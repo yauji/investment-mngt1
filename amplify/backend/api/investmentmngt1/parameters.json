@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "investmentmngt1",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authinvestmentmngt19c723015",
+      "Outputs.UserPoolId"
+    ]
+  }
+}
