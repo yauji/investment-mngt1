@@ -1,5 +1,84 @@
-type Todo @model {
-  id: ID!
-  name: String!
-  description: String
+enum Currency {
+  JPY
+  USD
+  AUD
+  EUR
+  NZD
 }
+
+enum DepositeStatus {
+  ACTIVE
+  FINISHED
+}
+
+
+type Deposit
+@model
+@auth(rules: [{allow: owner}]) {  
+  name:String!
+  memo:String
+
+  status:DepositeStatus!
+
+  date:String!
+  principalCurrency:Currency!
+  principalJPY: Int
+  principalForeign:Float
+  exchangeRate:Float
+  interestRate:Float
+  duration:Int!
+
+  endDate:String
+  valueCurrency:Currency!
+  valueJPY:Int
+  valueForeign:Float
+}
+
+
+type Account
+@model
+@auth(rules: [{allow: owner}]) {  
+  currency:Currency!
+  balance:Float!
+  exchangeRate:Float!
+  memo:String
+}
+
+
+enum TradeType {
+  BUY
+  SELL
+  DIVIDEND
+}
+
+
+type TrustTransaction
+@model
+@auth(rules: [{allow: owner}]) {  
+  date: String!
+  tradeType: TradeType!
+  basicPrice:Int
+  basicPriceForeign:Float
+  noItem:Float!
+
+  buyValueJPY:Int
+  buyValueForeign:Float
+  sellValueJPY:Int
+  sellValueForeign:Float
+  dividendValueJPY:Int
+  dividendValueForeign:Float
+}
+
+type TrustBalance
+@model
+@auth(rules: [{allow: owner}]) {  
+  currency:Currency!
+  name:String!
+  memo:String
+  balance:Float!
+  noItem:Float!
+}
+
+
+
+
