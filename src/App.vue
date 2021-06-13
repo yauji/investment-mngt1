@@ -1,3 +1,4 @@
+<!--
 <template>
   <div id="nav">
     <router-link to="/">Home</router-link> |
@@ -5,6 +6,15 @@
   </div>
   <router-view/>
 </template>
+-->
+<template>
+  <div id="app">
+    <Header />
+    <router-view/>
+  </div>
+</template>
+
+
 
 <style>
 #app {
@@ -13,6 +23,7 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  margin-top: 0px;
 }
 
 #nav {
@@ -28,3 +39,13 @@
   color: #42b983;
 }
 </style>
+
+<script>
+import Header from '@/components/Header'
+export default {
+  name: 'App',
+  components:{
+    Header
+  }
+}
+</script>
