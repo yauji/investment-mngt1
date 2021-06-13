@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Deposit アルバム一覧</h1>
+    <h1>Deposits</h1>
     
     <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
       <button @click="navigate">Add Album</button>
