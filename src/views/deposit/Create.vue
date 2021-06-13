@@ -11,35 +11,48 @@
       <input type="submit" value="Submit" />
 
       <div class="mb-3">
-        status:DepositeStatus! date:String! principalCurrency:Currency!
-        principalJPY: Int principalForeign:Float exchangeRate:Float
-        interestRate:Float duration:Int! endDate:String valueCurrency:Currency!
-        valueJPY:Int valueForeign:Float
-
         <div class="mb-3">
           <label for="" class="form-label">name</label>
           <input type="text" class="form-control" v-model="form.name" />
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">memo</label>
-          <input type="text" class="form-control" id="memo" />
+          <label for="" class="form-label"></label>
+          <input type="text" class="form-control" v-model="form.memo" />
         </div>
 
         <div class="mb-3">
           <label for="" class="form-label"></label>
-          <input type="" class="form-control" id="" />
+          <input type="text" class="form-control" v-model="form.date" />
+        </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">principalCurrency</label>
+          <select
+            class="form-select"
+            aria-label="Default select example"
+            v-model="form.principalCurrency"
+          >
+            <option selected>Open this select menu</option>
+            <option value="JPY">JPY</option>
+            <option value="USD">USD</option>
+            <option value="AUD">AUD</option>
+            <option value="EUR">EUR</option>
+            <option value="NZD">NZD</option>
+          </select>
         </div>
 
         <div class="mb-3">
           <label for="" class="form-label"></label>
-          <input type="" class="form-control" id="" />
+          <input type="text" class="form-control" v-model="form.duration" />
         </div>
 
         <div class="mb-3">
           <label for="" class="form-label"></label>
-          <input type="" class="form-control" id="" />
+          <input type="text" class="form-control" v-model="form.xx" />
         </div>
+
+
 
         <label for="exampleInputEmail1" class="form-label">Email address</label>
         <input
@@ -68,8 +81,7 @@
     </form>
   </div>
 
-  name memo status date principalCurrency principalJPY principalForeign
-  exchangeRate interestRate duration endDate valueCurrency valueJPY valueForeign
+  
 </template>
 
 <script>
@@ -87,21 +99,28 @@ export default {
 
         date: "",
         principalCurrency: "",
-        principalJPY: "",
-        principalForeign: "",
-        exchangeRate: "",
-        interestRate: "",
-        duration: "",
+        principalJPY: 0,
+        principalForeign: 0,
+        exchangeRate: 0,
+        interestRate: 0,
+        duration: 0,
 
         endDate: "",
-        valueCurrency: "",
-        valueJPY: "",
-        valueForeign: "",
+        valueCurrency: "JPY",
+        valueJPY: 0,
+        valueForeign: 0,
       },
     };
   },
   methods: {
     async submitCreate() {
+
+      this.form.status = "ACTIVE";
+
+this.form.duration = 12;
+
+
+
       let d = new Date();
       console.log(d.toISOString());
       this.form.date = d.toISOString();

@@ -2,80 +2,96 @@
   <div>
     <h1>Deposits</h1>
     
-    <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
-      <button @click="navigate">Add Album</button>
-    </router-link>
-    <table border="1">
-      <tr v-for="(album, index) in albums" :key="album.id">
-        <td>{{ album.name }}</td>
-        <td>{{ album.date }}</td>
-        <td>{{ album.principalCurrency }}</td>
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>hoge</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(deposit, index) in deposits" :key="deposit.id">
+        <td>{{ deposit.name }}</td>
+        <td>{{ deposit.date }}</td>
+        <td>{{ deposit.principalCurrency }}</td>
         <td>
           <router-link
             custom
             v-slot="{ navigate }"
-            :to="{ name: 'AlbumShow', params: { albumId: album.id } }"
+            :to="{ name: 'DepositShow', params: { depositId: deposit.id } }"
           >
-            <button @click="navigate">Show Album</button>
+            <button @click="navigate">Show Deposit</button>
           </router-link>
         </td>
         <td>
           <router-link
             custom
             v-slot="{ navigate }"
-            :to="{ name: 'AlbumEdit', params: { albumId: album.id } }"
+            :to="{ name: 'DepositEdit', params: { depositId: deposit.id } }"
           >
-            <button @click="navigate">Edit Album</button>
+            <button @click="navigate">Edit Deposit</button>
           </router-link>
         </td>
         <td>
-          <button @click="deleteAlbum(index, album.id)">
-            Delete Album
+          <button @click="deleteDeposit(index, deposit.id)">
+            Delete Deposit
           </button>
         </td>
       </tr>
+      </tbody>
     </table>
+
+    <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
+      <button class="btn btn-primary" @click="navigate">Add Deposit</button>
+    </router-link>
+
   </div>
 </template>
 
 <script>
 import { API } from "aws-amplify";
-import { listAlbums } from "../../graphql/queries";
-import { deleteAlbum } from "../../graphql/mutations";
+import { listDeposits } from "../../graphql/queries";
+import { deleteDeposit } from "../../graphql/mutations";
+
+//import { listDeposits } from "../../graphql/queries";
+//import { deleteDeposit } from "../../graphql/mutations";
 
 export default {
-  name: "AlbumIndex",
+  name: "DepositIndex",
   async created() {
-    this.getAlbums();
+    //this.getDeposits();
+    this.getDeposits();
   },
   data() {
     return {
-      albums: [],
+      //albums: [],
+      deposits: [],
     };
   },
   methods: {
-    async getAlbums() {
+    async getDeposits() {
       await API.graphql({
-        query: listAlbums,
+        query: listDeposits,
       })
         .then((result) => {
           console.log(result);
-          this.albums = result.data.listAlbums.items;
+          this.deposits = result.data.listDeposits.items;
+          //this.Deposits = result.data.listDeposits.items;
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    async deleteAlbum(index, albumId) {
-      if (!confirm("Delete Album?")) return;
+    async deleteDeposit(index, depositId) {
+      if (!confirm("Delete Deposit?")) return;
 
       await API.graphql({
-        query: deleteAlbum,
-        variables: { input: { id: albumId } },
+        //query: deleteDeposit,
+        query: deleteDeposit,
+        variables: { input: { id: depositId } },
       })
         .then((result) => {
           console.log(result);
-          this.albums.splice(index, 1);
+          this.depositss.splice(index, 1);
         })
         .catch((error) => {
           console.log(error);
