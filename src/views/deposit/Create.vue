@@ -1,24 +1,19 @@
 <template>
   <div>
     <h1>New Deposit</h1>
-    <form @submit.prevent="submitCreate2">
-      <label>Name</label><br />
-      <input v-model="form.name" placeholder="Enter album name" /><br />
-      <input type="submit" value="Submit" />
-    </form>
 
     <form @submit.prevent="submitCreate">
       <input type="submit" value="Submit" />
 
       <div class="mb-3">
         <div class="mb-3">
-          <label for="" class="form-label">name</label>
-          <input type="text" class="form-control" v-model="form.name" />
+          <label for="" class="form-label">name *</label>
+          <input type="text" class="form-control" v-model="form.name" required />
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label"></label>
-          <input type="text" class="form-control" v-model="form.memo" />
+          <label for="" class="form-label">memo</label>
+          <textarea class="form-control" v-model="form.memo" />
         </div>
 
         <div class="mb-3">
@@ -33,8 +28,9 @@
             aria-label="Default select example"
             v-model="form.principalCurrency"
           >
-            <option selected>Open this select menu</option>
-            <option value="JPY">JPY</option>
+          <!--
+            <option selected>Open this select menu</option>-->
+            <option value="JPY" selected>JPY</option>
             <option value="USD">USD</option>
             <option value="AUD">AUD</option>
             <option value="EUR">EUR</option>

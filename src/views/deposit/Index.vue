@@ -11,6 +11,7 @@
       <tbody>
       <tr v-for="(deposit, index) in deposits" :key="deposit.id">
         <td>{{ deposit.name }}</td>
+        <td>{{ deposit.memo }}</td>
         <td>{{ deposit.date }}</td>
         <td>{{ deposit.principalCurrency }}</td>
         <td>
