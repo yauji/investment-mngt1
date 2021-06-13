@@ -1,18 +1,31 @@
-<!--
 <template>
+  <div id="app">
+    <amplify-greetings></amplify-greetings>
+    <Header />
+    <router-view/>
+  </div>
+<!--
+  <div v-if="isSignedIn">
+    <amplify-greetings></amplify-greetings>
+   <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositIndex' }">
+     <button @click="navigate">TOP</button>
+   </router-link>    
+  </div>
+
+
+
+  <router-view/>
   <div id="nav">
     <router-link to="/">Home</router-link> |
     <router-link to="/about">About</router-link>
   </div>
   <router-view/>
+  -->
+</template>
+<!--
+<template>
 </template>
 -->
-<template>
-  <div id="app">
-    <Header />
-    <router-view/>
-  </div>
-</template>
 
 
 
@@ -42,6 +55,7 @@
 </style>
 
 <script>
+/*
 import Header from '@/components/Header'
 export default {
   name: 'App',
@@ -49,4 +63,17 @@ export default {
     Header
   }
 }
+*/
+import Header from '@/components/Header'
+export default {
+    name: 'App',
+  components:{
+    Header
+  },
+  computed: {
+    isSignedIn(){
+      return this.$store.state.user !== null;
+    },
+  },
+};
 </script>

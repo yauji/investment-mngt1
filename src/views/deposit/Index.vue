@@ -1,6 +1,8 @@
 <template>
   <div>
     <h1>Deposits</h1>
+
+    <router-link to="/deposits/create">Deposit add</router-link>
     
     <table class="table table-striped">
       <thead>
@@ -40,6 +42,10 @@
       </tr>
       </tbody>
     </table>
+
+    <router-link :to="{ name: 'DepositCreate' }">
+      <button class="btn btn-primary">Add Deposit</button>
+    </router-link>
 
     <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
       <button class="btn btn-primary" @click="navigate">Add Deposit</button>

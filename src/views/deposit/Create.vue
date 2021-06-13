@@ -8,7 +8,12 @@
       <div class="mb-3">
         <div class="mb-3">
           <label for="" class="form-label">name *</label>
-          <input type="text" class="form-control" v-model="form.name" required />
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.name"
+            required
+          />
         </div>
 
         <div class="mb-3">
@@ -28,7 +33,7 @@
             aria-label="Default select example"
             v-model="form.principalCurrency"
           >
-          <!--
+            <!--
             <option selected>Open this select menu</option>-->
             <option value="JPY" selected>JPY</option>
             <option value="USD">USD</option>
@@ -47,8 +52,6 @@
           <label for="" class="form-label"></label>
           <input type="text" class="form-control" v-model="form.xx" />
         </div>
-
-
 
         <label for="exampleInputEmail1" class="form-label">Email address</label>
         <input
@@ -76,8 +79,6 @@
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
-
-  
 </template>
 
 <script>
