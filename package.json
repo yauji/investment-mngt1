@@ -11,6 +11,7 @@
     "@aws-amplify/ui-components": "^1.4.0",
     "@popperjs/core": "^2.9.2",
     "aws-amplify": "^4.1.0",
+    "bootstrap": "^5.0.1",
     "core-js": "^3.6.5",
     "jquery": "^3.6.0",
     "vue": "^3.0.0",
