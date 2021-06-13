@@ -29,7 +29,7 @@ type Deposit
   duration:Int!
 
   endDate:String
-  valueCurrency:Currency!
+  valueCurrency:Currency
   valueJPY:Int
   valueForeign:Float
 }
