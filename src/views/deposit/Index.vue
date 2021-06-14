@@ -3,6 +3,10 @@
     <h1>Deposits</h1>
 
     <router-link to="/deposits/create">Deposit add</router-link>
+
+  <p>
+  Last update : {{ moment(updated_at) }}  // 関数呼び出しにする
+</p>
     
     <table class="table table-striped">
       <thead>
@@ -62,6 +66,8 @@ import { deleteDeposit } from "../../graphql/mutations";
 //import { listDeposits } from "../../graphql/queries";
 //import { deleteDeposit } from "../../graphql/mutations";
 
+import moment from "moment";
+
 export default {
   name: "DepositIndex",
   async created() {
@@ -75,6 +81,9 @@ export default {
     };
   },
   methods: {
+   moment: function (date) {
+      return moment(date).format('YYYY/MM/DD HH:mm:SS')
+    },    
     async getDeposits() {
       await API.graphql({
         query: listDeposits,

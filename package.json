@@ -14,8 +14,13 @@
     "bootstrap": "^5.0.1",
     "core-js": "^3.6.5",
     "jquery": "^3.6.0",
+    "moment": "^2.29.1",
+    "stylus": "^0.54.8",
+    "stylus-loader": "^6.1.0",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
+    "vue3-datepicker": "^0.2.4",
+    "vuejs-datepicker": "^1.6.2",
     "vuex": "^4.0.0-0"
   },
   "devDependencies": {

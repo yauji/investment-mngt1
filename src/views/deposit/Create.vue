@@ -22,9 +22,17 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label"></label>
+          <label for="" class="form-label">date</label>
+             <datepicker  v-model="form.date" />
+
+<!--             
+             <datepicker  v-model="picked" />
           <input type="text" class="form-control" v-model="form.date" />
+          -->
         </div>
+
+
+
 
         <div class="mb-3">
           <label for="" class="form-label">principalCurrency</label>
@@ -85,10 +93,25 @@
 import { API } from "aws-amplify";
 import { createDeposit } from "../../graphql/mutations";
 
+//import Datepicker from '../src/datepicker/Datepicker.vue'
+//import { Datepicker } from 'vue3-datepicker';
+//import { Datepicker } from 'vuejs-datepicker';
+//import Datepicker from 'vuejs-datepicker/src/components/Datepicker.vue';
+import Datepicker from 'vue3-datepicker';
+//import { ref } from 'vue';
+//const picked = ref(new Date());
+
+
 export default {
   name: "DepositCreate",
+  
+  components: {
+    Datepicker,
+  },
+  
   data() {
     return {
+      //picked: "",
       form: {
         name: "",
         memo: "",
@@ -111,12 +134,9 @@ export default {
   },
   methods: {
     async submitCreate() {
-
       this.form.status = "ACTIVE";
 
-this.form.duration = 12;
-
-
+      this.form.duration = 12;
 
       let d = new Date();
       console.log(d.toISOString());
