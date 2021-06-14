@@ -188,26 +188,28 @@ export default {
       //hoge
       //const did = this.form.id;
       
-      delete this.form.id;
+      //delete this.form.id;
       delete this.form.createdAt;
       delete this.form.updatedAt;
       delete this.form.owner;
 
+/*
       const f = {
         //id: did,
         name: 'hoge',
       };
+      */
       //f.id = did;
 
       
 
-      console.log(f);
+//      console.log(f);
       //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
       await API.graphql({
         query: updateDeposit,
         //id: did,
-        //variables: { input: this.form },
-        variables: { input: f },
+        variables: { input: this.form },
+        //variables: { input: f },
 //        variables: { key: did, input: this.form },
       })
         .then((result) => {
