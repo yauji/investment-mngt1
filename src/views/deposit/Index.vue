@@ -20,6 +20,7 @@
         <td>{{ deposit.memo }}</td>
         <td>{{ deposit.date }}</td>
         <td>{{ deposit.principalCurrency }}</td>
+        <td>{{ deposit.principalForeign }}</td>
         <td>
           <router-link
             custom

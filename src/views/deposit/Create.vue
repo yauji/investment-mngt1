@@ -23,16 +23,12 @@
 
         <div class="mb-3">
           <label for="" class="form-label">date</label>
-             <datepicker  v-model="form.date" />
-
-<!--             
+             <datepicker  v-model="form.date" class="form-control"/>
+          <!--             
              <datepicker  v-model="picked" />
           <input type="text" class="form-control" v-model="form.date" />
           -->
         </div>
-
-
-
 
         <div class="mb-3">
           <label for="" class="form-label">principalCurrency</label>
@@ -52,39 +48,65 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label"></label>
+          <label for="" class="form-label">Principal JPY</label>
+          <input type="number" class="form-control" v-model="form.principalJPY" />
+        </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">Principal Foreign</label>
+          <input type="number" step="0.01" class="form-control" v-model="form.principalForeign" />
+        </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">exchange rate</label>
+          <input type="number" class="form-control" v-model="form.exchangeRate" />
+        </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">interest rate</label>
+          <input type="number" class="form-control" v-model="form.interestRate" />
+        </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">duration</label>
           <input type="text" class="form-control" v-model="form.duration" />
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label"></label>
-          <input type="text" class="form-control" v-model="form.xx" />
+          <label for="" class="form-label">end date</label>
+                       <datepicker  v-model="form.endDate" class="form-control"/>
+          
         </div>
 
-        <label for="exampleInputEmail1" class="form-label">Email address</label>
-        <input
-          type="email"
-          class="form-control"
-          id="exampleInputEmail1"
-          aria-describedby="emailHelp"
-        />
-        <div id="emailHelp" class="form-text">
-          We'll never share your email with anyone else.
+        <div class="mb-3">
+          <label for="" class="form-label">valueCurrency</label>
+          <select
+            class="form-select"
+            aria-label="Default select example"
+            v-model="form.valueCurrency"
+          >
+            <option value="JPY" selected>JPY</option>
+            <option value="USD">USD</option>
+            <option value="AUD">AUD</option>
+            <option value="EUR">EUR</option>
+            <option value="NZD">NZD</option>
+          </select>
         </div>
-      </div>
-      <div class="mb-3">
-        <label for="exampleInputPassword1" class="form-label">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          id="exampleInputPassword1"
-        />
-      </div>
-      <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="exampleCheck1" />
-        <label class="form-check-label" for="exampleCheck1">Check me out</label>
-      </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">value JPY</label>
+          <input type="text" class="form-control" v-model="form.valueJPY" />
+        </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">value foreign</label>
+          <input type="text" class="form-control" v-model="form.valueForeign" />
+        </div>
+
+
+
       <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
     </form>
   </div>
 </template>
@@ -97,18 +119,17 @@ import { createDeposit } from "../../graphql/mutations";
 //import { Datepicker } from 'vue3-datepicker';
 //import { Datepicker } from 'vuejs-datepicker';
 //import Datepicker from 'vuejs-datepicker/src/components/Datepicker.vue';
-import Datepicker from 'vue3-datepicker';
+import Datepicker from "vue3-datepicker";
 //import { ref } from 'vue';
 //const picked = ref(new Date());
 
-
 export default {
   name: "DepositCreate",
-  
+
   components: {
     Datepicker,
   },
-  
+
   data() {
     return {
       //picked: "",
