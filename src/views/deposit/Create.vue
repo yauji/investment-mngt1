@@ -157,8 +157,9 @@ export default {
     async submitCreate() {
       this.form.status = "ACTIVE";
 
-      this.form.duration = 12;
+      //this.form.duration = 12;
 
+/*
       let d = new Date();
       console.log(d.toISOString());
       this.form.date = d.toISOString();
@@ -166,6 +167,7 @@ export default {
       this.form.principalCurrency = "AUD";
 
       console.log(this.form);
+      */
 
       await API.graphql({
         query: createDeposit,

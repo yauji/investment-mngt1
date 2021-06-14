@@ -4,14 +4,16 @@
 
     <router-link to="/deposits/create">Deposit add</router-link>
 
- <p>
-  Last update : {{ moment(updated_at) }}  // 関数呼び出しにする
-</p>
-    
     <table class="table table-striped">
       <thead>
       <tr>
-        <th>hoge</th>
+        <th>name</th>
+        <th>memo</th>
+        <th>status</th>
+        <th>date</th>
+        <th></th>
+        <th></th>
+        <th></th>
       </tr>
       </thead>
       <tbody>
@@ -27,7 +29,7 @@
             v-slot="{ navigate }"
             :to="{ name: 'DepositShow', params: { depositId: deposit.id } }"
           >
-            <button @click="navigate">Show Deposit</button>
+            <button class="btn btn-primary" @click="navigate">Show</button>
           </router-link>
         </td>
         <td>
@@ -36,12 +38,12 @@
             v-slot="{ navigate }"
             :to="{ name: 'DepositEdit', params: { depositId: deposit.id } }"
           >
-            <button @click="navigate">Edit Deposit</button>
+            <button class="btn btn-primary" @click="navigate">Edit</button>
           </router-link>
         </td>
         <td>
-          <button @click="deleteDeposit(index, deposit.id)">
-            Delete Deposit
+          <button class="btn btn-primary" @click="deleteDeposit(index, deposit.id)">
+            Delete 
           </button>
         </td>
       </tr>
