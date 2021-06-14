@@ -169,6 +169,9 @@ export default {
       console.log(this.form);
       */
 
+console.log("xxxxxxxx");
+     console.log(this.form.date);
+
       await API.graphql({
         query: createDeposit,
         variables: { input: this.form },
