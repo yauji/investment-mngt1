@@ -1,22 +1,54 @@
 export const EnumCurrency = {
-    JPY : {
-        val:"1",
-        text:"JPY"
+    JPY: {
+        val: "JPY",
+        text: "JPY"
     },
-    USD : {
-        val:"2",
-        text:"USD"
+    USD: {
+        val: "USD",
+        text: "USD"
     },
-    AUD : {
-        val:"3",
-        text:"AUD"
+    AUD: {
+        val: "AUD",
+        text: "AUD"
     },
-    EUR : {
-        val:"4",
-        text:"EUR"
+    EUR: {
+        val: "EUR",
+        text: "EUR"
     },
-    NZD : {
-        val:"5",
-        text:"NZD"
+    NZD: {
+        val: "NZD",
+        text: "NZD"
     },
-  } 
+} 
+export const EnumDepositeStatus = {
+    ACTIVE: {
+        val: "ACTIVE",
+        text: "ACTIVE"
+    },
+    FINISHED: {
+        val: "FINISHED",
+        text: "FINISHED"
+    },
+} 
+export const EnumDepositeType = {
+    DEPOSIT_JPY: {
+        val: "DEPOSIT_JPY",
+        text: "DEPOSIT JPY"
+    },
+    DEPOSIT_FC: {
+        val: "DEPOSIT_FC",
+        text: "DEPOSIT FC"
+    },
+    BUY_FOREIGN_CURRENCY_BY_JPY: {
+        val: "BUY_FOREIGN_CURRENCY_BY_JPY",
+        text: "BUY FOREIGN CURRENCY BY JPY"
+    },
+    BUY_FOREIGN_CURRENCY_BY_FC: {
+        val: "BUY_FOREIGN_CURRENCY_BY_FC",
+        text: "BUY FOREIGN CURRENCY BY FC"
+    },
+    SELL_FOREIGN_CURRENCY: {
+        val: "SELL_FOREIGN_CURRENCY",
+        text: "SELL FOREIGN CURRENCY"
+    },
+} 

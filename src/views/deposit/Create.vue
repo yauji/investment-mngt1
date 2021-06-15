@@ -17,17 +17,30 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">type</label>
+          <label for="" class="form-label">type *</label>
           <select
             class="form-select"
             aria-label="Default select example"
             v-model="form.depositType"
             @change="onChangeDepositType()"
+            required
           >
+            <option
+              v-for="n in refEnum.EnumDepositeType"
+              v-bind:key="n"
+              v-bind:value="n.val"
+            >
+              {{ n.text }}
+            </option>
+
             <option value="DEPOSIT_JPY">deposit jpy</option>
             <option value="DEPOSIT_FC">deposit fc</option>
-            <option value="BUY_FOREIGN_CURRENCY_BY_JPY">buy foreign currency by JPY</option>
-            <option value="BUY_FOREIGN_CURRENCY_BY_FC">buy foreign currency by FC</option>
+            <option value="BUY_FOREIGN_CURRENCY_BY_JPY">
+              buy foreign currency by JPY
+            </option>
+            <option value="BUY_FOREIGN_CURRENCY_BY_FC">
+              buy foreign currency by FC
+            </option>
             <option value="SELL_FOREIGN_CURRENCY">sell foreign currency</option>
           </select>
         </div>
@@ -39,7 +52,7 @@
 
         <div class="mb-3">
           <label for="" class="form-label">date</label>
-          <datepicker v-model="form.date" class="form-control" />
+          <datepicker v-model="form.date" class="form-control" required />
           <!--             
              <datepicker  v-model="picked" />
           <input type="text" class="form-control" v-model="form.date" />
@@ -56,11 +69,20 @@
           >
             <!--
             <option selected>Open this select menu</option>-->
+            <option
+              v-for="n in refEnum.EnumCurrency"
+              v-bind:key="n"
+              v-bind:value="n.val"
+            >
+              {{ n.text }}
+            </option>
+            <!--
             <option value="JPY" selected>JPY</option>
             <option value="USD">USD</option>
             <option value="AUD">AUD</option>
             <option value="EUR">EUR</option>
             <option value="NZD">NZD</option>
+            -->
           </select>
         </div>
 
@@ -119,17 +141,13 @@
             aria-label="Default select example"
             v-model="form.valueCurrency"
           >
-          <!--
-      -->
-          <option v-for="n in refEnum.EnumCurrency" v-bind:key="n" v-bind:value="n.text">{{ n.text }}</option>
-<!--
-          <option v-for="n in 5" v-bind:value="n">{{ n }}番目</option>
-    --->  
-            <option value="JPY" selected>{{refEnum.EnumCurrency.JPY.text}}</option>
-            <option value="USD">USD</option>
-            <option value="AUD">AUD</option>
-            <option value="EUR">EUR</option>
-            <option value="NZD">NZD</option>
+            <option
+              v-for="n in refEnum.EnumCurrency"
+              v-bind:key="n"
+              v-bind:value="n.val"
+            >
+              {{ n.text }}
+            </option>
           </select>
         </div>
 
@@ -161,7 +179,7 @@ import Datepicker from "vue3-datepicker";
 //import { ref } from 'vue';
 //const picked = ref(new Date());
 
-import * as Enum from '@/Enum';
+import * as Enum from "@/Enum";
 //import * as Enum from '../../enum';
 
 export default {
@@ -170,9 +188,8 @@ export default {
   components: {
     Datepicker,
   },
-  computed:{
-    
-    refEnum:()=>Enum,
+  computed: {
+    refEnum: () => Enum,
   },
   data() {
     return {
@@ -204,14 +221,15 @@ export default {
       } else {
         this.dPrincipalJPY = false;
       }
-    },onChangeDepositType: function () {
+    },
+    onChangeDepositType: function () {
       if (this.form.principalCurrency == "JPY") {
         this.dPrincipalJPY = true;
       } else {
         this.dPrincipalJPY = false;
       }
     },
-    
+
     async submitCreate() {
       this.form.status = "ACTIVE";
 
