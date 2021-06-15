@@ -22,6 +22,20 @@
           "additionalAuthenticationProviders": []
         }
       }
+    },
+    "apif8da427c": {
+      "service": "API Gateway",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "investmentmngt1853be231",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        }
+      ]
     }
   },
   "hosting": {
@@ -29,6 +43,13 @@
       "service": "amplifyhosting",
       "type": "cicd",
       "lastPushTimeStamp": "2021-06-12T23:33:21.613Z"
+    }
+  },
+  "function": {
+    "investmentmngt1853be231": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
     }
   }
 }

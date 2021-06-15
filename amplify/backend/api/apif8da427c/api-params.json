@@ -1,0 +1,42 @@
+{
+  "paths": [
+    {
+      "name": "/summary",
+      "lambdaFunction": "investmentmngt1853be231",
+      "privacy": {
+        "private": true,
+        "auth": [
+          "/POST",
+          "/GET",
+          "/PUT",
+          "/PATCH",
+          "/DELETE"
+        ]
+      },
+      "policyResourceName": "/summary"
+    }
+  ],
+  "resourceName": "apif8da427c",
+  "apiName": "apif8da427c",
+  "functionArns": [
+    {
+      "lambdaFunction": "investmentmngt1853be231"
+    }
+  ],
+  "privacy": {
+    "auth": 1,
+    "unauth": 0,
+    "authRoleName": "amplify-investmentmngt1-dev-53421-authRole",
+    "unAuthRoleName": "amplify-investmentmngt1-dev-53421-unauthRole"
+  },
+  "dependsOn": [
+    {
+      "category": "function",
+      "resourceName": "investmentmngt1853be231",
+      "attributes": [
+        "Name",
+        "Arn"
+      ]
+    }
+  ]
+}
