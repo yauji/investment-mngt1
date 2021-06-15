@@ -36,6 +36,7 @@
             class="form-select"
             aria-label="Default select example"
             v-model="form.principalCurrency"
+            @change="onChangePrincipalCurrency()"
           >
             <!--
             <option selected>Open this select menu</option>-->
@@ -49,7 +50,8 @@
 
         <div class="mb-3">
           <label for="" class="form-label">Principal JPY</label>
-          <input type="number" class="form-control" v-model="form.principalJPY" />
+          <input type="number" class="form-control" v-model="form.principalJPY" 
+          v-bind:disabled="dPrincipalJPY"/>
         </div>
 
         <div class="mb-3">
@@ -154,6 +156,13 @@ export default {
     };
   },
   methods: {
+    onChangePrincipalCurrency : function(){
+      if(this.form.principalCurrency == "JPY"){
+        this.dPrincipalJPY = true;
+      }else{
+        this.dPrincipalJPY = false;
+      }
+    },
     async submitCreate() {
       this.form.status = "ACTIVE";
 
