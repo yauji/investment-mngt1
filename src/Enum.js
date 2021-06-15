@@ -20,7 +20,7 @@ export const EnumCurrency = {
         text: "NZD"
     },
 } 
-export const EnumDepositeStatus = {
+export const EnumDepositStatus = {
     ACTIVE: {
         val: "ACTIVE",
         text: "ACTIVE"
@@ -30,7 +30,7 @@ export const EnumDepositeStatus = {
         text: "FINISHED"
     },
 } 
-export const EnumDepositeType = {
+export const EnumDepositType = {
     DEPOSIT_JPY: {
         val: "DEPOSIT_JPY",
         text: "DEPOSIT JPY"

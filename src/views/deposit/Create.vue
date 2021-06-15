@@ -26,22 +26,12 @@
             required
           >
             <option
-              v-for="n in refEnum.EnumDepositeType"
+              v-for="n in refEnum.EnumDepositType"
               v-bind:key="n"
               v-bind:value="n.val"
             >
               {{ n.text }}
             </option>
-
-            <option value="DEPOSIT_JPY">deposit jpy</option>
-            <option value="DEPOSIT_FC">deposit fc</option>
-            <option value="BUY_FOREIGN_CURRENCY_BY_JPY">
-              buy foreign currency by JPY
-            </option>
-            <option value="BUY_FOREIGN_CURRENCY_BY_FC">
-              buy foreign currency by FC
-            </option>
-            <option value="SELL_FOREIGN_CURRENCY">sell foreign currency</option>
           </select>
         </div>
 
@@ -51,7 +41,7 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">date</label>
+          <label for="" class="form-label">date *</label>
           <datepicker v-model="form.date" class="form-control" required />
           <!--             
              <datepicker  v-model="picked" />
@@ -60,15 +50,17 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">principalCurrency</label>
+          <label for="" class="form-label">principalCurrency *</label>
           <select
             class="form-select"
             aria-label="Default select example"
             v-model="form.principalCurrency"
             @change="onChangePrincipalCurrency()"
+            required
           >
             <!--
             <option selected>Open this select menu</option>-->
+            <option selected>Open this select menu</option>
             <option
               v-for="n in refEnum.EnumCurrency"
               v-bind:key="n"
@@ -103,6 +95,7 @@
             step="0.01"
             class="form-control"
             v-model="form.principalForeign"
+            v-bind:disabled="dPrincipalForeign"
           />
         </div>
 
@@ -112,6 +105,7 @@
             type="number"
             class="form-control"
             v-model="form.exchangeRate"
+            v-bind:disabled="dExchangeRate"
           />
         </div>
 
@@ -121,12 +115,18 @@
             type="number"
             class="form-control"
             v-model="form.interestRate"
+            v-bind:disabled="dInterestRate"
           />
         </div>
 
         <div class="mb-3">
           <label for="" class="form-label">duration</label>
-          <input type="text" class="form-control" v-model="form.duration" />
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.duration"
+            v-bind:disabled="dDuration"
+          />
         </div>
 
         <div class="mb-3">
@@ -140,6 +140,7 @@
             class="form-select"
             aria-label="Default select example"
             v-model="form.valueCurrency"
+            v-bind:disabled="dvalueCurrency"
           >
             <option
               v-for="n in refEnum.EnumCurrency"
@@ -153,12 +154,22 @@
 
         <div class="mb-3">
           <label for="" class="form-label">value JPY</label>
-          <input type="text" class="form-control" v-model="form.valueJPY" />
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.valueJPY"
+            v-bind:disabled="dValueJPY"
+          />
         </div>
 
         <div class="mb-3">
           <label for="" class="form-label">value foreign</label>
-          <input type="text" class="form-control" v-model="form.valueForeign" />
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.valueForeign"
+            v-bind:disabled="dValueForeign"
+          />
         </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
@@ -196,11 +207,12 @@ export default {
       //picked: "",
       form: {
         name: "",
+        //typeDeposit: Enum.EnumDepositeType.DEPOSIT_JPY.val,
         memo: "",
         status: "",
 
         date: "",
-        principalCurrency: "",
+        //principalCurrency: "",
         principalJPY: 0,
         principalForeign: 0,
         exchangeRate: 0,
@@ -208,21 +220,56 @@ export default {
         duration: 0,
 
         endDate: "",
-        valueCurrency: "JPY",
+        //valueCurrency: "JPY",
         valueJPY: 0,
         valueForeign: 0,
       },
+      dPrincipalJPY: true,
+      dPrincipalForeign: true,
+      dExchangeRate: true,
+      dInterestRate: true,
+      dDuration: true,
+      dEndDate: true,
+      dValueCurrency: true,
+      dValueJPY: true,
+      dValueForeign: true,
+      /*
+      dPrincipalCurrecy: true,
+*/
     };
   },
   methods: {
-    onChangePrincipalCurrency: function () {
-      if (this.form.principalCurrency == "JPY") {
-        this.dPrincipalJPY = true;
-      } else {
-        this.dPrincipalJPY = false;
-      }
+    disableAll: function () {
+      this.dPrincipalCurrecy = true;
+      this.dPrincipalJPY = true;
+      this.dPrincipalForeign = true;
+      this.dExchangeRate = true;
+      this.dInterestRate = true;
+      this.dDuration = true;
+      this.dEndDate = true;
+      this.dValueCurrency = true;
+      this.dValueJPY = true;
+      this.dValueForeign = true;
     },
     onChangeDepositType: function () {
+      //console.log("xxxxxx");
+
+      this.disableAll();
+
+      if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val) {        
+        this.dPrincipalJPY = false;
+        this.dInterestRate = false;
+        this.dDuration = false;
+      } else if (
+        this.form.depositType == Enum.EnumDepositType.DEPOSIT_FC.val
+      ) {
+        this.dPrincipalForeign = false;
+        this.dExchangeRate = false;
+        this.dInterestRate = false;
+        this.dDuration = false;
+      }
+    },
+    onChangePrincipalCurrency: function () {
       if (this.form.principalCurrency == "JPY") {
         this.dPrincipalJPY = true;
       } else {
