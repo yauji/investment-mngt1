@@ -9,6 +9,8 @@ import DepositCreate from "../views/deposit/Create.vue";
 import DepositShow from "../views/deposit/Show.vue";
 import DepositEdit from "../views/deposit/Edit.vue";
 
+import Summary from "../views/Summary.vue";
+
 /*
 import AlbumIndex from "../views/album/Index.vue";
 import AlbumCreate from "../views/album/Create.vue";
@@ -51,6 +53,13 @@ const routes = [
     path: "/deposits/:depositId",
     name: "DepositShow",
     component: DepositShow,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/summary",
+    name: "Summary",
+    component: Summary,
     props: true,
     meta: { requireAuth: true },
   },
