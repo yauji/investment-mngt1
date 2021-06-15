@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h1>New Deposit</h1>
+    <h1>Edit deposit</h1>
 
-    <form @submit.prevent="submitCreate">
+    <form @submit.prevent="submitUpdate">
       <input type="submit" value="Submit" />
 
       <div class="mb-3">
@@ -17,22 +17,6 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">type</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            v-model="form.depositType"
-            @change="onChangeDepositType()"
-          >
-            <option value="DEPOSIT_JPY">deposit jpy</option>
-            <option value="DEPOSIT_FC">deposit fc</option>
-            <option value="BUY_FOREIGN_CURRENCY_BY_JPY">buy foreign currency by JPY</option>
-            <option value="BUY_FOREIGN_CURRENCY_BY_FC">buy foreign currency by FC</option>
-            <option value="SELL_FOREIGN_CURRENCY">sell foreign currency</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
           <label for="" class="form-label">memo</label>
           <textarea class="form-control" v-model="form.memo" />
         </div>
@@ -40,10 +24,9 @@
         <div class="mb-3">
           <label for="" class="form-label">date</label>
           <datepicker v-model="form.date" class="form-control" />
-          <!--             
-             <datepicker  v-model="picked" />
-          <input type="text" class="form-control" v-model="form.date" />
-          -->
+          <!--
+          <input text="text" v-model="form.date"/>
+             -->
         </div>
 
         <div class="mb-3">
@@ -52,11 +35,10 @@
             class="form-select"
             aria-label="Default select example"
             v-model="form.principalCurrency"
-            @change="onChangePrincipalCurrency()"
           >
             <!--
             <option selected>Open this select menu</option>-->
-            <option value="JPY" selected>JPY</option>
+            <option value="JPY">JPY</option>
             <option value="USD">USD</option>
             <option value="AUD">AUD</option>
             <option value="EUR">EUR</option>
@@ -70,7 +52,6 @@
             type="number"
             class="form-control"
             v-model="form.principalJPY"
-            v-bind:disabled="dPrincipalJPY"
           />
         </div>
 
@@ -119,13 +100,7 @@
             aria-label="Default select example"
             v-model="form.valueCurrency"
           >
-          <!--
-      -->
-          <option v-for="n in refEnum.EnumCurrency" v-bind:key="n" v-bind:value="n.text">{{ n.text }}</option>
-<!--
-          <option v-for="n in 5" v-bind:value="n">{{ n }}番目</option>
-    --->  
-            <option value="JPY" selected>{{refEnum.EnumCurrency.JPY.text}}</option>
+            <option value="JPY">JPY</option>
             <option value="USD">USD</option>
             <option value="AUD">AUD</option>
             <option value="EUR">EUR</option>
@@ -151,88 +126,91 @@
 
 <script>
 import { API } from "aws-amplify";
-import { createDeposit } from "../../graphql/mutations";
+import { getDeposit } from "../../graphql/queries";
+import { updateDeposit } from "../../graphql/mutations";
 
-//import Datepicker from '../src/datepicker/Datepicker.vue'
-//import { Datepicker } from 'vue3-datepicker';
-//import { Datepicker } from 'vuejs-datepicker';
-//import Datepicker from 'vuejs-datepicker/src/components/Datepicker.vue';
 import Datepicker from "vue3-datepicker";
-//import { ref } from 'vue';
-//const picked = ref(new Date());
 
-import * as Enum from '@/Enum';
-//import * as Enum from '../../enum';
+import moment from "moment";
 
 export default {
-  name: "DepositCreate",
-
+  name: "DepositEdit",
   components: {
     Datepicker,
   },
-  computed:{
-    
-    refEnum:()=>Enum,
+  props: {
+    depositId: String,
+  },
+  async created() {
+    //console.log(this.props.depositId);
+    //console.log(this.depositId);
+
+    this.getDeposit();
   },
   data() {
     return {
-      //picked: "",
       form: {
-        name: "",
-        memo: "",
-        status: "",
-
-        date: "",
-        principalCurrency: "",
-        principalJPY: 0,
-        principalForeign: 0,
-        exchangeRate: 0,
-        interestRate: 0,
-        duration: 0,
-
-        endDate: "",
-        valueCurrency: "JPY",
-        valueJPY: 0,
-        valueForeign: 0,
+        //id: "",
+        //        date: new Date(),
+        //      endDate: new Date(),
       },
     };
   },
   methods: {
-    onChangePrincipalCurrency: function () {
-      if (this.form.principalCurrency == "JPY") {
-        this.dPrincipalJPY = true;
-      } else {
-        this.dPrincipalJPY = false;
-      }
-    },onChangeDepositType: function () {
-      if (this.form.principalCurrency == "JPY") {
-        this.dPrincipalJPY = true;
-      } else {
-        this.dPrincipalJPY = false;
-      }
+    moment: function (date) {
+      return moment(date).format("YYYY/MM/DD");
     },
-    
-    async submitCreate() {
-      this.form.status = "ACTIVE";
-
-      //this.form.duration = 12;
-
-      /*
-      let d = new Date();
-      console.log(d.toISOString());
-      this.form.date = d.toISOString();
-
-      this.form.principalCurrency = "AUD";
-
-      console.log(this.form);
-      */
-
-      console.log("xxxxxxxx");
-      console.log(this.form.date);
+    async getDeposit() {
+      //console.log(this.depositId);
 
       await API.graphql({
-        query: createDeposit,
+        query: getDeposit,
+        variables: { id: this.depositId },
+      })
+        .then((result) => {
+          console.log("xxxxxxxxxx");
+          //console.log(result);
+          //this.form.id = result.data.getDeposit.id;
+          //this.form.name = result.data.getDeposit.name;
+          this.form = result.data.getDeposit;
+          const d = new Date(result.data.getDeposit.date);
+          //console.log(moment(d).format("YYYY/MM/DD"));
+          //this.form.date = moment(d).format("YYYY/MM/DD");
+          this.form.date = d;
+          //this.form.date = "2021/01/01";
+          //hoge
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async submitUpdate() {
+      //hoge
+      //const did = this.form.id;
+      
+      //delete this.form.id;
+      delete this.form.createdAt;
+      delete this.form.updatedAt;
+      delete this.form.owner;
+
+/*
+      const f = {
+        //id: did,
+        name: 'hoge',
+      };
+      */
+      //f.id = did;
+
+      
+
+//      console.log(f);
+      //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
+      await API.graphql({
+        query: updateDeposit,
+        //id: did,
         variables: { input: this.form },
+        //variables: { input: f },
+//        variables: { key: did, input: this.form },
       })
         .then((result) => {
           console.log(result);

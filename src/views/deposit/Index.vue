@@ -8,6 +8,7 @@
       <thead>
         <tr>
           <th>name</th>
+          <th>type</th>
           <th>memo</th>
           <th>status</th>
           <th>date</th>
@@ -31,6 +32,7 @@
       <tbody>
         <tr v-for="(deposit, index) in deposits" :key="deposit.id">
           <td>{{ deposit.name }}</td>
+          <td>{{ deposit.depositType }}</td>
           <td>{{ deposit.memo }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ moment(deposit.date) }}</td>

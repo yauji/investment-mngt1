@@ -11,9 +11,14 @@
         <router-link to="/deposits">Deposits</router-link>
       </li>
       | 
-      <li class="nav-item">
-        <router-link to="/deposits/create">Deposit add</router-link>       
+      <li class="nav-item active">
+        <router-link to="/accounts">Accounts</router-link>
       </li>
+      | 
+      <li class="nav-item active">
+        <router-link to="/summary">Summary</router-link>
+      </li>
+
     </ul>
   </div>
 </nav>

@@ -9,6 +9,11 @@ import DepositCreate from "../views/deposit/Create.vue";
 import DepositShow from "../views/deposit/Show.vue";
 import DepositEdit from "../views/deposit/Edit.vue";
 
+import AccountIndex from "../views/account/Index.vue";
+import AccountCreate from "../views/account/Create.vue";
+import AccountShow from "../views/account/Show.vue";
+import AccountEdit from "../views/account/Edit.vue";
+
 import Summary from "../views/Summary.vue";
 
 /*
@@ -56,6 +61,35 @@ const routes = [
     props: true,
     meta: { requireAuth: true },
   },
+  
+  {
+    path: "/accounts",
+    name: "AccountIndex",
+    component: AccountIndex,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/accounts/create",
+    name: "AccountCreate",
+    component: AccountCreate,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/accounts/:accountId/edit",
+    name: "AccountEdit",
+    component: AccountEdit,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/accounts/:accountId",
+    name: "AccountShow",
+    component: AccountShow,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  
+  
   {
     path: "/summary",
     name: "Summary",
