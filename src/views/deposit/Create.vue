@@ -302,21 +302,8 @@ export default {
     async submitCreate() {
       this.form.status = "ACTIVE";
 
-      //this.form.duration = 12;
-
-      /*
-      let d = new Date();
-      console.log(d.toISOString());
-      this.form.date = d.toISOString();
-
-      this.form.principalCurrency = "AUD";
-
-      console.log(this.form);
-      */
-
-      console.log("xxxxxxxx");
-      console.log(this.form.date);
-
+      //console.log("xxxxxxxx");
+      //console.log(this.form.date);
       await API.graphql({
         query: createDeposit,
         variables: { input: this.form },
@@ -328,6 +315,8 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+
+      //update account----
     },
   },
 };

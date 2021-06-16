@@ -7,45 +7,19 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>name</th>
-          <th>memo</th>
-          <th>status</th>
-          <th>date</th>
-
-          <th>principalCurrency</th>
-          <th>principalJPY</th>
-          <th>principalForeign</th>
+          <th>currency</th>
+          <th>balance</th>
           <th>exchangeRate</th>
-          <th>interestRate</th>
-          <th>duration</th>
-
-          <th>endDate</th>
-          <th>valueCurrency</th>
-          <th>valueJPY</th>
-          <th>valueForeign</th>
-          <th></th>
-          <th></th>
+          <th>memo</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(account, index) in accounts" :key="account.id">
-          <td>{{ account.name }}</td>
-          <td>{{ account.memo }}</td>
-          <td>{{ account.status }}</td>
-          <td>{{ moment(account.date) }}</td>
-          <td>{{ account.principalCurrency }}</td>
-
-          <td>{{ account.principalJPY }}</td>
-          <td>{{ account.principalForeign }}</td>
+          <td>{{ account.currency }}</td>
+          <td>{{ account.balance }}</td>
           <td>{{ account.exchangeRate }}</td>
-          <td>{{ account.interestRate }}</td>
-          <td>{{ account.duration }}</td>
-
-          <td>{{ account.endDate }}</td>
-          <td>{{ account.valueCurrency }}</td>
-          <td>{{ account.valueJPY }}</td>
-          <td>{{ account.valueForeign }}</td>
+          <td>{{ account.memo }}</td>
           <td>
             <router-link
               custom
@@ -54,8 +28,6 @@
             >
               <button class="btn btn-primary" @click="navigate">Show</button>
             </router-link>
-          </td>
-          <td>
             <router-link
               custom
               v-slot="{ navigate }"
@@ -63,8 +35,6 @@
             >
               <button class="btn btn-primary" @click="navigate">Edit</button>
             </router-link>
-          </td>
-          <td>
             <button
               class="btn btn-primary"
               @click="deleteAccount(index, account.id)"
