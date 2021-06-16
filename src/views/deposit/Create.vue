@@ -267,6 +267,28 @@ export default {
         this.dExchangeRate = false;
         this.dInterestRate = false;
         this.dDuration = false;
+      } else if (
+        this.form.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
+      ) {
+        this.dPrincipalJPY = false;
+        this.dExchangeRate = false;
+        this.form.duration = 0;
+        this.dValueForeign = false;
+      } else if (
+        this.form.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
+      ) {
+        this.dPrincipalForeign = false;
+        this.dExchangeRate = false;
+        this.form.duration = 0;
+        this.dValueJPY = false;
+      } else if (
+        this.form.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
+      ) {
+        this.dPrincipalForeign = false;
+        this.dExchangeRate = false;
+        this.dInterestRate = false;
+        this.form.duration = 0;
+        this.dValueForeign = false;
       }
     },
     onChangePrincipalCurrency: function () {
