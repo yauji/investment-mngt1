@@ -2,7 +2,7 @@
   <div>
     <h1>Accounts</h1>
 
-    <router-link to="/accounts/create">Account add</router-link>
+
 
     <table class="table table-striped">
       <thead>
@@ -46,10 +46,7 @@
       </tbody>
     </table>
 
-    <router-link :to="{ name: 'AccountCreate' }">
-      <button class="btn btn-primary">Add Account</button>
-    </router-link>
-
+    
     <router-link custom v-slot="{ navigate }" :to="{ name: 'AccountCreate' }">
       <button class="btn btn-primary" @click="navigate">Add Account</button>
     </router-link>

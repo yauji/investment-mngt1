@@ -3,8 +3,6 @@
     <h1>New Account</h1>
 
     <form @submit.prevent="submitCreate">
-      <input type="submit" value="Submit" />
-
       <div class="mb-3">
         <div class="mb-3">
           <label for="" class="form-label">currency</label>
