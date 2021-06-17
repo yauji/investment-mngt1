@@ -207,10 +207,11 @@ export default {
         name: "a",
         //        name: "",
         //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
-        depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",
+        depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",        
         //typeDeposit
         memo: "",
-        status: "",
+        status: "FINISHED",
+//status: "",
 
         date: new Date(),
         //        date: "",
@@ -312,7 +313,7 @@ export default {
     },
 
     async submitCreate() {
-      this.form.status = "ACTIVE";
+      //this.form.status = "ACTIVE";
 
       //console.log("xxxxxxxx");
       //console.log(this.form.date);
