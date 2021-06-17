@@ -347,7 +347,7 @@ export default {
                   variables: { input: a },
                 })
                   .then((result) => {
-                    //                    console.log(result);
+                    console.log(result);
                     this.$router.push({ name: "DepositIndex" });
                   })
                   .catch((error) => {
