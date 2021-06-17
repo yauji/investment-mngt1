@@ -2,8 +2,6 @@
   <div>
     <h1>Accounts</h1>
 
-
-
     <table class="table table-striped">
       <thead>
         <tr>
@@ -46,7 +44,10 @@
       </tbody>
     </table>
 
-    
+    <button class="btn btn-primary" @click="updateBalances()">
+      Update balance
+    </button>
+
     <router-link custom v-slot="{ navigate }" :to="{ name: 'AccountCreate' }">
       <button class="btn btn-primary" @click="navigate">Add Account</button>
     </router-link>
@@ -55,11 +56,9 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listAccounts } from "../../graphql/queries";
+import { listAccounts, listDeposits } from "../../graphql/queries";
 import { deleteAccount } from "../../graphql/mutations";
-
-//import { listAccounts } from "../../graphql/queries";
-//import { deleteAccount } from "../../graphql/mutations";
+//import { deleteAccount, updateAccount } from "../../graphql/mutations";
 
 import moment from "moment";
 
@@ -108,6 +107,27 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    async updateBalances() {
+      var deposits;
+      await API.graphql({
+        query: listDeposits,
+      })
+        .then((result) => {
+          //console.log(result);
+          deposits = result.data.listDeposits.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      console.log(deposits);
+
+      
+
+
+          //hoge
+
     },
   },
 };

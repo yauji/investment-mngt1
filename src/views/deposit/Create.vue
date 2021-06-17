@@ -181,8 +181,10 @@
 <script>
 import { API } from "aws-amplify";
 
-import { createDeposit, updateAccount } from "../../graphql/mutations";
-import { listAccounts } from "../../graphql/queries";
+import { createDeposit } from "../../graphql/mutations";
+
+//import { createDeposit, updateAccount } from "../../graphql/mutations";
+//import { listAccounts } from "../../graphql/queries";
 
 import Datepicker from "vue3-datepicker";
 
@@ -205,7 +207,8 @@ export default {
         name: "a",
         //        name: "",
         //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
-        typeDeposit: "BUY_FOREIGN_CURRENCY_BY_JPY",
+        depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",
+        //typeDeposit
         memo: "",
         status: "",
 
@@ -258,6 +261,8 @@ export default {
 
       this.disableAll();
 
+      this.form.status = Enum.EnumDepositStatus.ACTIVE.val;
+
       if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val) {
         this.dPrincipalJPY = false;
         this.dInterestRate = false;
@@ -275,6 +280,8 @@ export default {
         this.dExchangeRate = false;
         this.form.duration = 0;
         this.dValueForeign = false;
+
+        this.form.status = Enum.EnumDepositStatus.FINISHED.val;
       } else if (
         this.form.depositType ==
         Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
@@ -283,6 +290,8 @@ export default {
         this.dExchangeRate = false;
         this.form.duration = 0;
         this.dValueJPY = false;
+
+        this.form.status = Enum.EnumDepositStatus.FINISHED.val;
       } else if (
         this.form.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
       ) {
@@ -291,6 +300,7 @@ export default {
         this.dInterestRate = false;
         this.form.duration = 0;
         this.dValueForeign = false;
+        this.form.status = Enum.EnumDepositStatus.FINISHED.val;
       }
     },
     onChangePrincipalCurrency: function () {
@@ -319,6 +329,7 @@ export default {
         });
 
       //update account----
+      /*
       if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val) {
         console.log("a");
       } else if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_FC.val) {
@@ -369,6 +380,7 @@ export default {
       ) {
         console.log("a");
       }
+      */
     },
   },
 };
