@@ -180,15 +180,11 @@
 
 <script>
 import { API } from "aws-amplify";
-import { createDeposit } from "../../graphql/mutations";
 
-//import Datepicker from '../src/datepicker/Datepicker.vue'
-//import { Datepicker } from 'vue3-datepicker';
-//import { Datepicker } from 'vuejs-datepicker';
-//import Datepicker from 'vuejs-datepicker/src/components/Datepicker.vue';
+import { createDeposit, updateAccount } from "../../graphql/mutations";
+import { listAccounts } from "../../graphql/queries";
+
 import Datepicker from "vue3-datepicker";
-//import { ref } from 'vue';
-//const picked = ref(new Date());
 
 import * as Enum from "@/Enum";
 //import * as Enum from '../../enum';
@@ -206,23 +202,29 @@ export default {
     return {
       //picked: "",
       form: {
-        name: "",
-        //typeDeposit: Enum.EnumDepositeType.DEPOSIT_JPY.val,
+        name: "a",
+        //        name: "",
+        //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
+        typeDeposit: "BUY_FOREIGN_CURRENCY_BY_JPY",
         memo: "",
         status: "",
 
-        date: "",
-        //principalCurrency: "",
-        principalJPY: 0,
+        date: new Date(),
+        //        date: "",
+        principalCurrency: "JPY",
+        principalJPY: 1000,
+        //        principalJPY: 0,
         principalForeign: 0,
-        exchangeRate: 0,
+        exchangeRate: 100.0,
+        //        exchangeRate: 0,
         interestRate: 0,
         duration: 0,
 
         endDate: "",
-        //valueCurrency: "JPY",
+        valueCurrency: "USD",
         valueJPY: 0,
-        valueForeign: 0,
+        valueForeign: 10.0,
+        //        valueForeign: 0,
       },
       dPrincipalJPY: true,
       dPrincipalForeign: true,
@@ -256,26 +258,26 @@ export default {
 
       this.disableAll();
 
-      if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val) {        
+      if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val) {
         this.dPrincipalJPY = false;
         this.dInterestRate = false;
         this.dDuration = false;
-      } else if (
-        this.form.depositType == Enum.EnumDepositType.DEPOSIT_FC.val
-      ) {
+      } else if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_FC.val) {
         this.dPrincipalForeign = false;
         this.dExchangeRate = false;
         this.dInterestRate = false;
         this.dDuration = false;
       } else if (
-        this.form.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
+        this.form.depositType ==
+        Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
       ) {
         this.dPrincipalJPY = false;
         this.dExchangeRate = false;
         this.form.duration = 0;
         this.dValueForeign = false;
       } else if (
-        this.form.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
+        this.form.depositType ==
+        Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
       ) {
         this.dPrincipalForeign = false;
         this.dExchangeRate = false;
@@ -293,9 +295,9 @@ export default {
     },
     onChangePrincipalCurrency: function () {
       if (this.form.principalCurrency == "JPY") {
-        this.dPrincipalJPY = true;
-      } else {
         this.dPrincipalJPY = false;
+      } else {
+        this.dPrincipalForeign = false;
       }
     },
 
@@ -317,6 +319,56 @@ export default {
         });
 
       //update account----
+      if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val) {
+        console.log("a");
+      } else if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_FC.val) {
+        console.log("a");
+      } else if (
+        this.form.depositType ==
+        Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
+      ) {
+        await API.graphql({
+          query: listAccounts,
+        })
+          .then((result) => {
+            const accounts = result.data.listAccounts.items;
+
+            for (const key in accounts) {
+              if (accounts[key].currency == this.form.valueCurrency) {
+                var a = accounts[key];
+                delete a.createdAt;
+                delete a.updatedAt;
+                delete a.owner;
+
+                a.balance += this.form.valueForeign;
+
+                API.graphql({
+                  query: updateAccount,
+                  variables: { input: a },
+                })
+                  .then((result) => {
+                    //                    console.log(result);
+                    this.$router.push({ name: "DepositIndex" });
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+              }
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else if (
+        this.form.depositType ==
+        Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
+      ) {
+        console.log("a");
+      } else if (
+        this.form.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
+      ) {
+        console.log("a");
+      }
     },
   },
 };
