@@ -24,11 +24,11 @@
             v-model="form.status"
             required
           >
-          <!--
+            <!--
             <option value="ACTIVE">ACTIVE</option>
             <option value="FINISHED">FINISHED</option>
 -->
-            
+
             <option
               v-for="n in refEnum.EnumDepositStatus"
               v-bind:key="n"
@@ -36,7 +36,6 @@
             >
               {{ n.text }}
             </option>
-            
           </select>
         </div>
 
@@ -197,7 +196,6 @@ export default {
         variables: { id: this.depositId },
       })
         .then((result) => {
-          console.log("xxxxxxxxxx");
           //console.log(result);
           //this.form.id = result.data.getDeposit.id;
           //this.form.name = result.data.getDeposit.name;
@@ -207,37 +205,20 @@ export default {
           //this.form.date = moment(d).format("YYYY/MM/DD");
           this.form.date = d;
           //this.form.date = "2021/01/01";
-          //hoge
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async submitUpdate() {
-      //hoge
-      //const did = this.form.id;
-
-      //delete this.form.id;
       delete this.form.createdAt;
       delete this.form.updatedAt;
       delete this.form.owner;
 
-      /*
-      const f = {
-        //id: did,
-        name: 'hoge',
-      };
-      */
-      //f.id = did;
-
-      //      console.log(f);
       //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
       await API.graphql({
         query: updateDeposit,
-        //id: did,
         variables: { input: this.form },
-        //variables: { input: f },
-        //        variables: { key: did, input: this.form },
       })
         .then((result) => {
           console.log(result);

@@ -13,17 +13,17 @@
           <th>status</th>
           <th>date</th>
 
-          <th>principalCurrency</th>
-          <th>principalJPY</th>
-          <th>principalForeign</th>
-          <th>exchangeRate</th>
-          <th>interestRate</th>
+          <th>principal Currency</th>
+          <th>principal JPY</th>
+          <th>principal Foreign</th>
+          <th>exchange Rate</th>
+          <th>interest Rate</th>
           <th>duration</th>
 
-          <th>endDate</th>
-          <th>valueCurrency</th>
-          <th>valueJPY</th>
-          <th>valueForeign</th>
+          <th>end Date</th>
+          <th>value Currency</th>
+          <th>value JPY</th>
+          <th>value Foreign</th>
           <th></th>
           <th></th>
           <th></th>
@@ -44,7 +44,7 @@
           <td>{{ deposit.interestRate }}</td>
           <td>{{ deposit.duration }}</td>
 
-          <td>{{ deposit.endDate }}</td>
+          <td>{{ moment(deposit.endDate) }}</td>
           <td>{{ deposit.valueCurrency }}</td>
           <td>{{ deposit.valueJPY }}</td>
           <td>{{ deposit.valueForeign }}</td>

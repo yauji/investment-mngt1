@@ -16,6 +16,10 @@
       </li>
       | 
       <li class="nav-item active">
+        <router-link to="/trusttransactions">Trust transactions</router-link>
+      </li>
+      | 
+      <li class="nav-item active">
         <router-link to="/summary">Summary</router-link>
       </li>
 

@@ -52,3 +52,19 @@ export const EnumDepositType = {
         text: "SELL FOREIGN CURRENCY"
     },
 } 
+
+export const EnumTradeType = {
+    BUY: {
+        val: "BUY",
+        text: "BUY"
+    },
+    SELL: {
+        val: "SELL",
+        text: "SELL"
+    },
+    DIVIDEND: {
+        val: "DIVIDEND",
+        text: "DIVIDEND"
+    },
+} 
+

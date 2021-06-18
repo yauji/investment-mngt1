@@ -14,6 +14,11 @@ import AccountCreate from "../views/account/Create.vue";
 import AccountShow from "../views/account/Show.vue";
 import AccountEdit from "../views/account/Edit.vue";
 
+import TrustTransactionIndex from "../views/trusttransaction/Index.vue";
+import TrustTransactionCreate from "../views/trusttransaction/Create.vue";
+import TrustTransactionShow from "../views/trusttransaction/Show.vue";
+import TrustTransactionEdit from "../views/trusttransaction/Edit.vue";
+
 import Summary from "../views/Summary.vue";
 
 /*
@@ -85,6 +90,34 @@ const routes = [
     path: "/accounts/:accountId",
     name: "AccountShow",
     component: AccountShow,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  
+
+  {
+    path: "/trusttransactions",
+    name: "TrustTransactionIndex",
+    component: TrustTransactionIndex,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/trusttransactions/create",
+    name: "TrustTransactionCreate",
+    component: TrustTransactionCreate,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/trusttransactions/:trustTransactionId/edit",
+    name: "TrustTransactionEdit",
+    component: TrustTransactionEdit,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/trusttransactions/:trustTransactionId",
+    name: "TrustTransactionShow",
+    component: TrustTransactionShow,
     props: true,
     meta: { requireAuth: true },
   },

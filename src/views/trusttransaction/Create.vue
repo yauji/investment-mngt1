@@ -181,77 +181,43 @@ export default {
       dSellValueForeign: true,
       dDividendValueJPY: true,
       dDividendValueForeign: true,
-
-      /*
-      dPrincipalCurrecy: true,
-*/
     };
   },
   methods: {
     disableAll: function () {
-      this.dPrincipalCurrecy = true;
-      this.dPrincipalJPY = true;
-      this.dPrincipalForeign = true;
-      this.dExchangeRate = true;
-      this.dInterestRate = true;
-      this.dDuration = true;
-      this.dEndDate = true;
-      this.dValueCurrency = true;
-      this.dValueJPY = true;
-      this.dValueForeign = true;
+      this.dBasicPrice = true;
+      this.dBasicPriceForeign = true;
+      this.dNoItem = true;
+
+      this.dBuyValueJPY = true;
+      this.dBuyValueForeign = true;
+      this.dSellValueJPY = true;
+      this.dSellValueForeign = true;
+      this.dDividendValueJPY = true;
+      this.dDividendValueForeign = true;
     },
     onChangeTrustTransactionType: function () {
-      //console.log("xxxxxx");
-
       this.disableAll();
 
-      this.form.status = Enum.EnumTrustTransactionStatus.ACTIVE.val;
+      //      this.form.status = Enum.EnumTrustTransactionStatus.ACTIVE.val;
 
-      if (
-        this.form.trusttransactionType ==
-        Enum.EnumTrustTransactionType.TRUSTTRANSACTION_JPY.val
-      ) {
-        this.dPrincipalJPY = false;
-        this.dInterestRate = false;
-        this.dDuration = false;
-      } else if (
-        this.form.trusttransactionType ==
-        Enum.EnumTrustTransactionType.TRUSTTRANSACTION_FC.val
-      ) {
-        this.dPrincipalForeign = false;
-        this.dExchangeRate = false;
-        this.dInterestRate = false;
-        this.dDuration = false;
-      } else if (
-        this.form.trusttransactionType ==
-        Enum.EnumTrustTransactionType.BUY_FOREIGN_CURRENCY_BY_JPY.val
-      ) {
-        this.dPrincipalJPY = false;
-        this.dExchangeRate = false;
-        this.form.duration = 0;
-        this.dValueForeign = false;
+      if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
+        this.dBasicPrice = false;
+        this.dBasicPriceForeign = false;
+        this.dNoItem = false;
 
-        this.form.status = Enum.EnumTrustTransactionStatus.FINISHED.val;
-      } else if (
-        this.form.trusttransactionType ==
-        Enum.EnumTrustTransactionType.BUY_FOREIGN_CURRENCY_BY_FC.val
-      ) {
-        this.dPrincipalForeign = false;
-        this.dExchangeRate = false;
-        this.form.duration = 0;
-        this.dValueJPY = false;
+        this.dBuyValueJPY = false;
+        this.dBuyValueForeign = false;
+      } else if (this.form.tradeType == Enum.EnumTradeType.SELL.val) {
+        this.dBasicPrice = false;
+        this.dBasicPriceForeign = false;
+        this.dNoItem = false;
 
-        this.form.status = Enum.EnumTrustTransactionStatus.FINISHED.val;
-      } else if (
-        this.form.trusttransactionType ==
-        Enum.EnumTrustTransactionType.SELL_FOREIGN_CURRENCY.val
-      ) {
-        this.dPrincipalForeign = false;
-        this.dExchangeRate = false;
-        this.dInterestRate = false;
-        this.form.duration = 0;
-        this.dValueForeign = false;
-        this.form.status = Enum.EnumTrustTransactionStatus.FINISHED.val;
+        this.dSellValueJPY = false;
+        this.dSellValueForeign = false;
+      } else if (this.form.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
+        this.dDividendValueJPY = false;
+        this.dDividendValueForeign = false;
       }
     },
     onChangePrincipalCurrency: function () {
