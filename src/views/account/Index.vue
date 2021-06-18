@@ -57,10 +57,12 @@
 <script>
 import { API } from "aws-amplify";
 import { listAccounts, listDeposits } from "../../graphql/queries";
-import { deleteAccount } from "../../graphql/mutations";
+import { deleteAccount, updateAccount } from "../../graphql/mutations";
 //import { deleteAccount, updateAccount } from "../../graphql/mutations";
 
 import moment from "moment";
+
+import * as Enum from "@/Enum";
 
 export default {
   name: "AccountIndex",
@@ -109,6 +111,7 @@ export default {
         });
     },
     async updateBalances() {
+      //get deposits
       var deposits;
       await API.graphql({
         query: listDeposits,
@@ -121,13 +124,82 @@ export default {
           console.log(error);
         });
 
-      console.log(deposits);
+      //console.log(deposits);
 
-      
+      //get accounts---
+      var accounts;
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
+      //console.log(accounts);
 
-          //hoge
+      // create dic----
+      var dicDepositBalanceEachCurrency = [];
 
+      for (const a in accounts) {
+        dicDepositBalanceEachCurrency[accounts[a].currency] = 0;
+      }
+
+      for (const kd in deposits) {
+        //console.log(deposits[kd]);
+        const d = deposits[kd];
+        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+          if (
+            d.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val ||
+            d.depositType ==
+              Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
+          ) {
+            dicDepositBalanceEachCurrency[d.valueCurrency] += d.valueForeign;
+          } else if (
+            d.depositType == Enum.EnumDepositType.DEPOSIT_FC.val ||
+            d.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
+          ) {
+            dicDepositBalanceEachCurrency[d.valueCurrency] += d.valueForeign;
+            dicDepositBalanceEachCurrency[d.principalCurrency] -=
+              d.principlaForeign;
+          } else if (
+            d.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
+          ) {
+            dicDepositBalanceEachCurrency[d.principalCurrency] -=
+              d.principlaForeign;
+          }
+        }
+      }
+
+      //console.log("------12");
+      //console.log(dicDepositBalanceEachCurrency);
+
+      for (const ka in accounts) {
+        var a = accounts[ka];
+        a.balance = dicDepositBalanceEachCurrency[a.currency];
+        //console.log(a);
+
+        delete a.createdAt;
+        delete a.updatedAt;
+        delete a.owner;
+
+        await API.graphql({
+          query: updateAccount,
+          variables: { input: a },
+        })
+          .then((result) => {
+            console.log(result);
+            //this.$router.push({ name: "AccountIndex" });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      //hoge
     },
   },
 };
