@@ -86,28 +86,39 @@ export default {
       //principal---
       principal += d.principalJPY;
 
-      //value----
+      //value-------
+      //value - deposit----
       if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
         if (d.principalCurrency == Enum.EnumCurrency.JPY.val) {
           value += d.principalJPY;
         } else {
           //foreign, evaluate with exchange rate---
           const exrate = dAccounts[d.principalCurrency].exchangeRate;
+          //console.log("---------2");
           value += exrate * d.principalForeign;
-          console.log(exrate * d.principalForeign);
-          //hoge
         }
       } else {
-        //TODO
-        console.log("aaa");
+        if (d.valueCurrency == Enum.EnumCurrency.JPY.val) {
+          value += d.valueJPY;
+        }
       }
     }
+
+    //value - account----
+    for(const ka in accounts){
+      const a = accounts[ka];
+      value += a.balance * a.exchangeRate;
+      //console.log("------3");
+      //console.log(a.balance * a.exchangeRate);
+    }
+
     //TODO: take account in trust
 
-    console.log(principal);
+    //console.log(principal);
     this.principal = principal;
+    this.value = value;
 
-    //hoge
+
   },
   data() {
     return {
