@@ -17,6 +17,30 @@
         </div>
 
         <div class="mb-3">
+          <label for="" class="form-label">status *</label>
+          <select
+            class="form-select"
+            aria-label="Default select example"
+            v-model="form.status"
+            required
+          >
+          <!--
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="FINISHED">FINISHED</option>
+-->
+            
+            <option
+              v-for="n in refEnum.EnumDepositStatus"
+              v-bind:key="n"
+              v-bind:value="n.val"
+            >
+              {{ n.text }}
+            </option>
+            
+          </select>
+        </div>
+
+        <div class="mb-3">
           <label for="" class="form-label">memo</label>
           <textarea class="form-control" v-model="form.memo" />
         </div>
@@ -133,6 +157,8 @@ import Datepicker from "vue3-datepicker";
 
 import moment from "moment";
 
+import * as Enum from "@/Enum";
+
 export default {
   name: "DepositEdit",
   components: {
@@ -146,6 +172,9 @@ export default {
     //console.log(this.depositId);
 
     this.getDeposit();
+  },
+  computed: {
+    refEnum: () => Enum,
   },
   data() {
     return {
@@ -187,13 +216,13 @@ export default {
     async submitUpdate() {
       //hoge
       //const did = this.form.id;
-      
+
       //delete this.form.id;
       delete this.form.createdAt;
       delete this.form.updatedAt;
       delete this.form.owner;
 
-/*
+      /*
       const f = {
         //id: did,
         name: 'hoge',
@@ -201,16 +230,14 @@ export default {
       */
       //f.id = did;
 
-      
-
-//      console.log(f);
+      //      console.log(f);
       //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
       await API.graphql({
         query: updateDeposit,
         //id: did,
         variables: { input: this.form },
         //variables: { input: f },
-//        variables: { key: did, input: this.form },
+        //        variables: { key: did, input: this.form },
       })
         .then((result) => {
           console.log(result);
