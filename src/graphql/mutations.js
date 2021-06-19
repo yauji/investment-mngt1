@@ -150,6 +150,7 @@ export const createTrustTransaction = /* GraphQL */ `
         memo
         balance
         noItem
+        basicPrice
         createdAt
         updatedAt
         owner
@@ -185,6 +186,7 @@ export const updateTrustTransaction = /* GraphQL */ `
         memo
         balance
         noItem
+        basicPrice
         createdAt
         updatedAt
         owner
@@ -220,6 +222,7 @@ export const deleteTrustTransaction = /* GraphQL */ `
         memo
         balance
         noItem
+        basicPrice
         createdAt
         updatedAt
         owner
@@ -253,6 +256,7 @@ export const createTrustBalance = /* GraphQL */ `
       memo
       balance
       noItem
+      basicPrice
       createdAt
       updatedAt
       owner
@@ -271,6 +275,7 @@ export const updateTrustBalance = /* GraphQL */ `
       memo
       balance
       noItem
+      basicPrice
       createdAt
       updatedAt
       owner
@@ -289,6 +294,7 @@ export const deleteTrustBalance = /* GraphQL */ `
       memo
       balance
       noItem
+      basicPrice
       createdAt
       updatedAt
       owner

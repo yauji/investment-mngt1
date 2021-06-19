@@ -104,6 +104,7 @@ export const getTrustTransaction = /* GraphQL */ `
         memo
         balance
         noItem
+        basicPrice
         createdAt
         updatedAt
         owner
@@ -145,6 +146,7 @@ export const listTrustTransactions = /* GraphQL */ `
           memo
           balance
           noItem
+          basicPrice
           createdAt
           updatedAt
           owner
@@ -177,6 +179,7 @@ export const getTrustBalance = /* GraphQL */ `
       memo
       balance
       noItem
+      basicPrice
       createdAt
       updatedAt
       owner
@@ -197,6 +200,7 @@ export const listTrustBalances = /* GraphQL */ `
         memo
         balance
         noItem
+        basicPrice
         createdAt
         updatedAt
         owner

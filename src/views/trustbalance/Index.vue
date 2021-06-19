@@ -2,24 +2,17 @@
   <div>
     <h1>TrustBalances</h1>
 
-    <router-link to="/trustbalances/create"
-      >TrustBalance add</router-link
-    >
+    <router-link to="/trustbalances/create">TrustBalance add</router-link>
 
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>date</th>
-          <th>trade Type</th>
-          <th>basic Price</th>
-          <th>basic Price Foreign</th>
-          <th>no Item</th>
-          <th>buy JPY</th>
-          <th>buy Foreign</th>
-          <th>sell JPY</th>
-          <th>sell Foreign</th>
-          <th>dividend JPY</th>
-          <th>dividend Foreign</th>
+          <th>currency</th>
+          <th>name</th>
+          <th>memo</th>
+          <th>balance</th>
+          <th>noItem</th>
+          <th>basicPrice</th>
 
           <th></th>
           <th></th>
@@ -31,18 +24,13 @@
           v-for="(trustbalance, index) in trustbalances"
           :key="trustbalance.id"
         >
-          <td>{{ moment(trustbalance.date) }}</td>
-          <td>{{ trustbalance.tradeType }}</td>
-          <td>{{ trustbalance.basicPrice }}</td>
-          <td>{{ trustbalance.basicPriceForeign }}</td>
+          <td>{{ trustbalance.currency }}</td>
+          <td>{{ trustbalance.name }}</td>
+          <td>{{ trustbalance.memo }}</td>
+          <td>{{ trustbalance.balance }}</td>
           <td>{{ trustbalance.noItem }}</td>
+          <td>{{ trustbalance.basicPrice }}</td>
 
-          <td>{{ trustbalance.buyJPY }}</td>
-          <td>{{ trustbalance.buyForeign }}</td>
-          <td>{{ trustbalance.sellJPY }}</td>
-          <td>{{ trustbalance.sellForeign }}</td>
-          <td>{{ trustbalance.dividendJPY }}</td>
-          <td>{{ trustbalance.dividendForeign }}</td>
           <td>
             <router-link
               custom

@@ -95,6 +95,7 @@ type TrustBalance
   memo:String
   balance:Float!
   noItem:Float!
+  basicPrice:Float!
 }
 
 
