@@ -61,9 +61,9 @@ export default {
     return {
       //picked: "",
       form: {
-  balance:0,
-  noItem:0,
-  basicPrice:0,
+        balance: 0,
+        noItem: 0,
+        basicPrice: 0,
       },
     };
   },

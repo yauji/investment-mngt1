@@ -32,7 +32,6 @@
           <td>{{ trustbalance.basicPrice }}</td>
 
           <td>
-            
             <router-link
               custom
               v-slot="{ navigate }"
@@ -43,7 +42,6 @@
             >
               <button class="btn btn-primary" @click="navigate">Show</button>
             </router-link>
-            
           </td>
           <td>
             <router-link
