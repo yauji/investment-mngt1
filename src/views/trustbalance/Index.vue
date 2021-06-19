@@ -159,7 +159,7 @@ export default {
           console.log(error);
         });
 
-      console.log(trusttransactions);
+      //console.log(trusttransactions);
 
       //get trustbalances---
       var trustbalances;
@@ -187,17 +187,16 @@ export default {
         dicIdTrustBalance[trustbalances[a].id] = trustbalances[a];
       }
 
-      console.log("------5");
-      console.log(dicIdTrustBalance);
+      //console.log("------5");
+      //console.log(dicIdTrustBalance);
 
       for (const ktt in trusttransactions) {
         //console.log(trusttransactions[kd]);
         const tt = trusttransactions[ktt];
-        console.log(tt);
 
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          console.log("---51");
-          console.log(dicIdTrustBalance[tt.trustBalanceId]);
+          //console.log("---51");
+          //console.log(dicIdTrustBalance[tt.trustBalanceId]);
           dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
         } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
           dicIdTrustBalance[tt.trustBalanceId].noItem -= tt.noItem;
@@ -206,10 +205,8 @@ export default {
           dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
         }
       }
-      console.log("------12");
-      console.log(dicIdTrustBalance);
-
-      //TODO update balance.
+      //console.log("------12");
+      //console.log(dicIdTrustBalance);
 
       for (const ka in dicIdTrustBalance) {
         var a = dicIdTrustBalance[ka];
@@ -235,8 +232,6 @@ export default {
             console.log(error);
           });
       }
-
-      //hoge
     },
   },
 };

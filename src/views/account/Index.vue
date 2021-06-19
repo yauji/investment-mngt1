@@ -115,6 +115,8 @@ export default {
         });
     },
     async updateBalances() {
+      //TODO: consider trust transaction (buy with FC)
+      
       //get deposits
       var deposits;
       await API.graphql({
