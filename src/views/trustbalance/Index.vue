@@ -87,6 +87,7 @@
 <script>
 import { API } from "aws-amplify";
 import { listTrustBalances, listTrustTransactions } from "../../graphql/queries";
+//import { deleteTrustBalance } from "../../graphql/mutations";
 import { deleteTrustBalance, updateTrustBalance } from "../../graphql/mutations";
 
 import moment from "moment";
@@ -152,7 +153,7 @@ export default {
           console.log(error);
         });
 
-      //console.log(trusttransactions);
+      console.log(trusttransactions);
 
       //get trustbalances---
       var trustbalances;
@@ -167,52 +168,55 @@ export default {
           console.log(error);
         });
 
+    //console.log("------4");
       //console.log(trustbalances);
+      //console.log(trustbalances.trustTransactions);
+
 
       // create dic----
-      var dicTrustTransactionBalanceEachCurrency = [];
+      var dicIdTrustBalance = [];
 
       for (const a in trustbalances) {
-        dicTrustTransactionBalanceEachCurrency[trustbalances[a].currency] = 0;
+        dicIdTrustBalance[trustbalances[a].id] = trustbalances[a];
       }
 
-      for (const kd in trusttransactions) {
+      console.log("------5");
+      console.log(dicIdTrustBalance);
+
+    for (const ktt in trusttransactions) {
         //console.log(trusttransactions[kd]);
-        const d = trusttransactions[kd];
-        if (d.status == Enum.EnumTrustTransactionStatus.FINISHED.val) {
-          if (
-            d.trusttransactionType == Enum.EnumTrustTransactionType.TRUSTTRANSACTION_JPY.val ||
-            d.trusttransactionType ==
-              Enum.EnumTrustTransactionType.BUY_FOREIGN_CURRENCY_BY_JPY.val
-          ) {
-            dicTrustTransactionBalanceEachCurrency[d.valueCurrency] += d.valueForeign;
-          } else if (
-            d.trusttransactionType == Enum.EnumTrustTransactionType.TRUSTTRANSACTION_FC.val ||
-            d.trusttransactionType == Enum.EnumTrustTransactionType.BUY_FOREIGN_CURRENCY_BY_FC.val
-          ) {
-            dicTrustTransactionBalanceEachCurrency[d.valueCurrency] += d.valueForeign;
-            dicTrustTransactionBalanceEachCurrency[d.principalCurrency] -=
-              d.principlaForeign;
-          } else if (
-            d.trusttransactionType == Enum.EnumTrustTransactionType.SELL_FOREIGN_CURRENCY.val
-          ) {
-            dicTrustTransactionBalanceEachCurrency[d.principalCurrency] -=
-              d.principlaForeign;
-          }
+        const tt = trusttransactions[ktt];
+        console.log(tt);
+        
+        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+          console.log("---51");
+          console.log(dicIdTrustBalance[tt.trustBalanceId]);
+          dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
+          
+        }else if(tt.tradeType == Enum.EnumTradeType.SELL.val){
+          
+          dicIdTrustBalance[tt.trustBalanceId].noItem -= tt.noItem;
+        }else if(tt.tradeType == Enum.EnumTradeType.DIVIDEND.val){
+          //correct?
+          dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
+
         }
       }
+      console.log("------12");
+      console.log(dicIdTrustBalance);
 
-      //console.log("------12");
-      //console.log(dicTrustTransactionBalanceEachCurrency);
+      //TODO update balance.
 
-      for (const ka in trustbalances) {
-        var a = trustbalances[ka];
-        a.balance = dicTrustTransactionBalanceEachCurrency[a.currency];
+
+      for (const ka in dicIdTrustBalance) {
+        var a = dicIdTrustBalance[ka];
+        //a.balance = dicTrustTransactionBalanceEachCurrency[a.currency];
         //console.log(a);
 
         delete a.createdAt;
         delete a.updatedAt;
         delete a.owner;
+        delete a.trustTransactions;
 
         await API.graphql({
           query: updateTrustBalance,
