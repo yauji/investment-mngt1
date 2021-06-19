@@ -67,7 +67,8 @@ enum TradeType {
 
 type TrustTransaction
 @model
-@auth(rules: [{allow: owner}]) {  
+@auth(rules: [{allow: owner}]) 
+@key(name: "byTrustBalance", fields: ["trustBalanceId"]){  
   id: ID!
 
   trustBalanceId: ID!
@@ -97,6 +98,8 @@ type TrustBalance
   balance:Float!
   noItem:Float!
   basicPrice:Float!
+
+  trustTransactions: [TrustTransaction] @connection(keyName: "byTrustBalance", fields: ["id"])
 }
 
 

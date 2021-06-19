@@ -131,6 +131,9 @@ export const onCreateTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
+        trustTransactions {
+          nextToken
+        }
         createdAt
         updatedAt
         owner
@@ -165,6 +168,9 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
+        trustTransactions {
+          nextToken
+        }
         createdAt
         updatedAt
         owner
@@ -199,6 +205,9 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
+        trustTransactions {
+          nextToken
+        }
         createdAt
         updatedAt
         owner
@@ -230,6 +239,27 @@ export const onCreateTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      trustTransactions {
+        items {
+          id
+          trustBalanceId
+          date
+          tradeType
+          basicPrice
+          basicPriceForeign
+          noItem
+          buyJPY
+          buyForeign
+          sellJPY
+          sellForeign
+          dividendJPY
+          dividendForeign
+          createdAt
+          updatedAt
+          owner
+        }
+        nextToken
+      }
       createdAt
       updatedAt
       owner
@@ -246,6 +276,27 @@ export const onUpdateTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      trustTransactions {
+        items {
+          id
+          trustBalanceId
+          date
+          tradeType
+          basicPrice
+          basicPriceForeign
+          noItem
+          buyJPY
+          buyForeign
+          sellJPY
+          sellForeign
+          dividendJPY
+          dividendForeign
+          createdAt
+          updatedAt
+          owner
+        }
+        nextToken
+      }
       createdAt
       updatedAt
       owner
@@ -262,6 +313,27 @@ export const onDeleteTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      trustTransactions {
+        items {
+          id
+          trustBalanceId
+          date
+          tradeType
+          basicPrice
+          basicPriceForeign
+          noItem
+          buyJPY
+          buyForeign
+          sellJPY
+          sellForeign
+          dividendJPY
+          dividendForeign
+          createdAt
+          updatedAt
+          owner
+        }
+        nextToken
+      }
       createdAt
       updatedAt
       owner

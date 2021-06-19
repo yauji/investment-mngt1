@@ -28,6 +28,7 @@
             type="number"
             class="form-control"
             v-model="form.exchangeRate"
+            step="0.01"
           />
         </div>
 
