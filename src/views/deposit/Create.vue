@@ -116,6 +116,7 @@
             class="form-control"
             v-model="form.interestRate"
             v-bind:disabled="dInterestRate"
+            step="0.01"
           />
         </div>
 
@@ -204,31 +205,31 @@ export default {
     return {
       //picked: "",
       form: {
-        name: "a",
-        //        name: "",
+        //name: "a",
+        name: "",
         //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
-        depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",        
+        //depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",
         //typeDeposit
         memo: "",
-        status: "FINISHED",
-//status: "",
+        //status: "FINISHED",
+        //status: "",
 
         date: new Date(),
         //        date: "",
         principalCurrency: "JPY",
-        principalJPY: 1000,
-        //        principalJPY: 0,
+        //principalJPY: 1000,
+        principalJPY: 0,
         principalForeign: 0,
-        exchangeRate: 100.0,
-        //        exchangeRate: 0,
+        //exchangeRate: 100.0,
+        exchangeRate: 0,
         interestRate: 0,
         duration: 0,
 
         endDate: "",
-        valueCurrency: "USD",
+        //valueCurrency: "USD",
         valueJPY: 0,
-        valueForeign: 10.0,
-        //        valueForeign: 0,
+        //valueForeign: 10.0,
+        valueForeign: 0,
       },
       dPrincipalJPY: true,
       dPrincipalForeign: true,
