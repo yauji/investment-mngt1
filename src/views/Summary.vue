@@ -24,7 +24,12 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listDeposits, listAccounts } from "../graphql/queries";
+import {
+  listDeposits,
+  listAccounts,
+  listTrustTransactions,
+  listTrustBalances,
+} from "../graphql/queries";
 import { deleteDeposit } from "../graphql/mutations";
 
 //import { listDeposits } from "../../graphql/queries";
@@ -105,20 +110,66 @@ export default {
     }
 
     //value - account----
-    for(const ka in accounts){
+    for (const ka in accounts) {
       const a = accounts[ka];
       value += a.balance * a.exchangeRate;
       //console.log("------3");
       //console.log(a.balance * a.exchangeRate);
     }
 
-    //TODO: take account in trust
+    // principal, value - trust transaction----
+    var trusttransactions = {};
+    await API.graphql({
+      query: listTrustTransactions,
+    })
+      .then((result) => {
+        console.log(result);
+        trusttransactions = result.data.listTrustTransactions.items;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
+    for (const ktt in trusttransactions) {
+      const tt = trusttransactions[ktt];
+      if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+        //console.log("-------1");
+        //console.log(tt);
+        principal += tt.buyJPY;
+      } else {
+        value += tt.sellJPY;
+        value += tt.dividendJPY;
+      }
+    }
+
+    // value - trust balance----
+    var trustbalances = {};
+    await API.graphql({
+      query: listTrustBalances,
+    })
+      .then((result) => {
+        console.log(result);
+        trustbalances = result.data.listTrustBalances.items;
+        //this.TrustBalances = result.data.listTrustBalances.items;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    //console.log(trustbalances);
+
+    for (const ktb in trustbalances) {
+      const tb = trustbalances[ktb];
+      if(tb.currency == Enum.EnumCurrency.JPY.val){
+        value += tb.balance;
+      }else{
+        //foreign currency
+        value += tb.balance * dAccounts[tb.currency].exchangeRate;
+        
+      }
+    }
     //console.log(principal);
     this.principal = principal;
     this.value = value;
-
-
   },
   data() {
     return {
