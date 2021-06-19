@@ -19,6 +19,11 @@ import TrustTransactionCreate from "../views/trusttransaction/Create.vue";
 import TrustTransactionShow from "../views/trusttransaction/Show.vue";
 import TrustTransactionEdit from "../views/trusttransaction/Edit.vue";
 
+import TrustBalanceIndex from "../views/trustbalance/Index.vue";
+import TrustBalanceCreate from "../views/trustbalance/Create.vue";
+import TrustBalanceShow from "../views/trustbalance/Show.vue";
+import TrustBalanceEdit from "../views/trustbalance/Edit.vue";
+
 import Summary from "../views/Summary.vue";
 
 /*
@@ -118,6 +123,33 @@ const routes = [
     path: "/trusttransactions/:trustTransactionId",
     name: "TrustTransactionShow",
     component: TrustTransactionShow,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  
+  {
+    path: "/trustbalances",
+    name: "TrustBalanceIndex",
+    component: TrustBalanceIndex,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/trustbalances/create",
+    name: "TrustBalanceCreate",
+    component: TrustBalanceCreate,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/trustbalances/:TrustBalanceId/edit",
+    name: "TrustBalanceEdit",
+    component: TrustBalanceEdit,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/trustbalances/:TrustBalanceId",
+    name: "TrustBalanceShow",
+    component: TrustBalanceShow,
     props: true,
     meta: { requireAuth: true },
   },

@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h1>TrustTransactions</h1>
+    <h1>TrustBalances</h1>
 
-    <router-link to="/trusttransactions/create"
-      >TrustTransaction add</router-link
+    <router-link to="/trustbalances/create"
+      >TrustBalance add</router-link
     >
 
     <table class="table table-striped">
@@ -28,28 +28,28 @@
       </thead>
       <tbody>
         <tr
-          v-for="(trusttransaction, index) in trusttransactions"
-          :key="trusttransaction.id"
+          v-for="(trustbalance, index) in trustbalances"
+          :key="trustbalance.id"
         >
-          <td>{{ moment(trusttransaction.date) }}</td>
-          <td>{{ trusttransaction.tradeType }}</td>
-          <td>{{ trusttransaction.basicPrice }}</td>
-          <td>{{ trusttransaction.basicPriceForeign }}</td>
-          <td>{{ trusttransaction.noItem }}</td>
+          <td>{{ moment(trustbalance.date) }}</td>
+          <td>{{ trustbalance.tradeType }}</td>
+          <td>{{ trustbalance.basicPrice }}</td>
+          <td>{{ trustbalance.basicPriceForeign }}</td>
+          <td>{{ trustbalance.noItem }}</td>
 
-          <td>{{ trusttransaction.buyJPY }}</td>
-          <td>{{ trusttransaction.buyForeign }}</td>
-          <td>{{ trusttransaction.sellJPY }}</td>
-          <td>{{ trusttransaction.sellForeign }}</td>
-          <td>{{ trusttransaction.dividendJPY }}</td>
-          <td>{{ trusttransaction.dividendForeign }}</td>
+          <td>{{ trustbalance.buyJPY }}</td>
+          <td>{{ trustbalance.buyForeign }}</td>
+          <td>{{ trustbalance.sellJPY }}</td>
+          <td>{{ trustbalance.sellForeign }}</td>
+          <td>{{ trustbalance.dividendJPY }}</td>
+          <td>{{ trustbalance.dividendForeign }}</td>
           <td>
             <router-link
               custom
               v-slot="{ navigate }"
               :to="{
-                name: 'TrustTransactionShow',
-                params: { trustTransactionId: trusttransaction.id },
+                name: 'TrustBalanceShow',
+                params: { TrustBalanceId: trustbalance.id },
               }"
             >
               <button class="btn btn-primary" @click="navigate">Show</button>
@@ -60,8 +60,8 @@
               custom
               v-slot="{ navigate }"
               :to="{
-                name: 'TrustTransactionEdit',
-                params: { trusttransactionId: trusttransaction.id },
+                name: 'TrustBalanceEdit',
+                params: { trustbalanceId: trustbalance.id },
               }"
             >
               <button class="btn btn-primary" @click="navigate">Edit</button>
@@ -70,7 +70,7 @@
           <td>
             <button
               class="btn btn-primary"
-              @click="deleteTrustTransaction(index, trusttransaction.id)"
+              @click="deleteTrustBalance(index, trustbalance.id)"
             >
               Delete
             </button>
@@ -82,10 +82,10 @@
     <router-link
       custom
       v-slot="{ navigate }"
-      :to="{ name: 'TrustTransactionCreate' }"
+      :to="{ name: 'TrustBalanceCreate' }"
     >
       <button class="btn btn-primary" @click="navigate">
-        Add TrustTransaction
+        Add TrustBalance
       </button>
     </router-link>
   </div>
@@ -93,21 +93,21 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listTrustTransactions } from "../../graphql/queries";
-import { deleteTrustTransaction } from "../../graphql/mutations";
+import { listTrustBalances } from "../../graphql/queries";
+import { deleteTrustBalance } from "../../graphql/mutations";
 
 import moment from "moment";
 
 export default {
-  name: "TrustTransactionIndex",
+  name: "TrustBalanceIndex",
   async created() {
-    //this.getTrustTransactions();
-    this.getTrustTransactions();
+    //this.getTrustBalances();
+    this.getTrustBalances();
   },
   data() {
     return {
       //albums: [],
-      trusttransactions: [],
+      trustbalances: [],
     };
   },
   methods: {
@@ -115,30 +115,30 @@ export default {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
     },
-    async getTrustTransactions() {
+    async getTrustBalances() {
       await API.graphql({
-        query: listTrustTransactions,
+        query: listTrustBalances,
       })
         .then((result) => {
           console.log(result);
-          this.trusttransactions = result.data.listTrustTransactions.items;
-          //this.TrustTransactions = result.data.listTrustTransactions.items;
+          this.trustbalances = result.data.listTrustBalances.items;
+          //this.TrustBalances = result.data.listTrustBalances.items;
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    async deleteTrustTransaction(index, trusttransactionId) {
-      if (!confirm("Delete TrustTransaction?")) return;
+    async deleteTrustBalance(index, trustbalanceId) {
+      if (!confirm("Delete TrustBalance?")) return;
 
       await API.graphql({
-        //query: deleteTrustTransaction,
-        query: deleteTrustTransaction,
-        variables: { input: { id: trusttransactionId } },
+        //query: deleteTrustBalance,
+        query: deleteTrustBalance,
+        variables: { input: { id: trustbalanceId } },
       })
         .then((result) => {
           console.log(result);
-          this.trusttransactionss.splice(index, 1);
+          this.trustbalancess.splice(index, 1);
         })
         .catch((error) => {
           console.log(error);
