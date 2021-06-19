@@ -70,18 +70,20 @@ type TrustTransaction
 @auth(rules: [{allow: owner}]) {  
   id: ID!
 
+  trustBalance: TrustBalance! @connection(keyName: "id")
+
   date: String!
   tradeType: TradeType!
   basicPrice:Int
   basicPriceForeign:Float
-  noItem:Float!
+  noItem:Float
 
-  buyValueJPY:Int
-  buyValueForeign:Float
-  sellValueJPY:Int
-  sellValueForeign:Float
-  dividendValueJPY:Int
-  dividendValueForeign:Float
+  buyJPY:Int
+  buyForeign:Float
+  sellJPY:Int
+  sellForeign:Float
+  dividendJPY:Int
+  dividendForeign:Float
 }
 
 type TrustBalance

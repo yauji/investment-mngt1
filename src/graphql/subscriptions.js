@@ -122,17 +122,28 @@ export const onCreateTrustTransaction = /* GraphQL */ `
   subscription OnCreateTrustTransaction($owner: String!) {
     onCreateTrustTransaction(owner: $owner) {
       id
+      trustBalance {
+        id
+        currency
+        name
+        memo
+        balance
+        noItem
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
       basicPriceForeign
       noItem
-      buyValueJPY
-      buyValueForeign
-      sellValueJPY
-      sellValueForeign
-      dividendValueJPY
-      dividendValueForeign
+      buyJPY
+      buyForeign
+      sellJPY
+      sellForeign
+      dividendJPY
+      dividendForeign
       createdAt
       updatedAt
       owner
@@ -143,17 +154,28 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
   subscription OnUpdateTrustTransaction($owner: String!) {
     onUpdateTrustTransaction(owner: $owner) {
       id
+      trustBalance {
+        id
+        currency
+        name
+        memo
+        balance
+        noItem
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
       basicPriceForeign
       noItem
-      buyValueJPY
-      buyValueForeign
-      sellValueJPY
-      sellValueForeign
-      dividendValueJPY
-      dividendValueForeign
+      buyJPY
+      buyForeign
+      sellJPY
+      sellForeign
+      dividendJPY
+      dividendForeign
       createdAt
       updatedAt
       owner
@@ -164,17 +186,28 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
   subscription OnDeleteTrustTransaction($owner: String!) {
     onDeleteTrustTransaction(owner: $owner) {
       id
+      trustBalance {
+        id
+        currency
+        name
+        memo
+        balance
+        noItem
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
       basicPriceForeign
       noItem
-      buyValueJPY
-      buyValueForeign
-      sellValueJPY
-      sellValueForeign
-      dividendValueJPY
-      dividendValueForeign
+      buyJPY
+      buyForeign
+      sellJPY
+      sellForeign
+      dividendJPY
+      dividendForeign
       createdAt
       updatedAt
       owner

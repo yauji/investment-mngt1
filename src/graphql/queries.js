@@ -97,17 +97,28 @@ export const getTrustTransaction = /* GraphQL */ `
   query GetTrustTransaction($id: ID!) {
     getTrustTransaction(id: $id) {
       id
+      trustBalance {
+        id
+        currency
+        name
+        memo
+        balance
+        noItem
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
       basicPriceForeign
       noItem
-      buyValueJPY
-      buyValueForeign
-      sellValueJPY
-      sellValueForeign
-      dividendValueJPY
-      dividendValueForeign
+      buyJPY
+      buyForeign
+      sellJPY
+      sellForeign
+      dividendJPY
+      dividendForeign
       createdAt
       updatedAt
       owner
@@ -127,17 +138,28 @@ export const listTrustTransactions = /* GraphQL */ `
     ) {
       items {
         id
+        trustBalance {
+          id
+          currency
+          name
+          memo
+          balance
+          noItem
+          createdAt
+          updatedAt
+          owner
+        }
         date
         tradeType
         basicPrice
         basicPriceForeign
         noItem
-        buyValueJPY
-        buyValueForeign
-        sellValueJPY
-        sellValueForeign
-        dividendValueJPY
-        dividendValueForeign
+        buyJPY
+        buyForeign
+        sellJPY
+        sellForeign
+        dividendJPY
+        dividendForeign
         createdAt
         updatedAt
         owner

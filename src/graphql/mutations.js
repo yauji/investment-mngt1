@@ -143,17 +143,28 @@ export const createTrustTransaction = /* GraphQL */ `
   ) {
     createTrustTransaction(input: $input, condition: $condition) {
       id
+      trustBalance {
+        id
+        currency
+        name
+        memo
+        balance
+        noItem
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
       basicPriceForeign
       noItem
-      buyValueJPY
-      buyValueForeign
-      sellValueJPY
-      sellValueForeign
-      dividendValueJPY
-      dividendValueForeign
+      buyJPY
+      buyForeign
+      sellJPY
+      sellForeign
+      dividendJPY
+      dividendForeign
       createdAt
       updatedAt
       owner
@@ -167,17 +178,28 @@ export const updateTrustTransaction = /* GraphQL */ `
   ) {
     updateTrustTransaction(input: $input, condition: $condition) {
       id
+      trustBalance {
+        id
+        currency
+        name
+        memo
+        balance
+        noItem
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
       basicPriceForeign
       noItem
-      buyValueJPY
-      buyValueForeign
-      sellValueJPY
-      sellValueForeign
-      dividendValueJPY
-      dividendValueForeign
+      buyJPY
+      buyForeign
+      sellJPY
+      sellForeign
+      dividendJPY
+      dividendForeign
       createdAt
       updatedAt
       owner
@@ -191,17 +213,28 @@ export const deleteTrustTransaction = /* GraphQL */ `
   ) {
     deleteTrustTransaction(input: $input, condition: $condition) {
       id
+      trustBalance {
+        id
+        currency
+        name
+        memo
+        balance
+        noItem
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
       basicPriceForeign
       noItem
-      buyValueJPY
-      buyValueForeign
-      sellValueJPY
-      sellValueForeign
-      dividendValueJPY
-      dividendValueForeign
+      buyJPY
+      buyForeign
+      sellJPY
+      sellForeign
+      dividendJPY
+      dividendForeign
       createdAt
       updatedAt
       owner
