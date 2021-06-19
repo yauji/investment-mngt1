@@ -135,6 +135,7 @@ export default {
       delete this.form.createdAt;
       delete this.form.updatedAt;
       delete this.form.owner;
+        delete this.form.trustTransactions;      
 
       //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
       await API.graphql({

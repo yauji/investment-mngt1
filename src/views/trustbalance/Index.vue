@@ -86,9 +86,15 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listTrustBalances, listTrustTransactions } from "../../graphql/queries";
+import {
+  listTrustBalances,
+  listTrustTransactions,
+} from "../../graphql/queries";
 //import { deleteTrustBalance } from "../../graphql/mutations";
-import { deleteTrustBalance, updateTrustBalance } from "../../graphql/mutations";
+import {
+  deleteTrustBalance,
+  updateTrustBalance,
+} from "../../graphql/mutations";
 
 import moment from "moment";
 import * as Enum from "@/Enum";
@@ -168,45 +174,42 @@ export default {
           console.log(error);
         });
 
-    //console.log("------4");
+      //console.log("------4");
       //console.log(trustbalances);
       //console.log(trustbalances.trustTransactions);
-
 
       // create dic----
       var dicIdTrustBalance = [];
 
       for (const a in trustbalances) {
+        trustbalances[a].noItem = 0;
+
         dicIdTrustBalance[trustbalances[a].id] = trustbalances[a];
       }
 
       console.log("------5");
       console.log(dicIdTrustBalance);
 
-    for (const ktt in trusttransactions) {
+      for (const ktt in trusttransactions) {
         //console.log(trusttransactions[kd]);
         const tt = trusttransactions[ktt];
         console.log(tt);
-        
+
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
           console.log("---51");
           console.log(dicIdTrustBalance[tt.trustBalanceId]);
           dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
-          
-        }else if(tt.tradeType == Enum.EnumTradeType.SELL.val){
-          
+        } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
           dicIdTrustBalance[tt.trustBalanceId].noItem -= tt.noItem;
-        }else if(tt.tradeType == Enum.EnumTradeType.DIVIDEND.val){
+        } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
           //correct?
           dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
-
         }
       }
       console.log("------12");
       console.log(dicIdTrustBalance);
 
       //TODO update balance.
-
 
       for (const ka in dicIdTrustBalance) {
         var a = dicIdTrustBalance[ka];
@@ -217,6 +220,8 @@ export default {
         delete a.updatedAt;
         delete a.owner;
         delete a.trustTransactions;
+
+        a.balance = a.noItem * a.basicPrice;
 
         await API.graphql({
           query: updateTrustBalance,
