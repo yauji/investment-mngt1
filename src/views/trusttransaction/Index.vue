@@ -61,7 +61,7 @@
               v-slot="{ navigate }"
               :to="{
                 name: 'TrustTransactionEdit',
-                params: { trusttransactionId: trusttransaction.id },
+                params: { trustTransactionId: trusttransaction.id },
               }"
             >
               <button class="btn btn-primary" @click="navigate">Edit</button>

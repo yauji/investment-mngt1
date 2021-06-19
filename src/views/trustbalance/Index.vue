@@ -32,6 +32,7 @@
           <td>{{ trustbalance.basicPrice }}</td>
 
           <td>
+            
             <router-link
               custom
               v-slot="{ navigate }"
@@ -42,6 +43,7 @@
             >
               <button class="btn btn-primary" @click="navigate">Show</button>
             </router-link>
+            
           </td>
           <td>
             <router-link
@@ -49,7 +51,7 @@
               v-slot="{ navigate }"
               :to="{
                 name: 'TrustBalanceEdit',
-                params: { trustbalanceId: trustbalance.id },
+                params: { TrustBalanceId: trustbalance.id },
               }"
             >
               <button class="btn btn-primary" @click="navigate">Edit</button>
