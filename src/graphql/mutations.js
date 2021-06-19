@@ -143,6 +143,7 @@ export const createTrustTransaction = /* GraphQL */ `
   ) {
     createTrustTransaction(input: $input, condition: $condition) {
       id
+      trustBalanceId
       trustBalance {
         id
         currency
@@ -179,6 +180,7 @@ export const updateTrustTransaction = /* GraphQL */ `
   ) {
     updateTrustTransaction(input: $input, condition: $condition) {
       id
+      trustBalanceId
       trustBalance {
         id
         currency
@@ -215,6 +217,7 @@ export const deleteTrustTransaction = /* GraphQL */ `
   ) {
     deleteTrustTransaction(input: $input, condition: $condition) {
       id
+      trustBalanceId
       trustBalance {
         id
         currency

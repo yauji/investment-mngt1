@@ -1814,6 +1814,21 @@
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
+          "name" : "trustBalanceId",
+          "description" : null,
+          "args" : [ ],
+          "type" : {
+            "kind" : "NON_NULL",
+            "name" : null,
+            "ofType" : {
+              "kind" : "SCALAR",
+              "name" : "ID",
+              "ofType" : null
+            }
+          },
+          "isDeprecated" : false,
+          "deprecationReason" : null
+        }, {
           "name" : "trustBalance",
           "description" : null,
           "args" : [ ],
@@ -2220,6 +2235,15 @@
         "fields" : null,
         "inputFields" : [ {
           "name" : "id",
+          "description" : null,
+          "type" : {
+            "kind" : "INPUT_OBJECT",
+            "name" : "ModelIDInput",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "trustBalanceId",
           "description" : null,
           "type" : {
             "kind" : "INPUT_OBJECT",
@@ -3715,6 +3739,19 @@
           },
           "defaultValue" : null
         }, {
+          "name" : "trustBalanceId",
+          "description" : null,
+          "type" : {
+            "kind" : "NON_NULL",
+            "name" : null,
+            "ofType" : {
+              "kind" : "SCALAR",
+              "name" : "ID",
+              "ofType" : null
+            }
+          },
+          "defaultValue" : null
+        }, {
           "name" : "date",
           "description" : null,
           "type" : {
@@ -3821,19 +3858,6 @@
             "ofType" : null
           },
           "defaultValue" : null
-        }, {
-          "name" : "trustTransactionTrustBalanceId",
-          "description" : null,
-          "type" : {
-            "kind" : "NON_NULL",
-            "name" : null,
-            "ofType" : {
-              "kind" : "SCALAR",
-              "name" : "ID",
-              "ofType" : null
-            }
-          },
-          "defaultValue" : null
         } ],
         "interfaces" : null,
         "enumValues" : null,
@@ -3844,6 +3868,15 @@
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
+          "name" : "trustBalanceId",
+          "description" : null,
+          "type" : {
+            "kind" : "INPUT_OBJECT",
+            "name" : "ModelIDInput",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
           "name" : "date",
           "description" : null,
           "type" : {
@@ -4000,6 +4033,15 @@
           },
           "defaultValue" : null
         }, {
+          "name" : "trustBalanceId",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "ID",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
           "name" : "date",
           "description" : null,
           "type" : {
@@ -4095,15 +4137,6 @@
           "type" : {
             "kind" : "SCALAR",
             "name" : "Float",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "trustTransactionTrustBalanceId",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "ID",
             "ofType" : null
           },
           "defaultValue" : null

@@ -122,6 +122,7 @@ export const onCreateTrustTransaction = /* GraphQL */ `
   subscription OnCreateTrustTransaction($owner: String!) {
     onCreateTrustTransaction(owner: $owner) {
       id
+      trustBalanceId
       trustBalance {
         id
         currency
@@ -155,6 +156,7 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
   subscription OnUpdateTrustTransaction($owner: String!) {
     onUpdateTrustTransaction(owner: $owner) {
       id
+      trustBalanceId
       trustBalance {
         id
         currency
@@ -188,6 +190,7 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
   subscription OnDeleteTrustTransaction($owner: String!) {
     onDeleteTrustTransaction(owner: $owner) {
       id
+      trustBalanceId
       trustBalance {
         id
         currency

@@ -70,7 +70,8 @@ type TrustTransaction
 @auth(rules: [{allow: owner}]) {  
   id: ID!
 
-  trustBalance: TrustBalance! @connection(keyName: "id")
+  trustBalanceId: ID!
+  trustBalance: TrustBalance! @connection(fields: ["trustBalanceId"])
 
   date: String!
   tradeType: TradeType!

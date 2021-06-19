@@ -11,6 +11,20 @@
       </div>
 
       <div class="mb-3">
+        <label for="" class="form-label">trust balance *</label>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          v-model="form.trustBalanceId"
+          required
+        >
+          <option v-for="n in trustbalances" v-bind:key="n" v-bind:value="n.id">
+            {{ n.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
         <label for="" class="form-label">tradeType *</label>
         <select
           class="form-select"
@@ -137,6 +151,8 @@
 import { API } from "aws-amplify";
 
 import { createTrustTransaction } from "../../graphql/mutations";
+import { listTrustBalances } from "../../graphql/queries";
+
 
 //import { createTrustTransaction, updateAccount } from "../../graphql/mutations";
 //import { listAccounts } from "../../graphql/queries";
@@ -155,6 +171,9 @@ export default {
   computed: {
     refEnum: () => Enum,
   },
+  async created() {
+    this.getTrustBalances();
+  },
   data() {
     return {
       //picked: "",
@@ -170,6 +189,8 @@ export default {
         sellForeign: 0,
         dividendJPY: 0,
         dividendForeign: 0,
+
+        trustBalanceId: "",
       },
       dBasicPrice: true,
       dBasicPriceForeign: true,
@@ -181,9 +202,24 @@ export default {
       dSellForeign: true,
       dDividendJPY: true,
       dDividendForeign: true,
+
+      trustbalances: [],
     };
   },
   methods: {
+    async getTrustBalances() {
+      await API.graphql({
+        query: listTrustBalances,
+      })
+        .then((result) => {
+          console.log(result);
+          this.trustbalances = result.data.listTrustBalances.items;
+          //this.TrustBalances = result.data.listTrustBalances.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     disableAll: function () {
       this.dBasicPrice = true;
       this.dBasicPriceForeign = true;
@@ -229,10 +265,21 @@ export default {
     },
 
     async submitCreate() {
-      //this.form.status = "ACTIVE";
+      var targetTb = 0;
+      for(const k in this.trustbalances){
+        //console.log(k);
+//        console.log("xxxxxxxx1", k, tb);
 
-      //console.log("xxxxxxxx");
-      //console.log(this.form.date);
+        if(this.trustBalanceId == this.trustbalances[k].id){
+          targetTb = this.trustbalances[k];
+          console.log("------1");
+          console.log(targetTb);
+        }      
+      }
+
+     //this.form.trustBalance = targetTb;
+
+      console.log(this.form);
       await API.graphql({
         query: createTrustTransaction,
         variables: { input: this.form },

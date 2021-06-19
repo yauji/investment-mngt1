@@ -97,6 +97,7 @@ export const getTrustTransaction = /* GraphQL */ `
   query GetTrustTransaction($id: ID!) {
     getTrustTransaction(id: $id) {
       id
+      trustBalanceId
       trustBalance {
         id
         currency
@@ -139,6 +140,7 @@ export const listTrustTransactions = /* GraphQL */ `
     ) {
       items {
         id
+        trustBalanceId
         trustBalance {
           id
           currency
