@@ -2,8 +2,6 @@
   <div>
     <h1>TrustBalances</h1>
 
-    <router-link to="/trustbalances/create">TrustBalance add</router-link>
-
     <table class="table table-striped">
       <thead>
         <tr>
@@ -67,6 +65,13 @@
       </tbody>
     </table>
 
+    <button class="btn btn-primary" @click="updateBalances()">
+      Update balance
+    </button>
+
+    <br />
+    <br />
+
     <router-link
       custom
       v-slot="{ navigate }"
@@ -81,10 +86,11 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listTrustBalances } from "../../graphql/queries";
-import { deleteTrustBalance } from "../../graphql/mutations";
+import { listTrustBalances, listTrustTransactions } from "../../graphql/queries";
+import { deleteTrustBalance, updateTrustBalance } from "../../graphql/mutations";
 
 import moment from "moment";
+import * as Enum from "@/Enum";
 
 export default {
   name: "TrustBalanceIndex",
@@ -131,6 +137,97 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    async updateBalances() {
+      //get trusttransactions-----
+      var trusttransactions;
+      await API.graphql({
+        query: listTrustTransactions,
+      })
+        .then((result) => {
+          //console.log(result);
+          trusttransactions = result.data.listTrustTransactions.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      //console.log(trusttransactions);
+
+      //get trustbalances---
+      var trustbalances;
+      await API.graphql({
+        query: listTrustBalances,
+      })
+        .then((result) => {
+          //console.log(result);
+          trustbalances = result.data.listTrustBalances.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      //console.log(trustbalances);
+
+      // create dic----
+      var dicTrustTransactionBalanceEachCurrency = [];
+
+      for (const a in trustbalances) {
+        dicTrustTransactionBalanceEachCurrency[trustbalances[a].currency] = 0;
+      }
+
+      for (const kd in trusttransactions) {
+        //console.log(trusttransactions[kd]);
+        const d = trusttransactions[kd];
+        if (d.status == Enum.EnumTrustTransactionStatus.FINISHED.val) {
+          if (
+            d.trusttransactionType == Enum.EnumTrustTransactionType.TRUSTTRANSACTION_JPY.val ||
+            d.trusttransactionType ==
+              Enum.EnumTrustTransactionType.BUY_FOREIGN_CURRENCY_BY_JPY.val
+          ) {
+            dicTrustTransactionBalanceEachCurrency[d.valueCurrency] += d.valueForeign;
+          } else if (
+            d.trusttransactionType == Enum.EnumTrustTransactionType.TRUSTTRANSACTION_FC.val ||
+            d.trusttransactionType == Enum.EnumTrustTransactionType.BUY_FOREIGN_CURRENCY_BY_FC.val
+          ) {
+            dicTrustTransactionBalanceEachCurrency[d.valueCurrency] += d.valueForeign;
+            dicTrustTransactionBalanceEachCurrency[d.principalCurrency] -=
+              d.principlaForeign;
+          } else if (
+            d.trusttransactionType == Enum.EnumTrustTransactionType.SELL_FOREIGN_CURRENCY.val
+          ) {
+            dicTrustTransactionBalanceEachCurrency[d.principalCurrency] -=
+              d.principlaForeign;
+          }
+        }
+      }
+
+      //console.log("------12");
+      //console.log(dicTrustTransactionBalanceEachCurrency);
+
+      for (const ka in trustbalances) {
+        var a = trustbalances[ka];
+        a.balance = dicTrustTransactionBalanceEachCurrency[a.currency];
+        //console.log(a);
+
+        delete a.createdAt;
+        delete a.updatedAt;
+        delete a.owner;
+
+        await API.graphql({
+          query: updateTrustBalance,
+          variables: { input: a },
+        })
+          .then((result) => {
+            console.log(result);
+            //this.$router.push({ name: "TrustBalanceIndex" });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      //hoge
     },
   },
 };
