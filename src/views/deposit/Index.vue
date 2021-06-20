@@ -45,7 +45,8 @@
           <td>{{ deposit.duration }}</td>
 
           <td>{{ moment(deposit.endDate) }}</td>
-          <td>{{ deposit.valueAccount.currency }} {{deposit.valueAccount.name}}</td>
+          <td><a v-if="deposit.valueAccount != null">
+            {{ deposit.valueAccount.currency }} {{deposit.valueAccount.name}}</a></td>
           <td>{{ deposit.valueJPY }}</td>
           <td>{{ deposit.valueForeign }}</td>
           <td>
@@ -112,6 +113,7 @@ export default {
   async created() {
     //this.getDeposits();
     this.getDeposits();
+    //console.log(this.depositId);
   },
   data() {
     return {
