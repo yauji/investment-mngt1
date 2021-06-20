@@ -13,14 +13,34 @@ export const createDeposit = /* GraphQL */ `
       memo
       status
       date
-      principalCurrency
+      principalAccountId
+      principalAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       principalJPY
       principalForeign
       exchangeRate
       interestRate
       duration
       endDate
-      valueCurrency
+      valueAccountId
+      valueAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       valueJPY
       valueForeign
       createdAt
@@ -41,14 +61,34 @@ export const updateDeposit = /* GraphQL */ `
       memo
       status
       date
-      principalCurrency
+      principalAccountId
+      principalAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       principalJPY
       principalForeign
       exchangeRate
       interestRate
       duration
       endDate
-      valueCurrency
+      valueAccountId
+      valueAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       valueJPY
       valueForeign
       createdAt
@@ -69,14 +109,34 @@ export const deleteDeposit = /* GraphQL */ `
       memo
       status
       date
-      principalCurrency
+      principalAccountId
+      principalAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       principalJPY
       principalForeign
       exchangeRate
       interestRate
       duration
       endDate
-      valueCurrency
+      valueAccountId
+      valueAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       valueJPY
       valueForeign
       createdAt

@@ -22,7 +22,7 @@ enum DepositeType {
 
 type Deposit
 @model
-@auth(rules: [{allow: owner}]) {  
+@auth(rules: [{allow: owner}]) {
   id: ID!
 
   depositType: DepositeType!
@@ -33,7 +33,10 @@ type Deposit
   status:DepositeStatus!
 
   date:String!
-  principalCurrency:Currency!
+  """principalCurrency:Currency!"""
+  principalAccountId: ID
+  principalAccount: Account @connection(fields: ["principalAccountId"])
+
   principalJPY: Int
   principalForeign:Float
   exchangeRate:Float
@@ -41,7 +44,10 @@ type Deposit
   duration:Int!
 
   endDate:String
-  valueCurrency:Currency
+  """valueCurrency:Currency"""
+  valueAccountId: ID
+  valueAccount: Account @connection(fields: ["valueAccountId"])
+
   valueJPY:Int
   valueForeign:Float
 }
@@ -55,6 +61,8 @@ type Account
   balance:Float!
   exchangeRate:Float!
   memo:String
+
+
 }
 
 

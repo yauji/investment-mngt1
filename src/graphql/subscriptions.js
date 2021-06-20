@@ -10,14 +10,34 @@ export const onCreateDeposit = /* GraphQL */ `
       memo
       status
       date
-      principalCurrency
+      principalAccountId
+      principalAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       principalJPY
       principalForeign
       exchangeRate
       interestRate
       duration
       endDate
-      valueCurrency
+      valueAccountId
+      valueAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       valueJPY
       valueForeign
       createdAt
@@ -35,14 +55,34 @@ export const onUpdateDeposit = /* GraphQL */ `
       memo
       status
       date
-      principalCurrency
+      principalAccountId
+      principalAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       principalJPY
       principalForeign
       exchangeRate
       interestRate
       duration
       endDate
-      valueCurrency
+      valueAccountId
+      valueAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       valueJPY
       valueForeign
       createdAt
@@ -60,14 +100,34 @@ export const onDeleteDeposit = /* GraphQL */ `
       memo
       status
       date
-      principalCurrency
+      principalAccountId
+      principalAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       principalJPY
       principalForeign
       exchangeRate
       interestRate
       duration
       endDate
-      valueCurrency
+      valueAccountId
+      valueAccount {
+        id
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       valueJPY
       valueForeign
       createdAt

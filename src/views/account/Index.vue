@@ -196,7 +196,7 @@ export default {
           console.log(error);
         });
         console.log(trusttransactions);
-      /*
+      
 
       for (const ktt in trusttransactions) {
         const tt = trusttransactions[ktt];
@@ -208,7 +208,7 @@ export default {
           }
         }
       }
-      */
+      
      
       //hoge
 
