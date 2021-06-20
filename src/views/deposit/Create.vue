@@ -49,6 +49,7 @@
           -->
         </div>
 
+        <!--
         <div class="mb-3">
           <label for="" class="form-label">principalCurrency</label>
           <select
@@ -57,9 +58,7 @@
             @change="onChangePrincipalCurrency()"
             required
           >
-            <!--
-            <option selected>Open this select menu</option>
-            <option selected>Open this select menu</option>-->
+           
             <option
               v-for="n in refEnum.EnumCurrency"
               v-bind:key="n"
@@ -69,7 +68,7 @@
             </option>
           </select>
         </div>
-
+-->
         <div class="mb-3">
           <label for="" class="form-label">principal account</label>
           <select
@@ -145,7 +144,7 @@
           <label for="" class="form-label">end date</label>
           <datepicker v-model="form.endDate" class="form-control" />
         </div>
-
+        <!--
         <div class="mb-3">
           <label for="" class="form-label">valueCurrency</label>
           <select
@@ -162,7 +161,7 @@
             </option>
           </select>
         </div>
-
+-->
         <div class="mb-3">
           <label for="" class="form-label">value account</label>
           <select
@@ -237,8 +236,8 @@ export default {
     return {
       //picked: "",
       form: {
-        name: "a",
-        //name: "",
+        //name: "a",
+        name: "",
         //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
         //depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",
         //typeDeposit
@@ -246,8 +245,8 @@ export default {
         //status: "FINISHED",
         //status: "",
 
-        date: new Date(),
-        //        date: "",
+        //date: new Date(),
+        date: "",
         //principalCurrency: "JPY",
         //principalJPY: 1000,
         principalJPY: 0,
@@ -362,7 +361,6 @@ export default {
         }
       }
       console.log(a);
-
 
       //TODO; principal JPYとFCを分ける必要がないのでは？
       if (a.currency == "JPY") {

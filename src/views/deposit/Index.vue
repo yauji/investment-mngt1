@@ -36,7 +36,10 @@
           <td>{{ deposit.memo }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ moment(deposit.date) }}</td>
-          <td>{{ deposit.principalAccount.currency }} {{deposit.principalAccount.name}}</td>
+          <td>
+            {{ deposit.principalAccount.currency }}
+            {{ deposit.principalAccount.name }}
+          </td>
 
           <td>{{ deposit.principalJPY }}</td>
           <td>{{ deposit.principalForeign }}</td>
@@ -45,8 +48,12 @@
           <td>{{ deposit.duration }}</td>
 
           <td>{{ moment(deposit.endDate) }}</td>
-          <td><a v-if="deposit.valueAccount != null">
-            {{ deposit.valueAccount.currency }} {{deposit.valueAccount.name}}</a></td>
+          <td>
+            <a v-if="deposit.valueAccount != null">
+              {{ deposit.valueAccount.currency }}
+              {{ deposit.valueAccount.name }}</a
+            >
+          </td>
           <td>{{ deposit.valueJPY }}</td>
           <td>{{ deposit.valueForeign }}</td>
           <td>
