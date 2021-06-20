@@ -45,7 +45,7 @@
           <td>{{ deposit.duration }}</td>
 
           <td>{{ moment(deposit.endDate) }}</td>
-          <td>{{ deposit.valueCurrency }}</td>
+          <td>{{ deposit.valueAccount.currency }} {{deposit.valueAccount.name}}</td>
           <td>{{ deposit.valueJPY }}</td>
           <td>{{ deposit.valueForeign }}</td>
           <td>

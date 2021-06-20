@@ -54,7 +54,6 @@
           <select
             class="form-select"
             aria-label="Default select example"
-            
             @change="onChangePrincipalCurrency()"
             required
           >
@@ -152,7 +151,6 @@
           <select
             class="form-select"
             aria-label="Default select example"
-            
             v-bind:disabled="dvalueCurrency"
           >
             <option
@@ -172,7 +170,6 @@
             aria-label="Default select example"
             v-model="form.valueAccountId"
             @change="onChangePrincipalCurrency()"
-
           >
             <option
               v-for="n in this.accounts"
@@ -183,7 +180,6 @@
             </option>
           </select>
         </div>
-
 
         <div class="mb-3">
           <label for="" class="form-label">value JPY</label>
@@ -356,7 +352,20 @@ export default {
       }
     },
     onChangePrincipalCurrency: function () {
-      if (this.form.principalCurrency == "JPY") {
+      console.log("------1");
+
+      var a = 0;
+      for (const ka in this.accounts) {
+        if (this.form.principalAccountId == this.accounts[ka].id) {
+          console.log("------2");
+          a = this.accounts[ka];
+        }
+      }
+      console.log(a);
+
+
+      //TODO; principal JPYとFCを分ける必要がないのでは？
+      if (a.currency == "JPY") {
         this.dPrincipalJPY = false;
       } else {
         this.dPrincipalForeign = false;
