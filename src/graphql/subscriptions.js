@@ -22,8 +22,7 @@ export const onCreateDeposit = /* GraphQL */ `
         updatedAt
         owner
       }
-      principalJPY
-      principalForeign
+      principal
       exchangeRate
       interestRate
       duration
@@ -40,8 +39,7 @@ export const onCreateDeposit = /* GraphQL */ `
         updatedAt
         owner
       }
-      valueJPY
-      valueForeign
+      value
       createdAt
       updatedAt
       owner
@@ -69,8 +67,7 @@ export const onUpdateDeposit = /* GraphQL */ `
         updatedAt
         owner
       }
-      principalJPY
-      principalForeign
+      principal
       exchangeRate
       interestRate
       duration
@@ -87,8 +84,7 @@ export const onUpdateDeposit = /* GraphQL */ `
         updatedAt
         owner
       }
-      valueJPY
-      valueForeign
+      value
       createdAt
       updatedAt
       owner
@@ -116,8 +112,7 @@ export const onDeleteDeposit = /* GraphQL */ `
         updatedAt
         owner
       }
-      principalJPY
-      principalForeign
+      principal
       exchangeRate
       interestRate
       duration
@@ -134,8 +129,7 @@ export const onDeleteDeposit = /* GraphQL */ `
         updatedAt
         owner
       }
-      valueJPY
-      valueForeign
+      value
       createdAt
       updatedAt
       owner
@@ -212,12 +206,9 @@ export const onCreateTrustTransaction = /* GraphQL */ `
       basicPrice
       basicPriceForeign
       noItem
-      buyJPY
-      buyForeign
-      sellJPY
-      sellForeign
-      dividendJPY
-      dividendForeign
+      buy
+      sell
+      dividend
       createdAt
       updatedAt
       owner
@@ -249,12 +240,9 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
       basicPrice
       basicPriceForeign
       noItem
-      buyJPY
-      buyForeign
-      sellJPY
-      sellForeign
-      dividendJPY
-      dividendForeign
+      buy
+      sell
+      dividend
       createdAt
       updatedAt
       owner
@@ -286,12 +274,9 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
       basicPrice
       basicPriceForeign
       noItem
-      buyJPY
-      buyForeign
-      sellJPY
-      sellForeign
-      dividendJPY
-      dividendForeign
+      buy
+      sell
+      dividend
       createdAt
       updatedAt
       owner
@@ -317,12 +302,9 @@ export const onCreateTrustBalance = /* GraphQL */ `
           basicPrice
           basicPriceForeign
           noItem
-          buyJPY
-          buyForeign
-          sellJPY
-          sellForeign
-          dividendJPY
-          dividendForeign
+          buy
+          sell
+          dividend
           createdAt
           updatedAt
           owner
@@ -354,12 +336,9 @@ export const onUpdateTrustBalance = /* GraphQL */ `
           basicPrice
           basicPriceForeign
           noItem
-          buyJPY
-          buyForeign
-          sellJPY
-          sellForeign
-          dividendJPY
-          dividendForeign
+          buy
+          sell
+          dividend
           createdAt
           updatedAt
           owner
@@ -391,12 +370,9 @@ export const onDeleteTrustBalance = /* GraphQL */ `
           basicPrice
           basicPriceForeign
           noItem
-          buyJPY
-          buyForeign
-          sellJPY
-          sellForeign
-          dividendJPY
-          dividendForeign
+          buy
+          sell
+          dividend
           createdAt
           updatedAt
           owner

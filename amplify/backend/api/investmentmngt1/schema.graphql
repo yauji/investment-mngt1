@@ -37,8 +37,10 @@ type Deposit
   principalAccountId: ID
   principalAccount: Account @connection(fields: ["principalAccountId"])
 
-  principalJPY: Int
-  principalForeign:Float
+  principal: Float!
+  """principalJPY: Int"""
+  
+
   exchangeRate:Float
   interestRate:Float
   duration:Int!
@@ -48,8 +50,8 @@ type Deposit
   valueAccountId: ID
   valueAccount: Account @connection(fields: ["valueAccountId"])
 
-  valueJPY:Int
-  valueForeign:Float
+  value:Float
+
 }
 
 
@@ -89,12 +91,9 @@ type TrustTransaction
   basicPriceForeign:Float
   noItem:Float
 
-  buyJPY:Int
-  buyForeign:Float
-  sellJPY:Int
-  sellForeign:Float
-  dividendJPY:Int
-  dividendForeign:Float
+  buy:Float
+  sell:Float
+  dividend:Float
 }
 
 type TrustBalance

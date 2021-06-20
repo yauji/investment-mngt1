@@ -14,15 +14,15 @@
           <th>date</th>
 
           <th>principal Currency</th>
-          <th>principal JPY</th>
-          <th>principal Foreign</th>
+          <th>principal </th>
+          
           <th>exchange Rate</th>
           <th>interest Rate</th>
           <th>duration</th>
 
           <th>end Date</th>
-          <th>value Currency</th>
-          <th>value JPY</th>
+          <th>value </th>
+          
           <th>value Foreign</th>
           <th></th>
           <th></th>
@@ -41,8 +41,8 @@
             {{ deposit.principalAccount.name }}
           </td>
 
-          <td>{{ deposit.principalJPY }}</td>
-          <td>{{ deposit.principalForeign }}</td>
+          <td>{{ deposit.principal }}</td>
+          
           <td>{{ deposit.exchangeRate }}</td>
           <td>{{ deposit.interestRate }}</td>
           <td>{{ deposit.duration }}</td>
@@ -54,8 +54,8 @@
               {{ deposit.valueAccount.name }}</a
             >
           </td>
-          <td>{{ deposit.valueJPY }}</td>
-          <td>{{ deposit.valueForeign }}</td>
+          <td>{{ deposit.value }}</td>
+          
           <td>
             <router-link
               custom

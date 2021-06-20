@@ -89,15 +89,16 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">Principal JPY</label>
+          <label for="" class="form-label">Principal</label>
           <input
             type="number"
+            step="0.01"
             class="form-control"
-            v-model="form.principalJPY"
-            v-bind:disabled="dPrincipalJPY"
+            v-model="form.principal"
+            v-bind:disabled="dPrincipal"
           />
         </div>
-
+<!--
         <div class="mb-3">
           <label for="" class="form-label">Principal Foreign</label>
           <input
@@ -108,7 +109,7 @@
             v-bind:disabled="dPrincipalForeign"
           />
         </div>
-
+-->
         <div class="mb-3">
           <label for="" class="form-label">exchange rate</label>
           <input
@@ -181,24 +182,16 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">value JPY</label>
+          <label for="" class="form-label">value </label>
           <input
-            type="text"
+            type="number"
+            step="0.01"
             class="form-control"
-            v-model="form.valueJPY"
-            v-bind:disabled="dValueJPY"
+            v-model="form.value"
+            v-bind:disabled="dValue"
           />
         </div>
 
-        <div class="mb-3">
-          <label for="" class="form-label">value foreign</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.valueForeign"
-            v-bind:disabled="dValueForeign"
-          />
-        </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
@@ -249,8 +242,8 @@ export default {
         date: "",
         //principalCurrency: "JPY",
         //principalJPY: 1000,
-        principalJPY: 0,
-        principalForeign: 0,
+        principal: 0,
+        //principalForeign: 0,
         //exchangeRate: 100.0,
         exchangeRate: 0,
         interestRate: 0,
@@ -258,9 +251,9 @@ export default {
 
         endDate: "",
         //valueCurrency: "USD",
-        valueJPY: 0,
+        value: 0,
         //valueForeign: 10.0,
-        valueForeign: 0,
+        //valueForeign: 0,
       },
       dPrincipalJPY: true,
       dPrincipalForeign: true,
