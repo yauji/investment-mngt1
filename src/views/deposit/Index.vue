@@ -67,6 +67,15 @@
             </router-link>
           </td>
           <td>
+            <router-link
+              custom
+              v-slot="{ navigate }"
+              :to="{ name: 'DepositFinish', params: { depositId: deposit.id } }"
+            >
+              <button class="btn btn-primary" @click="navigate">Finish</button>
+            </router-link>
+          </td>
+          <td>
             <button
               class="btn btn-primary"
               @click="deleteDeposit(index, deposit.id)"

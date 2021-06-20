@@ -8,6 +8,7 @@ import DepositIndex from "../views/deposit/Index.vue";
 import DepositCreate from "../views/deposit/Create.vue";
 import DepositShow from "../views/deposit/Show.vue";
 import DepositEdit from "../views/deposit/Edit.vue";
+import DepositFinish from "../views/deposit/Finish.vue";
 
 import AccountIndex from "../views/account/Index.vue";
 import AccountCreate from "../views/account/Create.vue";
@@ -61,6 +62,13 @@ const routes = [
     path: "/deposits/:depositId/edit",
     name: "DepositEdit",
     component: DepositEdit,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/deposits/:depositId/finish",
+    name: "DepositFinish",
+    component: DepositFinish,
     props: true,
     meta: { requireAuth: true },
   },

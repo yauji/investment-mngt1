@@ -11,6 +11,8 @@
     <br />
     evaluated value: {{ this.value }}
     <br />
+     profit and loss: {{ this.pl }}
+    <br />
 
     <router-link :to="{ name: 'DepositCreate' }">
       <button class="btn btn-primary">Add Deposit</button>
@@ -170,6 +172,8 @@ export default {
     //console.log(principal);
     this.principal = principal;
     this.value = value;
+
+    this.pl = this.value - this.principal;
   },
   data() {
     return {
@@ -185,6 +189,7 @@ export default {
 
       principal: 0,
       value: 0,
+      pl:0,
     };
   },
   methods: {
