@@ -50,17 +50,17 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">principalCurrency *</label>
+          <label for="" class="form-label">principalCurrency</label>
           <select
             class="form-select"
             aria-label="Default select example"
-            v-model="form.principalCurrency"
+            
             @change="onChangePrincipalCurrency()"
             required
           >
             <!--
-            <option selected>Open this select menu</option>-->
             <option selected>Open this select menu</option>
+            <option selected>Open this select menu</option>-->
             <option
               v-for="n in refEnum.EnumCurrency"
               v-bind:key="n"
@@ -68,13 +68,25 @@
             >
               {{ n.text }}
             </option>
-            <!--
-            <option value="JPY" selected>JPY</option>
-            <option value="USD">USD</option>
-            <option value="AUD">AUD</option>
-            <option value="EUR">EUR</option>
-            <option value="NZD">NZD</option>
-            -->
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">principal account</label>
+          <select
+            class="form-select"
+            aria-label="Default select example"
+            v-model="form.principalAccountId"
+            @change="onChangePrincipalCurrency()"
+            required
+          >
+            <option
+              v-for="n in this.accounts"
+              v-bind:key="n"
+              v-bind:value="n.id"
+            >
+              {{ n.currency }} - {{ n.name }}
+            </option>
           </select>
         </div>
 
@@ -140,7 +152,7 @@
           <select
             class="form-select"
             aria-label="Default select example"
-            v-model="form.valueCurrency"
+            
             v-bind:disabled="dvalueCurrency"
           >
             <option
@@ -152,6 +164,26 @@
             </option>
           </select>
         </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">value account</label>
+          <select
+            class="form-select"
+            aria-label="Default select example"
+            v-model="form.valueAccountId"
+            @change="onChangePrincipalCurrency()"
+
+          >
+            <option
+              v-for="n in this.accounts"
+              v-bind:key="n"
+              v-bind:value="n.id"
+            >
+              {{ n.currency }} - {{ n.name }}
+            </option>
+          </select>
+        </div>
+
 
         <div class="mb-3">
           <label for="" class="form-label">value JPY</label>
@@ -183,6 +215,7 @@
 import { API } from "aws-amplify";
 
 import { createDeposit } from "../../graphql/mutations";
+import { listAccounts } from "../../graphql/queries";
 
 //import { createDeposit, updateAccount } from "../../graphql/mutations";
 //import { listAccounts } from "../../graphql/queries";
@@ -194,6 +227,9 @@ import * as Enum from "@/Enum";
 
 export default {
   name: "DepositCreate",
+  async created() {
+    this.getAccounts();
+  },
 
   components: {
     Datepicker,
@@ -205,8 +241,8 @@ export default {
     return {
       //picked: "",
       form: {
-        //name: "a",
-        name: "",
+        name: "a",
+        //name: "",
         //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
         //depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",
         //typeDeposit
@@ -216,7 +252,7 @@ export default {
 
         date: new Date(),
         //        date: "",
-        principalCurrency: "JPY",
+        //principalCurrency: "JPY",
         //principalJPY: 1000,
         principalJPY: 0,
         principalForeign: 0,
@@ -240,12 +276,26 @@ export default {
       dValueCurrency: true,
       dValueJPY: true,
       dValueForeign: true,
+
+      accounts: [],
       /*
       dPrincipalCurrecy: true,
 */
     };
   },
   methods: {
+    async getAccounts() {
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          console.log(result);
+          this.accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     disableAll: function () {
       this.dPrincipalCurrecy = true;
       this.dPrincipalJPY = true;

@@ -36,7 +36,7 @@
           <td>{{ deposit.memo }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ moment(deposit.date) }}</td>
-          <td>{{ deposit.principalCurrency }}</td>
+          <td>{{ deposit.principalAccount.currency }} {{deposit.principalAccount.name}}</td>
 
           <td>{{ deposit.principalJPY }}</td>
           <td>{{ deposit.principalForeign }}</td>

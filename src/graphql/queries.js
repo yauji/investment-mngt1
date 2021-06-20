@@ -13,6 +13,7 @@ export const getDeposit = /* GraphQL */ `
       principalAccountId
       principalAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -30,6 +31,7 @@ export const getDeposit = /* GraphQL */ `
       valueAccountId
       valueAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -63,6 +65,7 @@ export const listDeposits = /* GraphQL */ `
         principalAccountId
         principalAccount {
           id
+          name
           currency
           balance
           exchangeRate
@@ -80,6 +83,7 @@ export const listDeposits = /* GraphQL */ `
         valueAccountId
         valueAccount {
           id
+          name
           currency
           balance
           exchangeRate
@@ -102,6 +106,7 @@ export const getAccount = /* GraphQL */ `
   query GetAccount($id: ID!) {
     getAccount(id: $id) {
       id
+      name
       currency
       balance
       exchangeRate
@@ -121,6 +126,7 @@ export const listAccounts = /* GraphQL */ `
     listAccounts(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        name
         currency
         balance
         exchangeRate

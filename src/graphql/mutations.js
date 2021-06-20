@@ -16,6 +16,7 @@ export const createDeposit = /* GraphQL */ `
       principalAccountId
       principalAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -33,6 +34,7 @@ export const createDeposit = /* GraphQL */ `
       valueAccountId
       valueAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -64,6 +66,7 @@ export const updateDeposit = /* GraphQL */ `
       principalAccountId
       principalAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -81,6 +84,7 @@ export const updateDeposit = /* GraphQL */ `
       valueAccountId
       valueAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -112,6 +116,7 @@ export const deleteDeposit = /* GraphQL */ `
       principalAccountId
       principalAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -129,6 +134,7 @@ export const deleteDeposit = /* GraphQL */ `
       valueAccountId
       valueAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -152,6 +158,7 @@ export const createAccount = /* GraphQL */ `
   ) {
     createAccount(input: $input, condition: $condition) {
       id
+      name
       currency
       balance
       exchangeRate
@@ -169,6 +176,7 @@ export const updateAccount = /* GraphQL */ `
   ) {
     updateAccount(input: $input, condition: $condition) {
       id
+      name
       currency
       balance
       exchangeRate
@@ -186,6 +194,7 @@ export const deleteAccount = /* GraphQL */ `
   ) {
     deleteAccount(input: $input, condition: $condition) {
       id
+      name
       currency
       balance
       exchangeRate

@@ -22,6 +22,17 @@
         </div>
 
         <div class="mb-3">
+          <label for="" class="form-label">name *</label>
+            <input
+            type="text"
+            class="form-control"
+            v-model="form.name"
+            required
+          />
+          
+        </div>
+
+        <div class="mb-3">
           <label for="" class="form-label">memo</label>
           <textarea class="form-control" v-model="form.memo" />
         </div>

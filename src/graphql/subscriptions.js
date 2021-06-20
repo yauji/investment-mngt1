@@ -13,6 +13,7 @@ export const onCreateDeposit = /* GraphQL */ `
       principalAccountId
       principalAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -30,6 +31,7 @@ export const onCreateDeposit = /* GraphQL */ `
       valueAccountId
       valueAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -58,6 +60,7 @@ export const onUpdateDeposit = /* GraphQL */ `
       principalAccountId
       principalAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -75,6 +78,7 @@ export const onUpdateDeposit = /* GraphQL */ `
       valueAccountId
       valueAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -103,6 +107,7 @@ export const onDeleteDeposit = /* GraphQL */ `
       principalAccountId
       principalAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -120,6 +125,7 @@ export const onDeleteDeposit = /* GraphQL */ `
       valueAccountId
       valueAccount {
         id
+        name
         currency
         balance
         exchangeRate
@@ -140,6 +146,7 @@ export const onCreateAccount = /* GraphQL */ `
   subscription OnCreateAccount($owner: String!) {
     onCreateAccount(owner: $owner) {
       id
+      name
       currency
       balance
       exchangeRate
@@ -154,6 +161,7 @@ export const onUpdateAccount = /* GraphQL */ `
   subscription OnUpdateAccount($owner: String!) {
     onUpdateAccount(owner: $owner) {
       id
+      name
       currency
       balance
       exchangeRate
@@ -168,6 +176,7 @@ export const onDeleteAccount = /* GraphQL */ `
   subscription OnDeleteAccount($owner: String!) {
     onDeleteAccount(owner: $owner) {
       id
+      name
       currency
       balance
       exchangeRate

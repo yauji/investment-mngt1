@@ -57,6 +57,7 @@ type Account
 @model
 @auth(rules: [{allow: owner}]) {  
   id: ID!
+  name: String!
   currency:Currency!
   balance:Float!
   exchangeRate:Float!
