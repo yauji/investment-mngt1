@@ -215,6 +215,9 @@ export default {
       delete this.form.updatedAt;
       delete this.form.owner;
 
+      delete this.form.trustBalance;
+      delete this.form.account;
+
       //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
       await API.graphql({
         query: updateTrustTransaction,

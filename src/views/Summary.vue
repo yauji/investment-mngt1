@@ -36,13 +36,7 @@
     profit and loss: {{ this.pl }}
     <br />
 
-    <router-link :to="{ name: 'DepositCreate' }">
-      <button class="btn btn-primary">Add Deposit</button>
-    </router-link>
-
-    <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
-      <button class="btn btn-primary" @click="navigate">Add Deposit</button>
-    </router-link>
+  
   </div>
 </template>
 
@@ -229,6 +223,7 @@ export default {
     this.valueTBJPY = valueTBJPY;
     this.valueTBFC = valueTBFC;
     this.valueAccountFC = valueAccountFC;
+    //console.log("-----6",valueTT);
     this.valueTT = valueTT;
 
     
