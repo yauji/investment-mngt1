@@ -3,8 +3,6 @@
     <h1>New TrustTransaction</h1>
 
     <form @submit.prevent="submitCreate">
-      <input type="submit" value="Submit" />
-
       <div class="mb-3">
         <label for="" class="form-label">date *</label>
         <datepicker v-model="form.date" class="form-control" required />
@@ -65,6 +63,7 @@
           class="form-control"
           v-model="form.basicPrice"
           v-bind:disabled="dBasicPrice"
+          @change="onChangeBasicPriceNoItem()"
         />
       </div>
 
@@ -76,6 +75,7 @@
           class="form-control"
           v-model="form.noItem"
           v-bind:disabled="dNoItem"
+          @change="onChangeBasicPriceNoItem()"
         />
       </div>
 
@@ -210,7 +210,7 @@ export default {
     },
     disableAll: function () {
       //TODO: update
-      
+
       //this.dBasicPrice = true;
       //this.dBasicPriceForeign = true;
       //this.dNoItem = true;
@@ -238,6 +238,15 @@ export default {
         this.dDividend = false;
       }
     },
+    onChangeBasicPriceNoItem: function () {
+      if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
+        this.form.buy = this.form.basicPrice * this.form.noItem;
+      } else if (this.form.tradeType == Enum.EnumTradeType.SELL.val) {
+        this.form.sell = this.form.basicPrice * this.form.noItem;
+      } else if (this.form.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
+        this.form.dividend = this.form.basicPrice * this.form.noItem;
+      }
+    },
 
     async submitCreate() {
       var targetTb = 0;
@@ -247,7 +256,7 @@ export default {
 
         if (this.trustBalanceId == this.trustbalances[k].id) {
           targetTb = this.trustbalances[k];
-          console.log("------1");
+          //console.log("------1");
           console.log(targetTb);
         }
       }
