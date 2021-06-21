@@ -150,34 +150,18 @@ export default {
       form: {
         tradeType: "BUY",
         basicPrice: 0,
-        //basicPriceForeign: 0,
         noItem: 0,
 
         buy: 0,
-        //buyForeign: 0,
         sell: 0,
-        //sellForeign: 0,
         dividend: 0,
-        //dividendForeign: 0,
 
         trustBalanceId: "",
       },
       dBuy: true,
       dSell: true,
       dDividend: true,
-      //dDividendForeign: true,
-      /*
-      dBasicPrice: true,
-      //dBasicPriceForeign: true,
-      dNoItem: true,
 
-      dBuy: true,
-      //dBuyForeign: true,
-      dSell: true,
-      //dSellForeign: true,
-      dDividend: true,
-      //dDividendForeign: true,
-*/
       trustbalances: [],
       accounts: [],
     };
@@ -190,7 +174,6 @@ export default {
         .then((result) => {
           console.log(result);
           this.trustbalances = result.data.listTrustBalances.items;
-          //this.TrustBalances = result.data.listTrustBalances.items;
         })
         .catch((error) => {
           console.log(error);
@@ -209,20 +192,12 @@ export default {
         });
     },
     disableAll: function () {
-      //TODO: update
-
-      //this.dBasicPrice = true;
-      //this.dBasicPriceForeign = true;
-      //this.dNoItem = true;
-
       this.dBuy = true;
       this.dSell = true;
       this.dDividend = true;
     },
     onChangeTrustTransactionType: function () {
       this.disableAll();
-
-      //      this.form.status = Enum.EnumTrustTransactionStatus.ACTIVE.val;
 
       if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
         this.dBasicPrice = false;
@@ -241,10 +216,16 @@ export default {
     onChangeBasicPriceNoItem: function () {
       if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
         this.form.buy = this.form.basicPrice * this.form.noItem;
+        this.form.sell = 0;
+        this.form.dividend = 0;
       } else if (this.form.tradeType == Enum.EnumTradeType.SELL.val) {
         this.form.sell = this.form.basicPrice * this.form.noItem;
+        this.form.buy = 0;
+        this.form.dividend = 0;
       } else if (this.form.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
         this.form.dividend = this.form.basicPrice * this.form.noItem;
+        this.form.buy = 0;
+        this.form.sell = 0;
       }
     },
 
