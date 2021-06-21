@@ -61,7 +61,8 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listAccounts, listDeposits, listTrustTransactions } from "../../graphql/queries";
+import { listAccounts, listDeposits} from "../../graphql/queries";
+//import { listAccounts, listDeposits, listTrustTransactions } from "../../graphql/queries";
 import { deleteAccount, updateAccount } from "../../graphql/mutations";
 //import { deleteAccount, updateAccount } from "../../graphql/mutations";
 
@@ -132,6 +133,7 @@ export default {
       //console.log(deposits);
 
       //get accounts---
+      /*
       var accounts;
       await API.graphql({
         query: listAccounts,
@@ -143,49 +145,66 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-
-      //console.log(accounts);
+*/
+      console.log("-----1", this.accounts);
+      //var accounts = this.accounts;
 
       // create dic----
-      var dicCurrencyBalance = [];
+      var dicAccountIdBalance = [];
 
-      for (const a in accounts) {
-        dicCurrencyBalance[accounts[a].currency] = 0;
+      for (const a in this.accounts) {
+        dicAccountIdBalance[this.accounts[a].id] = 0;
       }
 
       for (const kd in deposits) {
         //console.log(deposits[kd]);
         const d = deposits[kd];
+        
+        //console.log("-------11", d.principal, d.value);
+        dicAccountIdBalance[d.principalAccountId] -= d.principal;
+
+        if(d.status == Enum.EnumDepositStatus.FINISHED.val){
+          //console.log("-----3", d.status);
+          dicAccountIdBalance[d.valueAccountId] += d.value;
+
+        }
+        
+
+        //if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
+/*
         if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
           if (
             d.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val ||
             d.depositType ==
               Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
           ) {
-            dicCurrencyBalance[d.valueCurrency] += d.valueForeign;
+            dicAccountIdBalance[d.valueCurrency] += d.valueForeign;
           } else if (
             d.depositType == Enum.EnumDepositType.DEPOSIT_FC.val ||
             d.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
           ) {
-            dicCurrencyBalance[d.valueCurrency] += d.valueForeign;
-            dicCurrencyBalance[d.principalCurrency] -=
+            dicAccountIdBalance[d.valueCurrency] += d.valueForeign;
+            dicAccountIdBalance[d.principalCurrency] -=
               d.principlaForeign;
           } else if (
             d.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
           ) {
-            dicCurrencyBalance[d.principalCurrency] -=
+            dicAccountIdBalance[d.principalCurrency] -=
               d.principlaForeign;
           }
         } else {
-          dicCurrencyBalance[d.principalCurrency] -=
+          dicAccountIdBalance[d.principalCurrency] -=
             d.principlaForeign;
         }
+        */
       }
 
       //console.log("------12");
-      //console.log(dicCurrencyBalance);
+      //console.log(dicAccountIdBalance);
 
       //trust transaction (buy with FC)----
+      //todo
+      /*
       var trusttransactions = {};
       await API.graphql({
         query: listTrustTransactions,
@@ -206,19 +225,19 @@ export default {
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
           console.log("------3",tt.trustBalance.currency);
           if(tt.trustBalance.currency != Enum.EnumCurrency.JPY.val){
-            dicCurrencyBalance[tt.trustBalance.currency] -= tt.buyForeign;
+            dicAccountIdBalance[tt.trustBalance.currency] -= tt.buyForeign;
           }
         }
       }
-      
-     
+      */
+     console.log("-----4",dicAccountIdBalance);
       //hoge
 
       //update account balances---
-      for (const ka in accounts) {
-        var a = accounts[ka];
-        a.balance = dicCurrencyBalance[a.currency];
-        console.log("-----1",a);
+      for (const ka in this.accounts) {
+        var a = this.accounts[ka];
+        a.balance = dicAccountIdBalance[a.id];
+        console.log("-----41",a);
 
         delete a.createdAt;
         delete a.updatedAt;
