@@ -11,7 +11,7 @@
     <br />
     evaluated value: {{ this.value }}
     <br />
-     profit and loss: {{ this.pl }}
+    profit and loss: {{ this.pl }}
     <br />
 
     <router-link :to="{ name: 'DepositCreate' }">
@@ -91,22 +91,26 @@ export default {
       const d = deposits[kd];
 
       //principal---
-      principal += d.principalJPY;
+      console.log("---20", d);
+      if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
+        console.log("---21", d);
+        principal += d.principal;
+      }
 
       //value-------
       //value - deposit----
       if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
-        if (d.principalCurrency == Enum.EnumCurrency.JPY.val) {
-          value += d.principalJPY;
+        if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
+          value += d.principal;
         } else {
           //foreign, evaluate with exchange rate---
-          const exrate = dAccounts[d.principalCurrency].exchangeRate;
+          const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
           //console.log("---------2");
-          value += exrate * d.principalForeign;
+          value += exrate * d.principal;
         }
       } else {
-        if (d.valueCurrency == Enum.EnumCurrency.JPY.val) {
-          value += d.valueJPY;
+        if (d.valueAccount.currency == Enum.EnumCurrency.JPY.val) {
+          value += d.value;
         }
       }
     }
@@ -114,9 +118,11 @@ export default {
     //value - account----
     for (const ka in accounts) {
       const a = accounts[ka];
-      value += a.balance * a.exchangeRate;
-      //console.log("------3");
-      //console.log(a.balance * a.exchangeRate);
+      if (a.currency != Enum.EnumCurrency.JPY.val) {
+        value += a.balance * a.exchangeRate;
+        //console.log("------3");
+        //console.log(a.balance * a.exchangeRate);
+      }
     }
 
     // principal, value - trust transaction----
@@ -134,13 +140,15 @@ export default {
 
     for (const ktt in trusttransactions) {
       const tt = trusttransactions[ktt];
-      if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-        //console.log("-------1");
-        //console.log(tt);
-        principal += tt.buyJPY;
-      } else {
-        value += tt.sellJPY;
-        value += tt.dividendJPY;
+      if (tt.account.currency == Enum.EnumCurrency.JPY.val) {
+        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+          //console.log("-------1");
+          //console.log(tt);
+          principal += tt.buy;
+        } else {
+          value += tt.sell;
+          value += tt.dividend;
+        }
       }
     }
 
@@ -161,12 +169,11 @@ export default {
 
     for (const ktb in trustbalances) {
       const tb = trustbalances[ktb];
-      if(tb.currency == Enum.EnumCurrency.JPY.val){
+      if (tb.currency == Enum.EnumCurrency.JPY.val) {
         value += tb.balance;
-      }else{
+      } else {
         //foreign currency
         value += tb.balance * dAccounts[tb.currency].exchangeRate;
-        
       }
     }
     //console.log(principal);
@@ -189,7 +196,7 @@ export default {
 
       principal: 0,
       value: 0,
-      pl:0,
+      pl: 0,
     };
   },
   methods: {
