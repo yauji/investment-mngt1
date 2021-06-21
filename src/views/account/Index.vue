@@ -61,8 +61,12 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listAccounts, listDeposits} from "../../graphql/queries";
-//import { listAccounts, listDeposits, listTrustTransactions } from "../../graphql/queries";
+//import { listAccounts, listDeposits} from "../../graphql/queries";
+import {
+  listAccounts,
+  listDeposits,
+  listTrustTransactions,
+} from "../../graphql/queries";
 import { deleteAccount, updateAccount } from "../../graphql/mutations";
 //import { deleteAccount, updateAccount } from "../../graphql/mutations";
 
@@ -159,19 +163,17 @@ export default {
       for (const kd in deposits) {
         //console.log(deposits[kd]);
         const d = deposits[kd];
-        
+
         //console.log("-------11", d.principal, d.value);
         dicAccountIdBalance[d.principalAccountId] -= d.principal;
 
-        if(d.status == Enum.EnumDepositStatus.FINISHED.val){
+        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
           //console.log("-----3", d.status);
           dicAccountIdBalance[d.valueAccountId] += d.value;
-
         }
-        
 
         //if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
-/*
+        /*
         if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
           if (
             d.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val ||
@@ -205,7 +207,7 @@ export default {
       //trust transaction----
       //TODO
       //kokokara: update schema for account
-      /*
+
       var trusttransactions = {};
       await API.graphql({
         query: listTrustTransactions,
@@ -217,29 +219,41 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-        console.log(trusttransactions);
-      
+      console.log(trusttransactions);
 
       for (const ktt in trusttransactions) {
         const tt = trusttransactions[ktt];
 
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+          dicAccountIdBalance[tt.accountId] -= tt.buy;
+          console.log("------31", tt.buy);
+        } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
+          dicAccountIdBalance[tt.accountId] += tt.sell;
+          console.log("------32", tt.sell);
+        } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
+          dicAccountIdBalance[tt.accountId] += tt.dividend;
+          console.log("------33", tt);
+        }
+
+        /*
+        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
           console.log("------3",tt.trustBalance.currency);
           if(tt.trustBalance.currency != Enum.EnumCurrency.JPY.val){
             dicAccountIdBalance[tt.trustBalance.currency] -= tt.buyForeign;
           }
+
         }
+        */
       }
-      */
-      
-     console.log("-----4",dicAccountIdBalance);
+
+      console.log("-----4", dicAccountIdBalance);
       //hoge
 
       //update account balances---
       for (const ka in this.accounts) {
         var a = this.accounts[ka];
         a.balance = dicAccountIdBalance[a.id];
-        console.log("-----41",a);
+        console.log("-----41", a);
 
         delete a.createdAt;
         delete a.updatedAt;
