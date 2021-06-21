@@ -25,6 +25,21 @@
       </div>
 
       <div class="mb-3">
+        <label for="" class="form-label">account *</label>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          v-model="form.accountId"
+          @change="onChangePrincipalCurrency()"
+          required
+        >
+          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
+            {{ n.currency }} - {{ n.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
         <label for="" class="form-label">tradeType *</label>
         <select
           class="form-select"
@@ -47,21 +62,10 @@
         <label for="" class="form-label">basicPrice</label>
         <input
           type="number"
-          step="1"
+          step="0.01"
           class="form-control"
           v-model="form.basicPrice"
           v-bind:disabled="dBasicPrice"
-        />
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">basicPriceForeign</label>
-        <input
-          type="number"
-          step="0.01"
-          class="form-control"
-          v-model="form.basicPriceForeign"
-          v-bind:disabled="dBasicPriceForeign"
         />
       </div>
 
@@ -77,68 +81,35 @@
       </div>
 
       <div class="mb-3">
-        <label for="" class="form-label">buyJPY</label>
-        <input
-          type="number"
-          step="1"
-          class="form-control"
-          v-model="form.buyJPY"
-          v-bind:disabled="dBuyJPY"
-        />
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">buyForeign</label>
+        <label for="" class="form-label">buy</label>
         <input
           type="number"
           step="0.01"
           class="form-control"
-          v-model="form.buyForeign"
-          v-bind:disabled="dBuyForeign"
+          v-model="form.buy"
+          v-bind:disabled="dBuy"
         />
       </div>
 
       <div class="mb-3">
-        <label for="" class="form-label">sellJPY</label>
-        <input
-          type="number"
-          step="1"
-          class="form-control"
-          v-model="form.sellJPY"
-          v-bind:disabled="dSellJPY"
-        />
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">sellForeign</label>
+        <label for="" class="form-label">sell</label>
         <input
           type="number"
           step="0.01"
           class="form-control"
-          v-model="form.sellForeign"
-          v-bind:disabled="dSellForeign"
+          v-model="form.sell"
+          v-bind:disabled="dSell"
         />
       </div>
 
       <div class="mb-3">
-        <label for="" class="form-label">dividendJPY</label>
-        <input
-          type="number"
-          step="1"
-          class="form-control"
-          v-model="form.dividendJPY"
-          v-bind:disabled="dDividendJPY"
-        />
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">dividendForeign</label>
+        <label for="" class="form-label">dividend</label>
         <input
           type="number"
           step="0.01"
           class="form-control"
-          v-model="form.dividendForeign"
-          v-bind:disabled="dDividendForeign"
+          v-model="form.dividend"
+          v-bind:disabled="dDividend"
         />
       </div>
 
@@ -151,8 +122,7 @@
 import { API } from "aws-amplify";
 
 import { createTrustTransaction } from "../../graphql/mutations";
-import { listTrustBalances } from "../../graphql/queries";
-
+import { listTrustBalances, listAccounts } from "../../graphql/queries";
 
 //import { createTrustTransaction, updateAccount } from "../../graphql/mutations";
 //import { listAccounts } from "../../graphql/queries";
@@ -173,6 +143,7 @@ export default {
   },
   async created() {
     this.getTrustBalances();
+    this.getAccounts();
   },
   data() {
     return {
@@ -180,30 +151,32 @@ export default {
       form: {
         tradeType: "BUY",
         basicPrice: 0,
-        basicPriceForeign: 0,
+        //basicPriceForeign: 0,
         noItem: 0,
 
-        buyJPY: 0,
-        buyForeign: 0,
-        sellJPY: 0,
-        sellForeign: 0,
-        dividendJPY: 0,
-        dividendForeign: 0,
+        buy: 0,
+        //buyForeign: 0,
+        sell: 0,
+        //sellForeign: 0,
+        dividend: 0,
+        //dividendForeign: 0,
 
         trustBalanceId: "",
       },
+      /*
       dBasicPrice: true,
-      dBasicPriceForeign: true,
+      //dBasicPriceForeign: true,
       dNoItem: true,
 
-      dBuyJPY: true,
-      dBuyForeign: true,
-      dSellJPY: true,
-      dSellForeign: true,
-      dDividendJPY: true,
-      dDividendForeign: true,
-
+      dBuy: true,
+      //dBuyForeign: true,
+      dSell: true,
+      //dSellForeign: true,
+      dDividend: true,
+      //dDividendForeign: true,
+*/
       trustbalances: [],
+      accounts: [],
     };
   },
   methods: {
@@ -220,7 +193,21 @@ export default {
           console.log(error);
         });
     },
+    async getAccounts() {
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          console.log(result);
+          this.accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     disableAll: function () {
+      //TODO: update
+      
       this.dBasicPrice = true;
       this.dBasicPriceForeign = true;
       this.dNoItem = true;
@@ -266,18 +253,18 @@ export default {
 
     async submitCreate() {
       var targetTb = 0;
-      for(const k in this.trustbalances){
+      for (const k in this.trustbalances) {
         //console.log(k);
-//        console.log("xxxxxxxx1", k, tb);
+        //        console.log("xxxxxxxx1", k, tb);
 
-        if(this.trustBalanceId == this.trustbalances[k].id){
+        if (this.trustBalanceId == this.trustbalances[k].id) {
           targetTb = this.trustbalances[k];
           console.log("------1");
           console.log(targetTb);
-        }      
+        }
       }
 
-     //this.form.trustBalance = targetTb;
+      //this.form.trustBalance = targetTb;
 
       console.log(this.form);
       await API.graphql({
