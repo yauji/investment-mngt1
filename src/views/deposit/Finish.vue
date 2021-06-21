@@ -26,41 +26,34 @@
           <label for="" class="form-label">date</label>
           <datepicker v-model="form.date" class="form-control" />
         </div>
-
         <div class="mb-3">
-          <label for="" class="form-label">principalCurrency</label>
+          <label for="" class="form-label">principal account</label>
           <select
             class="form-select"
             aria-label="Default select example"
-            v-model="form.principalCurrency"
-            disabled
+            v-model="form.principalAccountId"
+            @change="onChangePrincipalCurrency()"
+            required
           >
-            <option value="JPY">JPY</option>
-            <option value="USD">USD</option>
-            <option value="AUD">AUD</option>
-            <option value="EUR">EUR</option>
-            <option value="NZD">NZD</option>
+            <option
+              v-for="n in this.accounts"
+              v-bind:key="n"
+              v-bind:value="n.id"
+            >
+              {{ n.currency }} - {{ n.name }}
+            </option>
           </select>
         </div>
-
+        <!--
+-->
         <div class="mb-3">
-          <label for="" class="form-label">Principal JPY</label>
-          <input
-            type="number"
-            class="form-control"
-            v-model="form.principalJPY"
-            disabled
-          />
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">Principal Foreign</label>
+          <label for="" class="form-label">Principal</label>
           <input
             type="number"
             step="0.01"
             class="form-control"
-            v-model="form.principalForeign"
-            disabled
+            v-model="form.principal"
+            v-bind:disabled="true"
           />
         </div>
 
@@ -94,28 +87,32 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">valueCurrency</label>
+          <label for="" class="form-label">value account</label>
           <select
             class="form-select"
             aria-label="Default select example"
-            v-model="form.valueCurrency"
+            v-model="form.valueAccountId"
+            @change="onChangePrincipalCurrency()"
           >
-            <option value="JPY">JPY</option>
-            <option value="USD">USD</option>
-            <option value="AUD">AUD</option>
-            <option value="EUR">EUR</option>
-            <option value="NZD">NZD</option>
+            <option
+              v-for="n in this.accounts"
+              v-bind:key="n"
+              v-bind:value="n.id"
+            >
+              {{ n.currency }} - {{ n.name }}
+            </option>
           </select>
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">value JPY</label>
-          <input type="text" class="form-control" v-model="form.valueJPY" />
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">value foreign</label>
-          <input type="text" class="form-control" v-model="form.valueForeign" />
+          <label for="" class="form-label">value </label>
+          <input
+            type="number"
+            step="0.01"
+            class="form-control"
+            v-model="form.value"
+            v-bind:disabled="dValue"
+          />
         </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
@@ -126,7 +123,7 @@
 
 <script>
 import { API } from "aws-amplify";
-import { getDeposit } from "../../graphql/queries";
+import { getDeposit, listAccounts } from "../../graphql/queries";
 import { updateDeposit } from "../../graphql/mutations";
 
 import Datepicker from "vue3-datepicker";
@@ -145,6 +142,7 @@ export default {
   },
   async created() {
     this.getDeposit();
+    this.getAccounts();
   },
   computed: {
     refEnum: () => Enum,
@@ -152,6 +150,7 @@ export default {
   data() {
     return {
       form: {},
+      accounts: [],
     };
   },
   methods: {
@@ -174,10 +173,25 @@ export default {
           console.log(error);
         });
     },
+    async getAccounts() {
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          console.log(result);
+          this.accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     async submitUpdate() {
       delete this.form.createdAt;
       delete this.form.updatedAt;
       delete this.form.owner;
+
+      delete this.form.principalAccount;
+      delete this.form.valueAccount;
 
       this.form.status = Enum.EnumDepositStatus.FINISHED.val;
 
