@@ -9,8 +9,30 @@
 
     principal: {{ this.principal }}
     <br />
+    - deposit: {{ this.principalDeposit }}
+    <br />
+    - trust transaction: {{ this.principalTrustTransaction }}
+    <br />
+
+    <br />
+
     evaluated value: {{ this.value }}
     <br />
+    - active deposit: {{ this.valueDepositActive }}
+    <br />
+    - finished deposit jpy: {{ this.valueDepositFinished }}
+    <br />
+    - trust balance jpy: {{ this.valueTBJPY }}
+    <br />
+    - trust balance fc: {{ this.valueTBFC }}
+    <br />
+    - account fc: {{ this.valueAccountFC }}
+    <br />
+    - trust transaction: {{ this.valueTT }}
+    <br />
+
+    <br />
+
     profit and loss: {{ this.pl }}
     <br />
 
@@ -50,8 +72,17 @@ export default {
     //calc principal--------
     //calc value---------
     var principal = 0;
+    var principalDeposit = 0;
+    var principalTrustTransaction = 0;
+
     var value = 0;
-    console.log(value);
+
+    var valueDepositActive = 0;
+    var valueDepositFinished = 0;
+    var valueTBJPY = 0;
+    var valueTBFC = 0;
+    var valueAccountFC = 0;
+    var valueTT = 0;
 
     //get accounts---
     var accounts;
@@ -91,10 +122,11 @@ export default {
       const d = deposits[kd];
 
       //principal---
-      console.log("---20", d);
+      //console.log("---20", d);
       if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
-        console.log("---21", d);
+        //console.log("---21", d);
         principal += d.principal;
+        principalDeposit += d.principal;
       }
 
       //value-------
@@ -102,15 +134,19 @@ export default {
       if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
         if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
           value += d.principal;
+          valueDepositActive  += d.principal;
+          //hoge
         } else {
           //foreign, evaluate with exchange rate---
           const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
           //console.log("---------2");
           value += exrate * d.principal;
+          valueDepositActive += exrate * d.principal;
         }
       } else {
         if (d.valueAccount.currency == Enum.EnumCurrency.JPY.val) {
           value += d.value;
+          valueDepositFinished += d.value;
         }
       }
     }
@@ -120,6 +156,7 @@ export default {
       const a = accounts[ka];
       if (a.currency != Enum.EnumCurrency.JPY.val) {
         value += a.balance * a.exchangeRate;
+        valueAccountFC += a.balance * a.exchangeRate;
         //console.log("------3");
         //console.log(a.balance * a.exchangeRate);
       }
@@ -145,9 +182,12 @@ export default {
           //console.log("-------1");
           //console.log(tt);
           principal += tt.buy;
+          principalTrustTransaction += tt.buy;
         } else {
           value += tt.sell;
+          valueTT += tt.sell;
           value += tt.dividend;
+          valueTT += tt.dividend;
         }
       }
     }
@@ -171,14 +211,27 @@ export default {
       const tb = trustbalances[ktb];
       if (tb.currency == Enum.EnumCurrency.JPY.val) {
         value += tb.balance;
+        valueTBJPY += tb.balance;
       } else {
         //foreign currency
         value += tb.balance * dAccounts[tb.currency].exchangeRate;
+        valueTBFC += tb.balance * dAccounts[tb.currency].exchangeRate;
       }
     }
     //console.log(principal);
     this.principal = principal;
+    this.principalDeposit = principalDeposit;
+    this.principalTrustTransaction = principalTrustTransaction;
+    
     this.value = value;
+    this.valueDepositActive = valueDepositActive;
+    this.valueDepositFinished = valueDepositFinished;
+    this.valueTBJPY = valueTBJPY;
+    this.valueTBFC = valueTBFC;
+    this.valueAccountFC = valueAccountFC;
+    this.valueTT = valueTT;
+
+    
 
     this.pl = this.value - this.principal;
   },
@@ -195,6 +248,9 @@ export default {
       text: "",
 
       principal: 0,
+      principalDeposit: 0,
+      principalTrustTransaction: 0,
+
       value: 0,
       pl: 0,
     };
