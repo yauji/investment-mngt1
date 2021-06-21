@@ -11,6 +11,7 @@
         <tr>
           <th>date</th>
           <th>trade Type</th>
+          <th>trust balance</th>
           <th>account</th>
           <th>basic Price</th>
           <th>no Item</th>
@@ -30,6 +31,7 @@
         >
           <td>{{ moment(trusttransaction.date) }}</td>
           <td>{{ trusttransaction.tradeType }}</td>
+          <td>{{ trusttransaction.trustBalance.name }}</td>
           <td>{{ trusttransaction.account.currency }} {{trusttransaction.account.name}}</td>
           <td>{{ trusttransaction.basicPrice }}</td>
           <td>{{ trusttransaction.noItem }}</td>

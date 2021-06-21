@@ -188,8 +188,11 @@ export default {
         dicIdTBNoItem[this.trustbalances[a].id] = 0;
       }
 
-      //console.log("------5");
+  //    console.log("------5");
       //console.log(dicIdTBNoItem);
+      //for (const ka in dicIdTBNoItem) {
+//        console.log("---51", dicIdTBNoItem[ka]);
+      //}
 
       for (const ktt in trusttransactions) {
         //console.log(trusttransactions[kd]);
@@ -213,9 +216,9 @@ export default {
 
       for (const ka in dicIdTBNoItem) {
         var a = 0;
-        for(const ktb in this.trustbalances){
-          if(ka == this.trustbalances[ktb].id){
-           a = this.trustbalances[ktb];
+        for (const ktb in this.trustbalances) {
+          if (ka == this.trustbalances[ktb].id) {
+            a = this.trustbalances[ktb];
           }
         }
         a.noItem = dicIdTBNoItem[ka];
