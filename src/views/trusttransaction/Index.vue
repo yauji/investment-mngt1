@@ -11,15 +11,12 @@
         <tr>
           <th>date</th>
           <th>trade Type</th>
+          <th>account</th>
           <th>basic Price</th>
-          <th>basic Price Foreign</th>
           <th>no Item</th>
-          <th>buy JPY</th>
-          <th>buy Foreign</th>
-          <th>sell JPY</th>
-          <th>sell Foreign</th>
-          <th>dividend JPY</th>
-          <th>dividend Foreign</th>
+          <th>buy</th>
+          <th>sell</th>
+          <th>dividend</th>
 
           <th></th>
           <th></th>
@@ -33,16 +30,13 @@
         >
           <td>{{ moment(trusttransaction.date) }}</td>
           <td>{{ trusttransaction.tradeType }}</td>
+          <td>{{ trusttransaction.account.currency }} {{trusttransaction.account.name}}</td>
           <td>{{ trusttransaction.basicPrice }}</td>
-          <td>{{ trusttransaction.basicPriceForeign }}</td>
           <td>{{ trusttransaction.noItem }}</td>
 
-          <td>{{ trusttransaction.buyJPY }}</td>
-          <td>{{ trusttransaction.buyForeign }}</td>
-          <td>{{ trusttransaction.sellJPY }}</td>
-          <td>{{ trusttransaction.sellForeign }}</td>
-          <td>{{ trusttransaction.dividendJPY }}</td>
-          <td>{{ trusttransaction.dividendForeign }}</td>
+          <td>{{ trusttransaction.buy }}</td>
+          <td>{{ trusttransaction.sell }}</td>
+          <td>{{ trusttransaction.dividend }}</td>
           <td>
             <router-link
               custom
