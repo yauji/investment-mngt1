@@ -155,10 +155,21 @@ export const getTrustTransaction = /* GraphQL */ `
         updatedAt
         owner
       }
+      accountId
+      account {
+        id
+        name
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
-      basicPriceForeign
       noItem
       buy
       sell
@@ -195,10 +206,21 @@ export const listTrustTransactions = /* GraphQL */ `
           updatedAt
           owner
         }
+        accountId
+        account {
+          id
+          name
+          currency
+          balance
+          exchangeRate
+          memo
+          createdAt
+          updatedAt
+          owner
+        }
         date
         tradeType
         basicPrice
-        basicPriceForeign
         noItem
         buy
         sell
@@ -225,10 +247,10 @@ export const getTrustBalance = /* GraphQL */ `
         items {
           id
           trustBalanceId
+          accountId
           date
           tradeType
           basicPrice
-          basicPriceForeign
           noItem
           buy
           sell

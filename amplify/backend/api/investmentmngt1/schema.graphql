@@ -85,10 +85,13 @@ type TrustTransaction
   trustBalanceId: ID!
   trustBalance: TrustBalance! @connection(fields: ["trustBalanceId"])
 
+  accountId: ID!
+  account: Account! @connection(fields: ["accountId"])
+
   date: String!
   tradeType: TradeType!
-  basicPrice:Int
-  basicPriceForeign:Float
+  """basicPrice:Int"""
+  basicPrice:Float
   noItem:Float
 
   buy:Float

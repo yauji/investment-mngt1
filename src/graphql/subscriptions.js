@@ -201,10 +201,21 @@ export const onCreateTrustTransaction = /* GraphQL */ `
         updatedAt
         owner
       }
+      accountId
+      account {
+        id
+        name
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
-      basicPriceForeign
       noItem
       buy
       sell
@@ -235,10 +246,21 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
         updatedAt
         owner
       }
+      accountId
+      account {
+        id
+        name
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
-      basicPriceForeign
       noItem
       buy
       sell
@@ -269,10 +291,21 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
         updatedAt
         owner
       }
+      accountId
+      account {
+        id
+        name
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
-      basicPriceForeign
       noItem
       buy
       sell
@@ -297,10 +330,10 @@ export const onCreateTrustBalance = /* GraphQL */ `
         items {
           id
           trustBalanceId
+          accountId
           date
           tradeType
           basicPrice
-          basicPriceForeign
           noItem
           buy
           sell
@@ -331,10 +364,10 @@ export const onUpdateTrustBalance = /* GraphQL */ `
         items {
           id
           trustBalanceId
+          accountId
           date
           tradeType
           basicPrice
-          basicPriceForeign
           noItem
           buy
           sell
@@ -365,10 +398,10 @@ export const onDeleteTrustBalance = /* GraphQL */ `
         items {
           id
           trustBalanceId
+          accountId
           date
           tradeType
           basicPrice
-          basicPriceForeign
           noItem
           buy
           sell

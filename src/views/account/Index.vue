@@ -202,8 +202,9 @@ export default {
       //console.log("------12");
       //console.log(dicAccountIdBalance);
 
-      //trust transaction (buy with FC)----
-      //todo
+      //trust transaction----
+      //TODO
+      //kokokara: update schema for account
       /*
       var trusttransactions = {};
       await API.graphql({
@@ -230,6 +231,7 @@ export default {
         }
       }
       */
+      
      console.log("-----4",dicAccountIdBalance);
       //hoge
 

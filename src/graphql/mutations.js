@@ -222,10 +222,21 @@ export const createTrustTransaction = /* GraphQL */ `
         updatedAt
         owner
       }
+      accountId
+      account {
+        id
+        name
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
-      basicPriceForeign
       noItem
       buy
       sell
@@ -259,10 +270,21 @@ export const updateTrustTransaction = /* GraphQL */ `
         updatedAt
         owner
       }
+      accountId
+      account {
+        id
+        name
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
-      basicPriceForeign
       noItem
       buy
       sell
@@ -296,10 +318,21 @@ export const deleteTrustTransaction = /* GraphQL */ `
         updatedAt
         owner
       }
+      accountId
+      account {
+        id
+        name
+        currency
+        balance
+        exchangeRate
+        memo
+        createdAt
+        updatedAt
+        owner
+      }
       date
       tradeType
       basicPrice
-      basicPriceForeign
       noItem
       buy
       sell
@@ -327,10 +360,10 @@ export const createTrustBalance = /* GraphQL */ `
         items {
           id
           trustBalanceId
+          accountId
           date
           tradeType
           basicPrice
-          basicPriceForeign
           noItem
           buy
           sell
@@ -364,10 +397,10 @@ export const updateTrustBalance = /* GraphQL */ `
         items {
           id
           trustBalanceId
+          accountId
           date
           tradeType
           basicPrice
-          basicPriceForeign
           noItem
           buy
           sell
@@ -401,10 +434,10 @@ export const deleteTrustBalance = /* GraphQL */ `
         items {
           id
           trustBalanceId
+          accountId
           date
           tradeType
           basicPrice
-          basicPriceForeign
           noItem
           buy
           sell
