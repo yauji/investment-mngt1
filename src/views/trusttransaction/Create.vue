@@ -30,7 +30,6 @@
           class="form-select"
           aria-label="Default select example"
           v-model="form.accountId"
-          @change="onChangePrincipalCurrency()"
           required
         >
           <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
@@ -163,6 +162,10 @@ export default {
 
         trustBalanceId: "",
       },
+      dBuy: true,
+      dSell: true,
+      dDividend: true,
+      //dDividendForeign: true,
       /*
       dBasicPrice: true,
       //dBasicPriceForeign: true,
@@ -208,16 +211,13 @@ export default {
     disableAll: function () {
       //TODO: update
       
-      this.dBasicPrice = true;
-      this.dBasicPriceForeign = true;
-      this.dNoItem = true;
+      //this.dBasicPrice = true;
+      //this.dBasicPriceForeign = true;
+      //this.dNoItem = true;
 
-      this.dBuyJPY = true;
-      this.dBuyForeign = true;
-      this.dSellJPY = true;
-      this.dSellForeign = true;
-      this.dDividendJPY = true;
-      this.dDividendForeign = true;
+      this.dBuy = true;
+      this.dSell = true;
+      this.dDividend = true;
     },
     onChangeTrustTransactionType: function () {
       this.disableAll();
@@ -226,28 +226,16 @@ export default {
 
       if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
         this.dBasicPrice = false;
-        this.dBasicPriceForeign = false;
         this.dNoItem = false;
 
-        this.dBuyJPY = false;
-        this.dBuyForeign = false;
+        this.dBuy = false;
       } else if (this.form.tradeType == Enum.EnumTradeType.SELL.val) {
         this.dBasicPrice = false;
-        this.dBasicPriceForeign = false;
         this.dNoItem = false;
 
-        this.dSellJPY = false;
-        this.dSellForeign = false;
+        this.dSell = false;
       } else if (this.form.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
-        this.dDividendJPY = false;
-        this.dDividendForeign = false;
-      }
-    },
-    onChangePrincipalCurrency: function () {
-      if (this.form.principalCurrency == "JPY") {
-        this.dPrincipalJPY = false;
-      } else {
-        this.dPrincipalForeign = false;
+        this.dDividend = false;
       }
     },
 
