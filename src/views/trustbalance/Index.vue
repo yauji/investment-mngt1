@@ -162,6 +162,7 @@ export default {
       //console.log(trusttransactions);
 
       //get trustbalances---
+      /*
       var trustbalances;
       await API.graphql({
         query: listTrustBalances,
@@ -173,45 +174,53 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-
+*/
       //console.log("------4");
       //console.log(trustbalances);
       //console.log(trustbalances.trustTransactions);
 
       // create dic----
-      var dicIdTrustBalance = [];
+      var dicIdTBNoItem = [];
 
-      for (const a in trustbalances) {
-        trustbalances[a].noItem = 0;
+      for (const a in this.trustbalances) {
+        //this.trustbalances[a].noItem = 0;
 
-        dicIdTrustBalance[trustbalances[a].id] = trustbalances[a];
+        dicIdTBNoItem[this.trustbalances[a].id] = 0;
       }
 
       //console.log("------5");
-      //console.log(dicIdTrustBalance);
+      //console.log(dicIdTBNoItem);
 
       for (const ktt in trusttransactions) {
         //console.log(trusttransactions[kd]);
         const tt = trusttransactions[ktt];
 
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          //console.log("---51");
-          //console.log(dicIdTrustBalance[tt.trustBalanceId]);
-          dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
+          //console.log("---51",tt.noItem);
+          //console.log("---511",dicIdTBNoItem[tt.trustBalanceId]);
+          dicIdTBNoItem[tt.trustBalanceId] += tt.noItem;
+          //console.log("---512",dicIdTBNoItem[tt.trustBalanceId]);
         } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
-          dicIdTrustBalance[tt.trustBalanceId].noItem -= tt.noItem;
+          dicIdTBNoItem[tt.trustBalanceId] -= tt.noItem;
         } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
           //correct?
-          dicIdTrustBalance[tt.trustBalanceId].noItem += tt.noItem;
+          dicIdTBNoItem[tt.trustBalanceId] += tt.noItem;
         }
+        //console.log("---501",dicIdTBNoItem[tt.trustBalanceId]);
       }
       //console.log("------12");
-      //console.log(dicIdTrustBalance);
+      //console.log(dicIdTBNoItem);
 
-      for (const ka in dicIdTrustBalance) {
-        var a = dicIdTrustBalance[ka];
+      for (const ka in dicIdTBNoItem) {
+        var a = 0;
+        for(const ktb in this.trustbalances){
+          if(ka == this.trustbalances[ktb].id){
+           a = this.trustbalances[ktb];
+          }
+        }
+        a.noItem = dicIdTBNoItem[ka];
         //a.balance = dicTrustTransactionBalanceEachCurrency[a.currency];
-        //console.log(a);
+        //console.log("----61",a);
 
         delete a.createdAt;
         delete a.updatedAt;
