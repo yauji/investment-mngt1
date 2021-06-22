@@ -158,7 +158,7 @@ export default {
       })
         .then((result) => {
           console.log(result);
-          this.depositss.splice(index, 1);
+          this.deposits.splice(index, 1);
         })
         .catch((error) => {
           console.log(error);

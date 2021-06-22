@@ -114,7 +114,7 @@ export default {
       })
         .then((result) => {
           console.log(result);
-          this.accountss.splice(index, 1);
+          this.accounts.splice(index, 1);
         })
         .catch((error) => {
           console.log(error);

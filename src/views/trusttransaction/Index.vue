@@ -134,7 +134,7 @@ export default {
       })
         .then((result) => {
           console.log(result);
-          this.trusttransactionss.splice(index, 1);
+          this.trusttransactions.splice(index, 1);
         })
         .catch((error) => {
           console.log(error);

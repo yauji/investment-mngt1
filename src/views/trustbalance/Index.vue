@@ -139,7 +139,7 @@ export default {
       })
         .then((result) => {
           console.log(result);
-          this.trustbalancess.splice(index, 1);
+          this.trustbalances.splice(index, 1);
         })
         .catch((error) => {
           console.log(error);
