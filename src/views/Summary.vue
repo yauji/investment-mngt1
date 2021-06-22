@@ -35,8 +35,6 @@
 
     profit and loss: {{ this.pl.toLocaleString() }}
     <br />
-
-  
   </div>
 </template>
 
@@ -128,7 +126,7 @@ export default {
       if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
         if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
           value += d.principal;
-          valueDepositActive  += d.principal;
+          valueDepositActive += d.principal;
           //hoge
         } else {
           //foreign, evaluate with exchange rate---
@@ -216,7 +214,7 @@ export default {
     this.principal = principal;
     this.principalDeposit = principalDeposit;
     this.principalTrustTransaction = principalTrustTransaction;
-    
+
     this.value = value;
     this.valueDepositActive = valueDepositActive;
     this.valueDepositFinished = valueDepositFinished;
@@ -225,8 +223,6 @@ export default {
     this.valueAccountFC = valueAccountFC;
     //console.log("-----6",valueTT);
     this.valueTT = valueTT;
-
-    
 
     this.pl = this.value - this.principal;
   },
@@ -248,6 +244,13 @@ export default {
 
       value: 0,
       pl: 0,
+
+      valueDepositActive: 0,
+      valueDepositFinished: 0,
+      valueTBJPY: 0,
+      valueTBFC: 0,
+      valueAccountFC: 0,
+      valueTT: 0,
     };
   },
   methods: {
