@@ -2,8 +2,9 @@
   <div>
     <h1>Deposits</h1>
 
+<!--
     <router-link to="/deposits/create">Deposit add</router-link>
-
+-->
     <table class="table table-striped">
       <thead>
         <tr>
@@ -41,7 +42,7 @@
             {{ deposit.principalAccount.name }}
           </td>
 
-          <td>{{ deposit.principal }}</td>
+          <td>{{ deposit.principal.toLocaleString() }}</td>
           
           <td>{{ deposit.exchangeRate }}</td>
           <td>{{ deposit.interestRate }}</td>
@@ -54,7 +55,7 @@
               {{ deposit.valueAccount.name }}</a
             >
           </td>
-          <td>{{ deposit.value }}</td>
+          <td>{{ deposit.value.toLocaleString() }}</td>
           
           <td>
             <router-link
@@ -95,10 +96,11 @@
       </tbody>
     </table>
 
+<!--
     <router-link :to="{ name: 'DepositCreate' }">
       <button class="btn btn-primary">Add Deposit</button>
     </router-link>
-
+-->
     <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
       <button class="btn btn-primary" @click="navigate">Add Deposit</button>
     </router-link>

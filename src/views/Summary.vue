@@ -7,33 +7,33 @@
       <hr />
     </b-col>
 
-    principal: {{ this.principal }}
+    principal: {{ this.principal.toLocaleString() }}
     <br />
-    - deposit: {{ this.principalDeposit }}
+    - deposit: {{ this.principalDeposit.toLocaleString() }}
     <br />
-    - trust transaction: {{ this.principalTrustTransaction }}
-    <br />
-
-    <br />
-
-    evaluated value: {{ this.value }}
-    <br />
-    - active deposit: {{ this.valueDepositActive }}
-    <br />
-    - finished deposit jpy: {{ this.valueDepositFinished }}
-    <br />
-    - trust balance jpy: {{ this.valueTBJPY }}
-    <br />
-    - trust balance fc: {{ this.valueTBFC }}
-    <br />
-    - account fc: {{ this.valueAccountFC }}
-    <br />
-    - trust transaction: {{ this.valueTT }}
+    - trust transaction: {{ this.principalTrustTransaction.toLocaleString() }}
     <br />
 
     <br />
 
-    profit and loss: {{ this.pl }}
+    evaluated value: {{ this.value.toLocaleString() }}
+    <br />
+    - active deposit: {{ this.valueDepositActive.toLocaleString() }}
+    <br />
+    - finished deposit jpy: {{ this.valueDepositFinished.toLocaleString() }}
+    <br />
+    - trust balance jpy: {{ this.valueTBJPY.toLocaleString() }}
+    <br />
+    - trust balance fc: {{ this.valueTBFC.toLocaleString() }}
+    <br />
+    - account fc: {{ this.valueAccountFC.toLocaleString() }}
+    <br />
+    - trust transaction: {{ this.valueTT.toLocaleString() }}
+    <br />
+
+    <br />
+
+    profit and loss: {{ this.pl.toLocaleString() }}
     <br />
 
   
