@@ -27,14 +27,7 @@ import TrustBalanceEdit from "../views/trustbalance/Edit.vue";
 
 import Summary from "../views/Summary.vue";
 
-/*
-import AlbumIndex from "../views/album/Index.vue";
-import AlbumCreate from "../views/album/Create.vue";
-import AlbumEdit from "../views/album/Edit.vue";
-import AlbumShow from "../views/album/Show.vue";
-import PhotoCreate from "../views/photo/Create.vue"
-*/
-//import Home from '../views/Home.vue'
+import Inputdata from "../views/Inputdata.vue";
 
 const routes = [
   {
@@ -167,6 +160,13 @@ const routes = [
     path: "/summary",
     name: "Summary",
     component: Summary,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/inputdata",
+    name: "Inputdata",
+    component: Inputdata,
     props: true,
     meta: { requireAuth: true },
   },
