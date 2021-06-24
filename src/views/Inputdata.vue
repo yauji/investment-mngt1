@@ -2,6 +2,9 @@
   <div>
     <h1>Inputdata</h1>
 
+    deposit JPY finished
+    <br/>
+
     plus xxx interest rate xxx duration
 
     <form @submit.prevent="submitCreate">
