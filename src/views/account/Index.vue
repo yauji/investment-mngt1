@@ -17,7 +17,7 @@
         <tr v-for="(account, index) in accounts" :key="account.id">
           <td>{{ account.name }}</td>
           <td>{{ account.currency }}</td>
-          <td>{{ account.balance }}</td>
+          <td>{{ account.balance.toLocaleString() }}</td>
           <td>{{ account.exchangeRate }}</td>
           <td>{{ account.memo }}</td>
           <td>
