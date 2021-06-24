@@ -117,6 +117,7 @@
             class="form-control"
             v-model="form.exchangeRate"
             v-bind:disabled="dExchangeRate"
+            step="0.01"            
           />
         </div>
 
