@@ -25,9 +25,9 @@
           <td>{{ trustbalance.currency }}</td>
           <td>{{ trustbalance.name }}</td>
           <td>{{ trustbalance.memo }}</td>
-          <td>{{ trustbalance.balance }}</td>
-          <td>{{ trustbalance.noItem }}</td>
-          <td>{{ trustbalance.basicPrice }}</td>
+          <td>{{ numberFormat(trustbalance.balance) }}</td>
+          <td>{{ numberFormat(trustbalance.noItem) }}</td>
+          <td>{{ numberFormat(trustbalance.basicPrice) }}</td>
 
           <td>
             <router-link
@@ -116,6 +116,13 @@ export default {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
     },
+    numberFormat: function (value) {
+      if (value == null) {
+        return "---";
+      } else {
+        return value.toLocaleString();
+      }
+    },
     async getTrustBalances() {
       await API.graphql({
         query: listTrustBalances,
@@ -188,10 +195,10 @@ export default {
         dicIdTBNoItem[this.trustbalances[a].id] = 0;
       }
 
-  //    console.log("------5");
+      //    console.log("------5");
       //console.log(dicIdTBNoItem);
       //for (const ka in dicIdTBNoItem) {
-//        console.log("---51", dicIdTBNoItem[ka]);
+      //        console.log("---51", dicIdTBNoItem[ka]);
       //}
 
       for (const ktt in trusttransactions) {
