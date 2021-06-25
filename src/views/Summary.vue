@@ -45,7 +45,7 @@
     <br />
     valueAccount: {{ this.valueAccount.toLocaleString() }}
     <br />
-    total: {{ this.valueAccount + this.depositDiff + this.depositActive}}
+    total: {{ this.valueAccount + this.depositActive}}
   </div>
 </template>
 
