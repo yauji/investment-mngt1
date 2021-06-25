@@ -27,7 +27,7 @@
           <td>{{ trustbalance.memo }}</td>
           <td>{{ numberFormat(trustbalance.balance) }}</td>
           <td>{{ numberFormat(trustbalance.noItem) }}</td>
-          <td>{{ numberFormat(trustbalance.basicPrice) }}</td>
+          <td>{{ trustbalance.basicPrice }}</td>
 
           <td>
             <router-link
@@ -90,7 +90,6 @@ import {
   listTrustBalances,
   listTrustTransactions,
 } from "../../graphql/queries";
-//import { deleteTrustBalance } from "../../graphql/mutations";
 import {
   deleteTrustBalance,
   updateTrustBalance,
@@ -102,19 +101,16 @@ import * as Enum from "@/Enum";
 export default {
   name: "TrustBalanceIndex",
   async created() {
-    //this.getTrustBalances();
     this.getTrustBalances();
   },
   data() {
     return {
-      //albums: [],
       trustbalances: [],
     };
   },
   methods: {
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
-      //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
     },
     numberFormat: function (value) {
       if (value == null) {
@@ -130,7 +126,6 @@ export default {
         .then((result) => {
           console.log(result);
           this.trustbalances = result.data.listTrustBalances.items;
-          //this.TrustBalances = result.data.listTrustBalances.items;
         })
         .catch((error) => {
           console.log(error);
@@ -140,7 +135,6 @@ export default {
       if (!confirm("Delete TrustBalance?")) return;
 
       await API.graphql({
-        //query: deleteTrustBalance,
         query: deleteTrustBalance,
         variables: { input: { id: trustbalanceId } },
       })
@@ -166,43 +160,14 @@ export default {
           console.log(error);
         });
 
-      //console.log(trusttransactions);
-
-      //get trustbalances---
-      /*
-      var trustbalances;
-      await API.graphql({
-        query: listTrustBalances,
-      })
-        .then((result) => {
-          //console.log(result);
-          trustbalances = result.data.listTrustBalances.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-*/
-      //console.log("------4");
-      //console.log(trustbalances);
-      //console.log(trustbalances.trustTransactions);
-
       // create dic----
       var dicIdTBNoItem = [];
 
       for (const a in this.trustbalances) {
-        //this.trustbalances[a].noItem = 0;
-
         dicIdTBNoItem[this.trustbalances[a].id] = 0;
       }
 
-      //    console.log("------5");
-      //console.log(dicIdTBNoItem);
-      //for (const ka in dicIdTBNoItem) {
-      //        console.log("---51", dicIdTBNoItem[ka]);
-      //}
-
       for (const ktt in trusttransactions) {
-        //console.log(trusttransactions[kd]);
         const tt = trusttransactions[ktt];
 
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {

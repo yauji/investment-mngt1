@@ -4,9 +4,6 @@
 
     {{ this.sort_key }}
 
-    <!--
-    <router-link to="/deposits/create">Deposit add</router-link>
--->
     <table class="table table-striped">
       <thead>
         <tr>
@@ -108,13 +105,9 @@
 </template>
 
 <script>
-//import { ref } from "vue";
 import { API } from "aws-amplify";
 import { listDeposits } from "../../graphql/queries";
 import { deleteDeposit } from "../../graphql/mutations";
-
-//import { listDeposits } from "../../graphql/queries";
-//import { deleteDeposit } from "../../graphql/mutations";
 
 import moment from "moment";
 
@@ -122,19 +115,16 @@ export default {
   name: "DepositIndex",
 
   async created() {
-    //this.getDeposits();
     this.getDeposits();
-    //console.log(this.depositId);
   },
   data() {
     return {
-      //albums: [],
       deposits: [],
       sort_key: "date",
       sort_asc: true,
     };
   },
- 
+
   methods: {
     sortBy(key) {
       this.sort_key === key
@@ -142,7 +132,6 @@ export default {
         : (this.sort_asc = true);
       this.sort_key = key;
 
-      //      this.sort_users();
       let set = 1;
       this.sort_asc ? (set = 1) : (set = -1);
 
@@ -170,8 +159,7 @@ export default {
         .then((result) => {
           console.log(result);
           this.deposits = result.data.listDeposits.items;
-          this.sortBy('date');
-          //this.Deposits = result.data.listDeposits.items;
+          this.sortBy("date");
         })
         .catch((error) => {
           console.log(error);
@@ -181,7 +169,6 @@ export default {
       if (!confirm("Delete Deposit?")) return;
 
       await API.graphql({
-        //query: deleteDeposit,
         query: deleteDeposit,
         variables: { input: { id: depositId } },
       })

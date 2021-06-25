@@ -57,7 +57,7 @@
           type="number"
           class="form-control"
           v-model="form.basicPrice"
-          step="0.01"
+          step="0.0001"
         />
       </div>
 
@@ -72,27 +72,15 @@ import { API } from "aws-amplify";
 import { getTrustBalance } from "../../graphql/queries";
 import { updateTrustBalance } from "../../graphql/mutations";
 
-//import { getTrustBalance } from "../../graphql/queries";
-//import { updateTrustBalance } from "../../graphql/mutations";
-
-//import Datepicker from "vue3-datepicker";
-
-//import moment from "moment";
-
 import * as Enum from "@/Enum";
 
 export default {
   name: "TrustBalanceEdit",
-  components: {
-    //    Datepicker,
-  },
+  components: {},
   props: {
     TrustBalanceId: String,
   },
   async created() {
-    //console.log(this.props.trustbalanceId);
-    //console.log(this.trustbalanceId);
-
     this.getTrustBalance();
   },
   computed: {
@@ -100,32 +88,17 @@ export default {
   },
   data() {
     return {
-      form: {
-        //id: "",
-        //        date: new Date(),
-        //      endDate: new Date(),
-      },
-      //TrustBalanceId: 0,
+      form: {},
     };
   },
   methods: {
     async getTrustBalance() {
-      //console.log("-----1");
-      //console.log(this.TrustBalanceId);
       await API.graphql({
         query: getTrustBalance,
         variables: { id: this.TrustBalanceId },
       })
         .then((result) => {
-          //console.log(result);
-          //this.form.id = result.data.getTrustBalance.id;
-          //this.form.name = result.data.getTrustBalance.name;
           this.form = result.data.getTrustBalance;
-
-          //console.log(moment(d).format("YYYY/MM/DD"));
-          //this.form.date = moment(d).format("YYYY/MM/DD");
-
-          //this.form.date = "2021/01/01";
         })
         .catch((error) => {
           console.log(error);
@@ -135,9 +108,9 @@ export default {
       delete this.form.createdAt;
       delete this.form.updatedAt;
       delete this.form.owner;
-        delete this.form.trustTransactions;      
+      delete this.form.trustTransactions;
 
-      //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
+
       await API.graphql({
         query: updateTrustBalance,
         variables: { input: this.form },
