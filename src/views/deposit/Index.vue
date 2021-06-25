@@ -40,7 +40,7 @@
             {{ deposit.principalAccount.name }}
           </td>
 
-          <td>{{ numberDisp(deposit.principal) }}</td>
+          <td>{{ numberFormat(deposit.principal) }}</td>
 
           <td>{{ deposit.exchangeRate }}</td>
           <td>{{ deposit.interestRate }}</td>
@@ -53,7 +53,7 @@
               {{ deposit.valueAccount.name }}</a
             >
           </td>
-          <td>{{ numberDisp(deposit.value) }}</td>
+          <td>{{ numberFormat(deposit.value) }}</td>
 
           <td>
             <router-link
@@ -135,7 +135,7 @@ export default {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
     },
-    numberDisp: function (value) {
+    numberFormat: function (value) {
       if (value == null) {
         return "---";
       } else {
