@@ -45,9 +45,6 @@
       <input type="submit" value="Submit" />
     </form>
 
-    2008/10/29xxxパワードル年金xxx新生銀行/ジブラルタ生命xxx2,000,800xxx$20,500xxxxxx2000800xxx"利率：3.57%,据え置き期間：10年,レート：97.6円"xxxxxx3,275,845xxxxxxxxx2018/11/1xxx3.57xxx120
-    2009/02/07xxx円定期xxx新生銀行xxx1,000,000xxxxxxxxxxxx"金利：1.7%,期間：5年"xxxxxx1067770xxxxxxxxx2014/02/07xxx1.7xxx60
-
     <br />
   </div>
 </template>
