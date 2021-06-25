@@ -134,27 +134,7 @@ export default {
       sort_asc: true,
     };
   },
-  //TODO: delete
-  computed: {
-    sort_users() {
-      console.log("-----1", this.sort_key);
-      return this.deposits;
-      /*
-      if (this.sort_key != "") {
-        let set = 1;
-        this.sort_asc ? (set = 1) : (set = -1);
-        this.deposits.sort((a, b) => {
-          if (a[this.sort_key] < b[this.sort_key]) return -1 * set;
-          if (a[this.sort_key] > b[this.sort_key]) return 1 * set;
-          return 0;
-        });
-        return this.deposits;
-      } else {
-        return this.deposits;
-      }
-      */
-    },
-  },
+ 
   methods: {
     sortBy(key) {
       this.sort_key === key

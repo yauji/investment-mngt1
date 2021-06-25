@@ -45,7 +45,7 @@
     <br />
     valueAccount: {{ this.valueAccount.toLocaleString() }}
     <br />
-    total: {{ this.valueAccount + this.depositActive}}
+    total: {{ this.valueAccount + this.depositActive }}
   </div>
 </template>
 
@@ -262,10 +262,9 @@ export default {
       valueAccountFC: 0,
       valueTT: 0,
 
-      depositActive:0,
-      depositDiff:0,
-      valueAccount:0,
-      
+      depositActive: 0,
+      depositDiff: 0,
+      valueAccount: 0,
     };
   },
   methods: {
@@ -370,6 +369,14 @@ export default {
 
       for (const kd in deposits) {
         const d = deposits[kd];
+
+        //console.log("----3");
+        if (d.status == "FINISHED") {
+          //console.log("----31---",d.value);
+          if (d.value == null) {
+            console.log("----31", d);
+          }
+        }
 
         //principal---
         //console.log("---20", d);
