@@ -9,12 +9,11 @@
       <thead>
         <tr>
           <th>name</th>
-          <th>type</th>
           <th>memo</th>
           <th>status</th>
           <th>date</th>
 
-          <th>principal Currency</th>
+          <th>principal account</th>
           <th>principal </th>
           
           <th>exchange Rate</th>
@@ -22,9 +21,9 @@
           <th>duration</th>
 
           <th>end Date</th>
-          <th>value </th>
+          <th>value account</th>
           
-          <th>value Foreign</th>
+          <th>value</th>
           <th></th>
           <th></th>
           <th></th>
@@ -33,7 +32,6 @@
       <tbody>
         <tr v-for="(deposit, index) in deposits" :key="deposit.id">
           <td>{{ deposit.name }}</td>
-          <td>{{ deposit.depositType }}</td>
           <td>{{ deposit.memo }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ moment(deposit.date) }}</td>
