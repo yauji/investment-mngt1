@@ -172,33 +172,7 @@ export default {
           dicAccountIdBalance[d.valueAccountId] += d.value;
         }
 
-        //if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
-        /*
-        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
-          if (
-            d.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val ||
-            d.depositType ==
-              Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
-          ) {
-            dicAccountIdBalance[d.valueCurrency] += d.valueForeign;
-          } else if (
-            d.depositType == Enum.EnumDepositType.DEPOSIT_FC.val ||
-            d.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
-          ) {
-            dicAccountIdBalance[d.valueCurrency] += d.valueForeign;
-            dicAccountIdBalance[d.principalCurrency] -=
-              d.principlaForeign;
-          } else if (
-            d.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
-          ) {
-            dicAccountIdBalance[d.principalCurrency] -=
-              d.principlaForeign;
-          }
-        } else {
-          dicAccountIdBalance[d.principalCurrency] -=
-            d.principlaForeign;
-        }
-        */
+      
       }
 
       //console.log("------12");

@@ -90,7 +90,7 @@ export default {
          */
         var form = {};
 
-        form.depositType = "DEPOSIT_JPY";
+        //form.depositType = "DEPOSIT_JPY";
 
         form.date = new Date(arr2[0]);
         form.name = arr2[1];

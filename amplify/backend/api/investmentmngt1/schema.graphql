@@ -11,13 +11,6 @@ enum DepositeStatus {
   FINISHED
 }
 
-enum DepositeType {
-  DEPOSIT_JPY
-  DEPOSIT_FC
-  BUY_FOREIGN_CURRENCY_BY_JPY
-  BUY_FOREIGN_CURRENCY_BY_FC
-  SELL_FOREIGN_CURRENCY
-}
 
 
 type Deposit
@@ -25,7 +18,7 @@ type Deposit
 @auth(rules: [{allow: owner}]) {
   id: ID!
 
-  depositType: DepositeType!
+  """depositType: DepositeType!"""
 
   name:String!
   memo:String

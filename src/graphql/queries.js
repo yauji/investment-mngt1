@@ -5,7 +5,6 @@ export const getDeposit = /* GraphQL */ `
   query GetDeposit($id: ID!) {
     getDeposit(id: $id) {
       id
-      depositType
       name
       memo
       status
@@ -55,7 +54,6 @@ export const listDeposits = /* GraphQL */ `
     listDeposits(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        depositType
         name
         memo
         status
