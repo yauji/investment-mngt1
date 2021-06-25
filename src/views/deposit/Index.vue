@@ -2,6 +2,8 @@
   <div>
     <h1>Deposits</h1>
 
+    {{ this.sort_key }}
+
     <!--
     <router-link to="/deposits/create">Deposit add</router-link>
 -->
@@ -10,8 +12,8 @@
         <tr>
           <th>name</th>
           <th>memo</th>
-          <th>status</th>
-          <th>date</th>
+          <th @click="sortBy('status')">status</th>
+          <th @click="sortBy('date')">date</th>
 
           <th>principal account</th>
           <th>principal</th>
@@ -128,9 +130,28 @@ export default {
     return {
       //albums: [],
       deposits: [],
+      sort_key: "",
+      sort_asc: true,
     };
   },
+ 
   methods: {
+    sortBy(key) {
+      this.sort_key === key
+        ? (this.sort_asc = !this.sort_asc)
+        : (this.sort_asc = true);
+      this.sort_key = key;
+
+      //      this.sort_users();
+      let set = 1;
+      this.sort_asc ? (set = 1) : (set = -1);
+
+      this.deposits.sort((a, b) => {
+        if (a[this.sort_key] < b[this.sort_key]) return -1 * set;
+        if (a[this.sort_key] > b[this.sort_key]) return 1 * set;
+        return 0;
+      });
+    },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')

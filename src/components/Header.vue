@@ -29,10 +29,6 @@
       <li class="nav-item active">
         <router-link to="/summary">Summary</router-link>
       </li>
-      | 
-      <li class="nav-item active">
-        <router-link to="/inputdata">id</router-link>
-      </li>
 
     </ul>
 <!--
