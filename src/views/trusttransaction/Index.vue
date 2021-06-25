@@ -2,9 +2,6 @@
   <div>
     <h1>TrustTransactions</h1>
 
-    <router-link to="/trusttransactions/create"
-      >TrustTransaction add</router-link
-    >
 
     <table class="table table-striped">
       <thead>

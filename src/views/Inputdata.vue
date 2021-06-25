@@ -108,12 +108,12 @@ export default {
         form.date = new Date(arr2[0]);
         form.name = arr2[1];
         form.memo = arr2[7];
-        form.principal = parseFloat(arr2[3].replace(/,/g,""));
+        form.principal = parseFloat(arr2[16].replace(/,/g,""));
         form.exchangeRate = 0;
-        form.interestRate = parseFloat(arr2[13].replace(/,/g,""));
-        form.duration = parseFloat(arr2[14].replace(/,/g,""));
+        form.interestRate = parseFloat(arr2[18].replace(/,/g,""));
+        form.duration = parseFloat(arr2[19].replace(/,/g,""));
         form.endDate = new Date(arr2[12]);
-        form.value = parseFloat(arr2[9].replace(/,/g,""));
+        form.value = parseFloat(arr2[17].replace(/,/g,""));
 
         form.status = "FINISHED";
 
