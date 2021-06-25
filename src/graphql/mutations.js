@@ -8,7 +8,6 @@ export const createDeposit = /* GraphQL */ `
   ) {
     createDeposit(input: $input, condition: $condition) {
       id
-      depositType
       name
       memo
       status
@@ -56,7 +55,6 @@ export const updateDeposit = /* GraphQL */ `
   ) {
     updateDeposit(input: $input, condition: $condition) {
       id
-      depositType
       name
       memo
       status
@@ -104,7 +102,6 @@ export const deleteDeposit = /* GraphQL */ `
   ) {
     deleteDeposit(input: $input, condition: $condition) {
       id
-      depositType
       name
       memo
       status

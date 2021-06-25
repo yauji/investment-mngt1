@@ -365,10 +365,8 @@ export default {
     },
 
     async submitCreate() {
-      //this.form.status = "ACTIVE";
+      delete this.form.depositType;
 
-      //console.log("xxxxxxxx");
-      //console.log(this.form.date);
       await API.graphql({
         query: createDeposit,
         variables: { input: this.form },
@@ -381,59 +379,7 @@ export default {
           console.log(error);
         });
 
-      //update account----
-      /*
-      if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val) {
-        console.log("a");
-      } else if (this.form.depositType == Enum.EnumDepositType.DEPOSIT_FC.val) {
-        console.log("a");
-      } else if (
-        this.form.depositType ==
-        Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
-      ) {
-        await API.graphql({
-          query: listAccounts,
-        })
-          .then((result) => {
-            const accounts = result.data.listAccounts.items;
-
-            for (const key in accounts) {
-              if (accounts[key].currency == this.form.valueCurrency) {
-                var a = accounts[key];
-                delete a.createdAt;
-                delete a.updatedAt;
-                delete a.owner;
-
-                a.balance += this.form.valueForeign;
-
-                API.graphql({
-                  query: updateAccount,
-                  variables: { input: a },
-                })
-                  .then((result) => {
-                    console.log(result);
-                    this.$router.push({ name: "DepositIndex" });
-                  })
-                  .catch((error) => {
-                    console.log(error);
-                  });
-              }
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } else if (
-        this.form.depositType ==
-        Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
-      ) {
-        console.log("a");
-      } else if (
-        this.form.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
-      ) {
-        console.log("a");
-      }
-      */
+      
     },
   },
 };

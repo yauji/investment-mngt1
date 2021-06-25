@@ -30,14 +30,11 @@ export const EnumDepositStatus = {
         text: "FINISHED"
     },
 } 
+
 export const EnumDepositType = {
-    DEPOSIT_JPY: {
-        val: "DEPOSIT_JPY",
-        text: "DEPOSIT JPY"
-    },
-    DEPOSIT_FC: {
-        val: "DEPOSIT_FC",
-        text: "DEPOSIT FC"
+    DEPOSIT: {
+        val: "DEPOSIT",
+        text: "DEPOSIT"
     },
     BUY_FOREIGN_CURRENCY_BY_JPY: {
         val: "BUY_FOREIGN_CURRENCY_BY_JPY",

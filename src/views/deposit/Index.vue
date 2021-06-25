@@ -2,29 +2,28 @@
   <div>
     <h1>Deposits</h1>
 
-<!--
+    <!--
     <router-link to="/deposits/create">Deposit add</router-link>
 -->
     <table class="table table-striped">
       <thead>
         <tr>
           <th>name</th>
-          <th>type</th>
           <th>memo</th>
           <th>status</th>
           <th>date</th>
 
-          <th>principal Currency</th>
-          <th>principal </th>
-          
+          <th>principal account</th>
+          <th>principal</th>
+
           <th>exchange Rate</th>
           <th>interest Rate</th>
           <th>duration</th>
 
           <th>end Date</th>
-          <th>value </th>
-          
-          <th>value Foreign</th>
+          <th>value account</th>
+
+          <th>value</th>
           <th></th>
           <th></th>
           <th></th>
@@ -33,7 +32,6 @@
       <tbody>
         <tr v-for="(deposit, index) in deposits" :key="deposit.id">
           <td>{{ deposit.name }}</td>
-          <td>{{ deposit.depositType }}</td>
           <td>{{ deposit.memo }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ moment(deposit.date) }}</td>
@@ -42,8 +40,8 @@
             {{ deposit.principalAccount.name }}
           </td>
 
-          <td>{{ deposit.principal.toLocaleString() }}</td>
-          
+          <td>{{ numberFormat(deposit.principal) }}</td>
+
           <td>{{ deposit.exchangeRate }}</td>
           <td>{{ deposit.interestRate }}</td>
           <td>{{ deposit.duration }}</td>
@@ -55,8 +53,8 @@
               {{ deposit.valueAccount.name }}</a
             >
           </td>
-          <td>{{ deposit.value.toLocaleString() }}</td>
-          
+          <td>{{ numberFormat(deposit.value) }}</td>
+
           <td>
             <router-link
               custom
@@ -96,7 +94,7 @@
       </tbody>
     </table>
 
-<!--
+    <!--
     <router-link :to="{ name: 'DepositCreate' }">
       <button class="btn btn-primary">Add Deposit</button>
     </router-link>
@@ -108,6 +106,7 @@
 </template>
 
 <script>
+//import { ref } from "vue";
 import { API } from "aws-amplify";
 import { listDeposits } from "../../graphql/queries";
 import { deleteDeposit } from "../../graphql/mutations";
@@ -119,6 +118,7 @@ import moment from "moment";
 
 export default {
   name: "DepositIndex",
+
   async created() {
     //this.getDeposits();
     this.getDeposits();
@@ -134,6 +134,13 @@ export default {
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
+    },
+    numberFormat: function (value) {
+      if (value == null) {
+        return "---";
+      } else {
+        return value.toLocaleString();
+      }
     },
     async getDeposits() {
       await API.graphql({

@@ -17,7 +17,7 @@
         <tr v-for="(account, index) in accounts" :key="account.id">
           <td>{{ account.name }}</td>
           <td>{{ account.currency }}</td>
-          <td>{{ account.balance }}</td>
+          <td>{{ account.balance.toLocaleString() }}</td>
           <td>{{ account.exchangeRate }}</td>
           <td>{{ account.memo }}</td>
           <td>
@@ -172,33 +172,7 @@ export default {
           dicAccountIdBalance[d.valueAccountId] += d.value;
         }
 
-        //if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
-        /*
-        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
-          if (
-            d.depositType == Enum.EnumDepositType.DEPOSIT_JPY.val ||
-            d.depositType ==
-              Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_JPY.val
-          ) {
-            dicAccountIdBalance[d.valueCurrency] += d.valueForeign;
-          } else if (
-            d.depositType == Enum.EnumDepositType.DEPOSIT_FC.val ||
-            d.depositType == Enum.EnumDepositType.BUY_FOREIGN_CURRENCY_BY_FC.val
-          ) {
-            dicAccountIdBalance[d.valueCurrency] += d.valueForeign;
-            dicAccountIdBalance[d.principalCurrency] -=
-              d.principlaForeign;
-          } else if (
-            d.depositType == Enum.EnumDepositType.SELL_FOREIGN_CURRENCY.val
-          ) {
-            dicAccountIdBalance[d.principalCurrency] -=
-              d.principlaForeign;
-          }
-        } else {
-          dicAccountIdBalance[d.principalCurrency] -=
-            d.principlaForeign;
-        }
-        */
+      
       }
 
       //console.log("------12");

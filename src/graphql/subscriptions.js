@@ -5,7 +5,6 @@ export const onCreateDeposit = /* GraphQL */ `
   subscription OnCreateDeposit($owner: String!) {
     onCreateDeposit(owner: $owner) {
       id
-      depositType
       name
       memo
       status
@@ -50,7 +49,6 @@ export const onUpdateDeposit = /* GraphQL */ `
   subscription OnUpdateDeposit($owner: String!) {
     onUpdateDeposit(owner: $owner) {
       id
-      depositType
       name
       memo
       status
@@ -95,7 +93,6 @@ export const onDeleteDeposit = /* GraphQL */ `
   subscription OnDeleteDeposit($owner: String!) {
     onDeleteDeposit(owner: $owner) {
       id
-      depositType
       name
       memo
       status
