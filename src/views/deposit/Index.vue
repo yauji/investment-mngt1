@@ -2,7 +2,7 @@
   <div>
     <h1>Deposits</h1>
 
-<!--
+    <!--
     <router-link to="/deposits/create">Deposit add</router-link>
 -->
     <table class="table table-striped">
@@ -14,15 +14,15 @@
           <th>date</th>
 
           <th>principal account</th>
-          <th>principal </th>
-          
+          <th>principal</th>
+
           <th>exchange Rate</th>
           <th>interest Rate</th>
           <th>duration</th>
 
           <th>end Date</th>
           <th>value account</th>
-          
+
           <th>value</th>
           <th></th>
           <th></th>
@@ -40,8 +40,8 @@
             {{ deposit.principalAccount.name }}
           </td>
 
-          <td>{{ deposit.principal.toLocaleString() }}</td>
-          
+          <td>{{ numberDisp(deposit.principal) }}</td>
+
           <td>{{ deposit.exchangeRate }}</td>
           <td>{{ deposit.interestRate }}</td>
           <td>{{ deposit.duration }}</td>
@@ -53,8 +53,8 @@
               {{ deposit.valueAccount.name }}</a
             >
           </td>
-          <td>{{ deposit.value.toLocaleString() }}</td>
-          
+          <td>{{ numberDisp(deposit.value) }}</td>
+
           <td>
             <router-link
               custom
@@ -94,7 +94,7 @@
       </tbody>
     </table>
 
-<!--
+    <!--
     <router-link :to="{ name: 'DepositCreate' }">
       <button class="btn btn-primary">Add Deposit</button>
     </router-link>
@@ -106,6 +106,7 @@
 </template>
 
 <script>
+//import { ref } from "vue";
 import { API } from "aws-amplify";
 import { listDeposits } from "../../graphql/queries";
 import { deleteDeposit } from "../../graphql/mutations";
@@ -117,6 +118,7 @@ import moment from "moment";
 
 export default {
   name: "DepositIndex",
+
   async created() {
     //this.getDeposits();
     this.getDeposits();
@@ -132,6 +134,13 @@ export default {
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
+    },
+    numberDisp: function (value) {
+      if (value == null) {
+        return "---";
+      } else {
+        return value.toLocaleString();
+      }
     },
     async getDeposits() {
       await API.graphql({
