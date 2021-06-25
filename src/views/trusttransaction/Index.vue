@@ -30,10 +30,10 @@
           <td>{{ trusttransaction.tradeType }}</td>
           <td>{{ trusttransaction.trustBalance.name }}</td>
           <td>{{ trusttransaction.account.currency }} {{trusttransaction.account.name}}</td>
-          <td>{{ trusttransaction.basicPrice }}</td>
+          <td>{{ numberFormat(trusttransaction.basicPrice) }}</td>
           <td>{{ trusttransaction.noItem }}</td>
 
-          <td>{{ trusttransaction.buy }}</td>
+          <td>{{ numberFormat(trusttransaction.buy) }}</td>
           <td>{{ trusttransaction.sell }}</td>
           <td>{{ trusttransaction.dividend }}</td>
           <td>
@@ -108,6 +108,13 @@ export default {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
     },
+    numberFormat: function (value) {
+      if (value == null) {
+        return "---";
+      } else {
+        return value.toLocaleString();
+      }
+    },    
     async getTrustTransactions() {
       await API.graphql({
         query: listTrustTransactions,
