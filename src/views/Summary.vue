@@ -49,7 +49,7 @@
     value tb: {{ this.valueTB.toLocaleString() }}
     <br />
     <br />
-    total: {{ this.pl.toLocaleString() }}
+    total: {{ this.pl2.toLocaleString() }}
   </div>
 </template>
 
@@ -271,6 +271,7 @@ export default {
       valueAccount: 0,
 
       valueTB: 0,
+      pl2:0,
     };
   },
   methods: {
@@ -525,7 +526,7 @@ export default {
 
       this.valueTB = valueTB;
 
-      this.pl = depositActive + valueAccount + valueTB;
+      this.pl2 = depositActive + valueAccount + valueTB;
     },
   },
 };

@@ -8,6 +8,7 @@
           <th>name</th>
           <th>currency</th>
           <th>balance</th>
+          <th>balance JPY</th>
           <th>exchangeRate</th>
           <th>memo</th>
           <th></th>
@@ -17,7 +18,8 @@
         <tr v-for="(account, index) in accounts" :key="account.id">
           <td>{{ account.name }}</td>
           <td>{{ account.currency }}</td>
-          <td>{{ account.balance.toLocaleString() }}</td>
+          <td>{{ numberFormat(account.balance) }}</td>
+          <td>{{ numberFormat(account.balance * account.exchangeRate) }}</td>
           <td>{{ account.exchangeRate }}</td>
           <td>{{ account.memo }}</td>
           <td>
@@ -91,6 +93,13 @@ export default {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
     },
+    numberFormat: function (value) {
+      if (value == null) {
+        return "---";
+      } else {
+        return value.toLocaleString();
+      }
+    },    
     async getAccounts() {
       await API.graphql({
         query: listAccounts,
