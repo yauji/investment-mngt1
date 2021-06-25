@@ -39,13 +39,17 @@
     <button class="btn btn-primary" @click="calc2()">calc2</button>
 
     <br />
-    deposite active: {{ this.depositActive.toLocaleString() }}
-    <br />
     depositeDiff: {{ this.depositDiff.toLocaleString() }}
+    <br />
+    <br />
+    deposite active: {{ this.depositActive.toLocaleString() }}
     <br />
     valueAccount: {{ this.valueAccount.toLocaleString() }}
     <br />
-    total: {{ this.valueAccount + this.depositActive }}
+    value tb: {{ this.valueTB.toLocaleString() }}
+    <br />
+    <br />
+    total: {{ this.pl.toLocaleString() }}
   </div>
 </template>
 
@@ -265,6 +269,8 @@ export default {
       depositActive: 0,
       depositDiff: 0,
       valueAccount: 0,
+
+      valueTB: 0,
     };
   },
   methods: {
@@ -332,6 +338,8 @@ export default {
       var depositActive = 0;
       var depositDiff = 0;
       var valueAccount = 0;
+
+      var valueTB = 0;
 
       //get accounts---
       var accounts;
@@ -465,7 +473,7 @@ export default {
           }
         }
       }
-
+*/
       // value - trust balance----
       var trustbalances = {};
       await API.graphql({
@@ -483,16 +491,17 @@ export default {
 
       for (const ktb in trustbalances) {
         const tb = trustbalances[ktb];
-        if (tb.currency == Enum.EnumCurrency.JPY.val) {
-          value += tb.balance;
-          valueTBJPY += tb.balance;
-        } else {
-          //foreign currency
-          value += tb.balance * dAccounts[tb.currency].exchangeRate;
-          valueTBFC += tb.balance * dAccounts[tb.currency].exchangeRate;
-        }
+        //if (tb.currency == Enum.EnumCurrency.JPY.val) {
+        //          value += tb.balance;
+        //valueTBJPY += tb.balance;
+        //} else {
+        //foreign currency
+        //   value += tb.balance * dAccounts[tb.currency].exchangeRate;
+        valueTB += tb.balance * dAccounts[tb.currency].exchangeRate;
+        //        }
       }
-      */
+      /*
+       */
       //console.log(principal);
       /*
       this.principal = principal;
@@ -513,6 +522,10 @@ export default {
       this.depositActive = depositActive;
       this.depositDiff = depositDiff;
       this.valueAccount = valueAccount;
+
+      this.valueTB = valueTB;
+
+      this.pl = depositActive + valueAccount + valueTB;
     },
   },
 };
