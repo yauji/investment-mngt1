@@ -130,7 +130,7 @@ export default {
     return {
       //albums: [],
       deposits: [],
-      sort_key: "",
+      sort_key: "date",
       sort_asc: true,
     };
   },
@@ -170,6 +170,7 @@ export default {
         .then((result) => {
           console.log(result);
           this.deposits = result.data.listDeposits.items;
+          this.sortBy('date');
           //this.Deposits = result.data.listDeposits.items;
         })
         .catch((error) => {
