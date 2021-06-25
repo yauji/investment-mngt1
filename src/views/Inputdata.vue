@@ -2,18 +2,31 @@
   <div>
     <h1>Inputdata</h1>
 
-    deposit JPY finished
+    deposit finished
     <br/>
 
     plus xxx interest rate xxx duration
 
     <form @submit.prevent="submitCreate">
       <div class="mb-3">
-        <label for="" class="form-label">account</label>
+        <label for="" class="form-label">principal account</label>
         <select
           class="form-select"
           aria-label="Default select example"
-          v-model="form.accountId"
+          v-model="form.principalAccountId"
+        >
+          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
+            {{ n.currency }} - {{ n.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="" class="form-label">value account</label>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          v-model="form.valueAccountId"
         >
           <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
             {{ n.currency }} - {{ n.name }}
@@ -106,8 +119,8 @@ export default {
 
         //console.log("---13", this.form.accountId);
 
-        form.principalAccountId = this.form.accountId;
-        form.valueAccountId = this.form.accountId;
+        form.principalAccountId = this.form.principalAccountId;
+        form.valueAccountId = this.form.valueAccountId;
 
 
 
