@@ -2,6 +2,31 @@
   <div>
     <h1>Summary</h1>
 
+    <br />
+    <form @submit.prevent="calc3">
+      <input type="submit" value="Submit" />
+
+      <div class="mb-3">
+        <label for="" class="form-label">year</label>
+        <input type="text" class="form-control" v-model="year3" />
+      </div>
+      <div class="mb-3">
+        <label for="" class="form-label">month</label>
+        <input type="text" class="form-control" v-model="month3" />
+      </div>
+    </form>
+
+    deposite active: {{ this.depositActive3.toLocaleString() }}
+    <br />
+    valueAccount: {{ this.valueAccount3.toLocaleString() }}
+    <br />
+    value tb: {{ this.valueTB3.toLocaleString() }}
+    <br />
+    <br />
+    total: {{ this.pl3.toLocaleString() }}
+
+    <hr />
+
     <b-col sm="12" class="mb-5">
       <b-button variant="success" v-on:click="getData">表示</b-button>
       <hr />
@@ -50,6 +75,10 @@
     <br />
     <br />
     total: {{ this.pl2.toLocaleString() }}
+
+    <hr />
+
+    <br />
   </div>
 </template>
 
@@ -71,6 +100,7 @@ import * as Enum from "@/Enum";
 
 export default {
   name: "DepositIndex",
+
   async created() {
     //this.getDeposits();
 
@@ -271,7 +301,14 @@ export default {
       valueAccount: 0,
 
       valueTB: 0,
-      pl2:0,
+      pl2: 0,
+
+      year3: 2000,
+      month3: 1,
+      depositActive3: 0,
+      valueAccount3: 0,
+      valueTB3: 0,
+      pl3: 0,
     };
   },
   methods: {
@@ -527,6 +564,135 @@ export default {
       this.valueTB = valueTB;
 
       this.pl2 = depositActive + valueAccount + valueTB;
+    },
+    async calc3() {
+      //calc principal--------
+      //calc value---------
+      // var principal = 0;
+      //var principalDeposit = 0;
+      //var principalTrustTransaction = 0;
+
+      //var value = 0;
+
+      /*
+    var valueDepositActive = 0;
+    //var valueDepositFinished = 0;
+    var valueTBJPY = 0;
+    var valueTBFC = 0;
+    var valueAccountFC = 0;
+    var valueTT = 0;
+    */
+
+      var depositActive = 0;
+      var depositDiff = 0;
+      var valueAccount = 0;
+
+      var valueTB = 0;
+
+      //get accounts---
+      var accounts;
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      const dAccounts = [];
+      for (const ka in accounts) {
+        const a = accounts[ka];
+        a.balance = 0;
+        dAccounts[a.id] = a;
+      }
+      //console.log("-------123");
+      //console.log(dAccounts);
+
+      //get deposits----
+
+      var deposits;
+
+      const sdate = this.year3 + "/" + this.month3 + "/01";
+      const ddate = new Date(sdate);
+      //console.log("----2", sdate, ddate);
+
+      let filter = {
+        date: {
+          ge: ddate, // filter priority = 1
+        },
+      };
+      //await API.graphql({ query: listProducts, variables: { filter: filter}}));
+      await API.graphql({
+        query: listDeposits,
+        variables: { filter: filter },
+      })
+        .then((result) => {
+          console.log("----31", result);
+          //console.log(result);
+          deposits = result.data.listDeposits.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      //update account balance---
+
+      for (const kd in deposits) {
+        const d = deposits[kd];
+
+        dAccounts[d.principalAccountId].balance -= d.principal;
+
+        console.log("----3", d.date);
+        if (d.status == "FINISHED") {
+          dAccounts[d.valueAccountId].balance += d.value;
+        } else {
+          //console.log("----31", );
+          const exrate = dAccounts[d.principalAccountId].exchangeRate;
+
+          depositActive += exrate * d.principal;
+        }
+
+        //principal---
+        //console.log("---20", d);
+        /*
+        if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
+          //console.log("---21", d);
+          principal += d.principal;
+          principalDeposit += d.principal;
+        }
+*/
+      }
+
+      //value - account----
+      for (const ka in accounts) {
+        const a = accounts[ka];
+        //if (a.currency != Enum.EnumCurrency.JPY.val) {
+        //value += a.balance * a.exchangeRate;
+        valueAccount += a.balance * a.exchangeRate;
+        //console.log("------3");
+        //console.log(a.balance * a.exchangeRate);
+        //}
+      }
+
+      console.log("---1", dAccounts);
+
+      console.log("deposit active:", depositActive);
+      console.log("value account:", valueAccount);
+
+      // principal, value - trust transaction----
+
+      // value - trust balance----
+
+      this.depositActive3 = depositActive;
+      this.depositDiff3 = depositDiff;
+      this.valueAccount3 = valueAccount;
+
+      this.valueTB3 = valueTB;
+
+      this.pl3 = depositActive + valueAccount + valueTB;
     },
   },
 };
