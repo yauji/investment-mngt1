@@ -2,6 +2,32 @@
   <div>
     <h1>Summary</h1>
 
+    <button class="btn btn-primary" @click="calc4()">calc4</button>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th></th>
+          <th>year</th>
+          <th>deposit active</th>
+          <th>value account</th>
+          <th>total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(e, index) in evals4" :key="e.year">
+          <td>{{ index }}</td>
+          <td>{{ e.year }}</td>
+          <td>{{ e.dactive.toLocaleString() }}</td>
+          <td>{{ e.vaccount.toLocaleString() }}</td>
+          <td>{{ e.total.toLocaleString() }}</td>
+        </tr>
+        <!--
+        -->
+      </tbody>
+    </table>
+    <hr />
+
     <br />
     <form @submit.prevent="calc3">
       <input type="submit" value="Submit" />
@@ -309,6 +335,9 @@ export default {
       valueAccount3: 0,
       valueTB3: 0,
       pl3: 0,
+
+      //---
+      evals4: [],
     };
   },
   methods: {
@@ -693,6 +722,149 @@ export default {
       this.valueTB3 = valueTB;
 
       this.pl3 = depositActive + valueAccount + valueTB;
+    },
+    async calc4() {
+      //calc principal--------
+      //calc value---------
+      // var principal = 0;
+      //var principalDeposit = 0;
+      //var principalTrustTransaction = 0;
+
+      //var value = 0;
+
+      /*
+    var valueDepositActive = 0;
+    //var valueDepositFinished = 0;
+    var valueTBJPY = 0;
+    var valueTBFC = 0;
+    var valueAccountFC = 0;
+    var valueTT = 0;
+    */
+
+      console.log("-----111");
+
+      //      var valueTB = 0;
+
+      //get accounts---
+      var accounts;
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      //for every year from 2005- -----
+
+      var evals4 = [];
+
+      //for (let year = 2008; year < 2010; year++) {
+      for (let year = 2007; year < 2025; year++) {
+        console.log("year;", year);
+
+        var depositActive = 0;
+        var valueAccount = 0;
+
+        const dAccounts = [];
+        for (const ka in accounts) {
+          const a = accounts[ka];
+          a.balance = 0;
+          dAccounts[a.id] = a;
+        }
+        //console.log("-------123");
+        //console.log(dAccounts);
+
+        //get deposits----
+
+        var deposits;
+
+        const sdate = year + "/01/01";
+        const dsdate = new Date(sdate);
+        const edate = year + 1 + "/01/01";
+        const dedate = new Date(edate);
+        //console.log("----2", dsdate, dedate);
+
+        let filter = {
+          date: {
+            ge: dsdate, // filter priority = 1
+            lt: dedate, // filter priority = 1
+          },
+        };
+        //await API.graphql({ query: listProducts, variables: { filter: filter}}));
+        await API.graphql({
+          query: listDeposits,
+          variables: { filter: filter },
+        })
+          .then((result) => {
+            //console.log("----31", result);
+            //console.log(result);
+            deposits = result.data.listDeposits.items;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+        //update account balance---
+
+        for (const kd in deposits) {
+          const d = deposits[kd];
+
+          dAccounts[d.principalAccountId].balance -= d.principal;
+
+          //console.log("----3", d.date);
+          if (d.status == "FINISHED") {
+            dAccounts[d.valueAccountId].balance += d.value;
+          } else {
+            //console.log("----31", );
+            const exrate = dAccounts[d.principalAccountId].exchangeRate;
+
+            depositActive += exrate * d.principal;
+          }
+        }
+
+        //value - account----
+        for (const ka in accounts) {
+          const a = accounts[ka];
+          //if (a.currency != Enum.EnumCurrency.JPY.val) {
+          //value += a.balance * a.exchangeRate;
+          valueAccount += a.balance * a.exchangeRate;
+          //console.log("------3");
+          //console.log(a.balance * a.exchangeRate);
+          //}
+        }
+
+        var e = {
+          year: year,
+          dactive: depositActive,
+          vaccount: valueAccount,
+          total: depositActive + valueAccount,
+        };
+        //evals4[year] = e;
+        evals4.push(e);
+        //hoge
+      }
+
+      console.log("---1", evals4);
+      this.evals4 = evals4;
+
+      //      console.log("deposit active:", depositActive);
+      //console.log("value account:", valueAccount);
+
+      // principal, value - trust transaction----
+
+      // value - trust balance----
+
+      //this.depositActive3 = depositActive;
+      //this.depositDiff3 = depositDiff;
+      //this.valueAccount3 = valueAccount;
+
+      //      this.valueTB3 = valueTB;
+
+      //this.pl3 = depositActive + valueAccount + valueTB;
     },
   },
 };
