@@ -197,7 +197,6 @@ export default {
         if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
           value += d.principal;
           valueDepositActive += d.principal;
-          //hoge
         } else {
           //foreign, evaluate with exchange rate---
           const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
@@ -473,7 +472,6 @@ export default {
           if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
             value += d.principal;
             valueDepositActive += d.principal;
-            //hoge
           } else {
             //foreign, evaluate with exchange rate---
             const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
@@ -845,7 +843,6 @@ export default {
         };
         //evals4[year] = e;
         evals4.push(e);
-        //hoge
       }
 
       console.log("---1", evals4);
