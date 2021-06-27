@@ -22,6 +22,12 @@
           <td>{{ e.vaccount.toLocaleString() }}</td>
           <td>{{ e.total.toLocaleString() }}</td>
         </tr>
+        <tr>
+          <td></td>
+          <td>{{dactive4}}</td>
+          <td>{{vaccount4}}</td>
+          <td>{{total4}}</td>
+        </tr>>
         <!--
         -->
       </tbody>
@@ -337,6 +343,10 @@ export default {
 
       //---
       evals4: [],
+
+      dactive: 0,
+      vaccount4: 0,
+      total4: 0,
     };
   },
   methods: {
@@ -760,6 +770,10 @@ export default {
 
       var evals4 = [];
 
+      this.dactive4 = 0;
+      this.vaccount4 = 0;
+      this.total4 = 0;
+
       //for (let year = 2008; year < 2010; year++) {
       for (let year = 2007; year < 2025; year++) {
         console.log("year;", year);
@@ -835,6 +849,34 @@ export default {
           //}
         }
 
+        //value - tb
+        /*
+        var trustbalances = {};
+        await API.graphql({
+          query: listTrustBalances,
+        })
+          .then((result) => {
+            console.log(result);
+            trustbalances = result.data.listTrustBalances.items;
+            //this.TrustBalances = result.data.listTrustBalances.items;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        //console.log(trustbalances);
+
+        for (const ktb in trustbalances) {
+          const tb = trustbalances[ktb];
+          //if (tb.currency == Enum.EnumCurrency.JPY.val) {
+          //          value += tb.balance;
+          //valueTBJPY += tb.balance;
+          //} else {
+          //foreign currency
+          //   value += tb.balance * dAccounts[tb.currency].exchangeRate;
+          valueTB += tb.balance * dAccounts[tb.currency].exchangeRate;
+          //        }
+        }
+*/
         var e = {
           year: year,
           dactive: depositActive,
@@ -843,6 +885,10 @@ export default {
         };
         //evals4[year] = e;
         evals4.push(e);
+
+        this.dactive4 += depositActive;
+        this.vaccount4 += valueAccount;
+        this.total4 += depositActive + valueAccount;
       }
 
       console.log("---1", evals4);
