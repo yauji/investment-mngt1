@@ -24,9 +24,10 @@
         </tr>
         <tr>
           <td></td>
-          <td>{{dactive4}}</td>
-          <td>{{vaccount4}}</td>
-          <td>{{total4}}</td>
+          <td>total</td>
+          <td>{{dactive4.toLocaleString()}}</td>
+          <td>{{vaccount4.toLocaleString()}}</td>
+          <td>{{total4.toLocaleString()}}</td>
         </tr>>
         <!--
         -->
