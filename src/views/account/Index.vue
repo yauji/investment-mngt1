@@ -25,7 +25,7 @@
           <td>{{ account.exchangeRate }}</td>
           <td>{{ account.memo }}</td>
           <td>{{ numberFormat(account.activedeposit) }}</td>
-          <td></td>
+          <td>{{ numberFormat(account.trust) }}</td>
           <td>
             <router-link
               custom
@@ -122,6 +122,7 @@ export default {
         var a = this.accounts[ka];
         //a.activedeposit = 1;
 
+        //calc active deposit----
         let filter = {
           principalAccountId: {
             eq: a.id,
@@ -148,9 +149,11 @@ export default {
             console.log(error);
           });
         a.activedeposit = tad;
-
-        //hoge
       }
+
+      //calc trust balance-----
+      //TODO
+      //a.trust = 2;
     },
     async deleteAccount(index, accountId) {
       if (!confirm("Delete Account?")) return;
