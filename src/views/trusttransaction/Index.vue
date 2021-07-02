@@ -1,14 +1,13 @@
 <template>
   <div>
-    <h1>TrustTransactions</h1>
-
+    <h1>Trust Transactions</h1>
 
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>date</th>
+          <th @click="sortBy('date')">date</th>
           <th>trade Type</th>
-          <th>trust balance</th>
+          <th @click="sortBy('trustBalanceId')">trust</th>
           <th>account</th>
           <th>basic Price</th>
           <th>no Item</th>
@@ -29,7 +28,10 @@
           <td>{{ moment(trusttransaction.date) }}</td>
           <td>{{ trusttransaction.tradeType }}</td>
           <td>{{ trusttransaction.trustBalance.name }}</td>
-          <td>{{ trusttransaction.account.currency }} {{trusttransaction.account.name}}</td>
+          <td>
+            {{ trusttransaction.account.currency }}
+            {{ trusttransaction.account.name }}
+          </td>
           <td>{{ numberFormat(trusttransaction.basicPrice) }}</td>
           <td>{{ trusttransaction.noItem }}</td>
 
@@ -99,11 +101,27 @@ export default {
   },
   data() {
     return {
-      //albums: [],
       trusttransactions: [],
+      sort_key: "date",
+      sort_asc: true,
     };
   },
   methods: {
+    sortBy(key) {
+      this.sort_key === key
+        ? (this.sort_asc = !this.sort_asc)
+        : (this.sort_asc = true);
+      this.sort_key = key;
+
+      let set = 1;
+      this.sort_asc ? (set = 1) : (set = -1);
+
+      this.trusttransactions.sort((a, b) => {
+        if (a[this.sort_key] < b[this.sort_key]) return -1 * set;
+        if (a[this.sort_key] > b[this.sort_key]) return 1 * set;
+        return 0;
+      });
+    },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
       //      return moment(date).format('YYYY/MM/DD HH:mm:SS')
@@ -114,15 +132,16 @@ export default {
       } else {
         return value.toLocaleString();
       }
-    },    
+    },
     async getTrustTransactions() {
       await API.graphql({
         query: listTrustTransactions,
       })
         .then((result) => {
-          console.log(result);
+          //console.log(result);
           this.trusttransactions = result.data.listTrustTransactions.items;
           //this.TrustTransactions = result.data.listTrustTransactions.items;
+          this.sortBy("date");
         })
         .catch((error) => {
           console.log(error);

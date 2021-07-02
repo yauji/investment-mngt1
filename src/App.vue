@@ -4,7 +4,9 @@
     <amplify-greetings></amplify-greetings>
     -->
     <Header />
+    <div id="main">
     <router-view/>
+    </div>
   </div>
 <!--
   <div v-if="isSignedIn">
@@ -38,7 +40,11 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: left;
   color: #2c3e50;
-  margin: 5px;  
+  margin: 0px;  
+}
+
+#main {
+  margin: 10px;  
 }
 
 

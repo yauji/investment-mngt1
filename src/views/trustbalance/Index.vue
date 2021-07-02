@@ -10,7 +10,7 @@
           <th>memo</th>
           <th>balance</th>
           <th>noItem</th>
-          <th>basicPrice</th>
+          <th>basic price</th>
 
           <th></th>
           <th></th>
