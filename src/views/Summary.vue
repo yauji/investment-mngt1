@@ -786,7 +786,7 @@ export default {
       this.total4 = 0;
 
       //for (let year = 2008; year < 2010; year++) {
-      for (let year = 2007; year < 2021; year++) {
+      for (let year = 2007; year < 2024; year++) {
         //console.log("year;", year);
 
         var depositActive = 0;
