@@ -1,59 +1,64 @@
 <template>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">Inv Mng</a>
-  <!--
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
--->
-<!--
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    -->
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <router-link to="/deposits">Deposits</router-link>
-      </li>
-      | 
-      <li class="nav-item active">
-        <router-link to="/accounts">Accounts</router-link>
-      </li>
-      | 
-      <li class="nav-item active">
-        <router-link to="/trusttransactions">Trust transactions</router-link>
-      </li>
-      | 
-      <li class="nav-item active">
-        <router-link to="/trustbalances">Trust balances</router-link>
-      </li>
-      | 
-      <li class="nav-item active">
-        <router-link to="/summary">Summary</router-link>
-      </li>
-
-    </ul>
-<!--
-
-  </div>
-  -->
-</nav>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">InvMng</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <!--
+          <a class="nav-link active" aria-current="page" href="#">Home</a>
+          -->
+            <router-link class="nav-link active" to="/deposits">Deposits</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link  class="nav-link active" to="/accounts">Accounts</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link active" to="/trusttransactions"
+              >Trust transactions</router-link
+            >
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link active" to="/trustbalances">Trust balances</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link active" to="/summary">Summary</router-link>
+          </li>
+        </ul>
+        
+        <amplify-sign-out button-text="Sign out"></amplify-sign-out>
+        
+      </div>
+    </div>
+  </nav>
 
 </template>
 
 <script>
-
 export default {
-  name: 'Header',
+  name: "Header",
   computed: {
-    loginStatus () {
-      return this.$store.state.loginStatus
+    loginStatus() {
+      return this.$store.state.loginStatus;
     },
-    user () {
-    //alert(this.$store.state.user);
-      return this.$store.state.user
-    }
+    user() {
+      //alert(this.$store.state.user);
+      return this.$store.state.user;
+    },
   },
   methods: {
-    logout () {
+    logout() {
       /*
         firebase.auth().signOut()
         .then(() => {
@@ -66,11 +71,10 @@ export default {
         alert(errorMessage)
         })
         */
-    }
-}
-}
+    },
+  },
+};
 </script>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 </style>
