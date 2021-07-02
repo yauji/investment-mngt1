@@ -4,6 +4,13 @@
 
     <button class="btn btn-primary" @click="calc4()">calc4</button>
 
+    <input type="checkbox" id="jpy" value="jpy" v-model="checkedCurrencys" />
+    <label for="jpy">jpy</label>
+    <input type="checkbox" id="fc" value="fc" v-model="checkedCurrencys" />
+    <label for="fc">fc</label>
+    <br />
+    <span>Checked names: {{ checkedCurrencys }}</span>
+
     <table class="table table-striped">
       <thead>
         <tr>
@@ -25,10 +32,11 @@
         <tr>
           <td></td>
           <td>total</td>
-          <td>{{dactive4.toLocaleString()}}</td>
-          <td>{{vaccount4.toLocaleString()}}</td>
-          <td>{{total4.toLocaleString()}}</td>
-        </tr>>
+          <td>{{ dactive4.toLocaleString() }}</td>
+          <td>{{ vaccount4.toLocaleString() }}</td>
+          <td>{{ total4.toLocaleString() }}</td>
+        </tr>
+        >
         <!--
         -->
       </tbody>
@@ -344,6 +352,8 @@ export default {
 
       //---
       evals4: [],
+
+      checkedCurrencys: ["jpy", "fc"],
 
       dactive4: 0,
       vaccount4: 0,
@@ -750,7 +760,7 @@ export default {
     var valueTT = 0;
     */
 
-      console.log("-----111");
+      //console.log("-----111");
 
       //      var valueTB = 0;
 
@@ -776,8 +786,8 @@ export default {
       this.total4 = 0;
 
       //for (let year = 2008; year < 2010; year++) {
-      for (let year = 2007; year < 2025; year++) {
-        console.log("year;", year);
+      for (let year = 2007; year < 2021; year++) {
+        //console.log("year;", year);
 
         var depositActive = 0;
         var valueAccount = 0;
@@ -786,14 +796,41 @@ export default {
         for (const ka in accounts) {
           const a = accounts[ka];
           a.balance = 0;
-          dAccounts[a.id] = a;
+
+          //
+
+          if (this.checkedCurrencys.length == 2) {
+            dAccounts[a.id] = a;
+          } else {
+            if (this.checkedCurrencys.includes("jpy")) {
+              if (a.currency == "JPY") {
+                dAccounts[a.id] = a;
+              }
+            } else {
+              dAccounts[a.id] = a;
+            }
+          }
+          /*
+          if (this.checkedCurrencys.includes("jpy")) {
+            if (a.currency == "JPY") {
+              dAccounts[a.id] = a;
+            }
+          }
+          if (this.checkedCurrencys.includes("fc")) {
+            if (a.currency != "JPY") {
+              console.log("-----222");
+              dAccounts[a.id] = a;
+            }
+          }
+          */
         }
         //console.log("-------123");
         //console.log(dAccounts);
 
         //get deposits----
 
-        var deposits;
+        var deposits = [];
+        var deposits0;
 
         const sdate = year + "/01/01";
         const dsdate = new Date(sdate);
@@ -815,7 +852,7 @@ export default {
           .then((result) => {
             //console.log("----31", result);
             //console.log(result);
-            deposits = result.data.listDeposits.items;
+            deposits0 = result.data.listDeposits.items;
           })
           .catch((error) => {
             console.log(error);
@@ -823,6 +860,56 @@ export default {
 
         //update account balance---
 
+        for (const kd in deposits0) {
+          const d = deposits0[kd];
+          if (this.checkedCurrencys.length == 2) {
+            deposits.push(d);
+          } else if (this.checkedCurrencys.length == 1) {
+            if (this.checkedCurrencys.includes("jpy")) {
+              //console.log("-----4", d.principalAccount);
+              if (d.principalAccount.currency == "JPY") {
+                if (d.status == "FINISHED") {
+                  if (d.valueAccount.currency == "JPY") {
+                    deposits.push(d);
+                  }
+                } else {
+                  deposits.push(d);
+                }
+                //console.log("-----41", d.valueAccount);
+              }
+            } else {
+              //console.log("-----5", d.principalAccount);
+              if (d.status == "FINISHED") {
+                if (
+                  d.principalAccount.currency != "JPY" ||
+                  d.valueAccount.currency != "JPY"
+                ) {
+                  deposits.push(d);
+                }
+              } else {
+                if (d.principalAccount.currency != "JPY") {
+                  deposits.push(d);
+                }
+              }
+
+              //
+              /*
+              if (d.principalAccount.currency != "JPY") {
+                if (d.status == "FINISHED") {
+                  if (d.valueAccount.currency != "JPY") {
+                    deposits.push(d);
+                  }
+                } else {
+                  deposits.push(d);
+                }
+                //console.log("-----51", d.valueAccount);
+              }
+              */
+            }
+          }
+        }
+        //
+        //console.log("----6", deposits);
         for (const kd in deposits) {
           const d = deposits[kd];
 
@@ -892,7 +979,7 @@ export default {
         this.total4 += depositActive + valueAccount;
       }
 
-      console.log("---1", evals4);
+      //      console.log("---1", evals4);
       this.evals4 = evals4;
 
       //      console.log("deposit active:", depositActive);
