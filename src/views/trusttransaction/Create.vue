@@ -59,7 +59,7 @@
         <label for="" class="form-label">basicPrice</label>
         <input
           type="number"
-          step="0.01"
+          step="0.0001"
           class="form-control"
           v-model="form.basicPrice"
           v-bind:disabled="dBasicPrice"
@@ -71,7 +71,7 @@
         <label for="" class="form-label">noItem</label>
         <input
           type="number"
-          step="0.01"
+          step="0.0001"
           class="form-control"
           v-model="form.noItem"
           v-bind:disabled="dNoItem"

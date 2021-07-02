@@ -37,7 +37,7 @@
           type="number"
           class="form-control"
           v-model="form.balance"
-          step="0.01"
+          step="0.0001"
         />
       </div>
 
@@ -47,7 +47,7 @@
           type="number"
           class="form-control"
           v-model="form.noItem"
-          step="0.01"
+          step="0.0001"
         />
       </div>
 
