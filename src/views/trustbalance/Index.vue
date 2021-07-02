@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>TrustBalances</h1>
+    <h1>Trust Balances</h1>
 
     <table class="table table-striped">
       <thead>
@@ -68,6 +68,8 @@
     <button class="btn btn-primary" @click="updateBalances()">
       Update balance
     </button>
+    <br />
+    {{ statusUpdate }}
 
     <br />
     <br />
@@ -106,6 +108,7 @@ export default {
   data() {
     return {
       trustbalances: [],
+      statusUpdate: "",
     };
   },
   methods: {
@@ -147,6 +150,8 @@ export default {
         });
     },
     async updateBalances() {
+      this.statusUpdate = "updating...";
+
       //get trusttransactions-----
       var trusttransactions;
       await API.graphql({
@@ -216,6 +221,7 @@ export default {
             console.log(error);
           });
       }
+      this.statusUpdate = "done.";
     },
   },
 };

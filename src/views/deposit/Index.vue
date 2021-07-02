@@ -9,13 +9,13 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>name</th>
+          <th @click="sortBy('name')">name</th>
           <th>memo</th>
           <th @click="sortBy('status')">status</th>
           <th @click="sortBy('date')">date</th>
 
-          <th>principal account</th>
-          <th>principal</th>
+          <th @click="sortBy('principalAccountId')">principal account</th>
+          <th @click="sortBy('principal')">principal</th>
 
           <th>exchange Rate</th>
           <th>interest Rate</th>

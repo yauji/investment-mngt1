@@ -11,6 +11,8 @@
           <th>balance JPY</th>
           <th>exchangeRate</th>
           <th>memo</th>
+          <th>active deposit</th>
+          <th>trust</th>
           <th></th>
         </tr>
       </thead>
@@ -22,6 +24,8 @@
           <td>{{ numberFormat(account.balance * account.exchangeRate) }}</td>
           <td>{{ account.exchangeRate }}</td>
           <td>{{ account.memo }}</td>
+          <td>{{ numberFormat(account.activedeposit) }}</td>
+          <td>{{ numberFormat(account.trust) }}</td>
           <td>
             <router-link
               custom
@@ -99,7 +103,7 @@ export default {
       } else {
         return value.toLocaleString();
       }
-    },    
+    },
     async getAccounts() {
       await API.graphql({
         query: listAccounts,
@@ -112,6 +116,44 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+
+      //calc active deposit----
+      for (const ka in this.accounts) {
+        var a = this.accounts[ka];
+        //a.activedeposit = 1;
+
+        //calc active deposit----
+        let filter = {
+          principalAccountId: {
+            eq: a.id,
+          },
+        };
+
+        var tad = 0;
+        await API.graphql({
+          query: listDeposits,
+          variables: { filter: filter },
+        })
+          .then((result) => {
+            console.log(result);
+            var tdeposits = result.data.listDeposits.items;
+
+            for (const kd in tdeposits) {
+              const d = tdeposits[kd];
+              if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
+                tad += d.principal;
+              }
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        a.activedeposit = tad;
+      }
+
+      //calc trust balance-----
+      //TODO
+      //a.trust = 2;
     },
     async deleteAccount(index, accountId) {
       if (!confirm("Delete Account?")) return;
@@ -180,8 +222,6 @@ export default {
           //console.log("-----3", d.status);
           dicAccountIdBalance[d.valueAccountId] += d.value;
         }
-
-      
       }
 
       //console.log("------12");
