@@ -1,6 +1,8 @@
 <template>
   <div id="app">
+    <!--
     <amplify-greetings></amplify-greetings>
+    -->
     <Header />
     <router-view/>
   </div>

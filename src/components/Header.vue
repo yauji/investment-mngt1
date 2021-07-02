@@ -36,6 +36,9 @@
             <router-link class="nav-link active" to="/summary">Summary</router-link>
           </li>
         </ul>
+        
+        <amplify-sign-out button-text="Sign out"></amplify-sign-out>
+        
       </div>
     </div>
   </nav>
