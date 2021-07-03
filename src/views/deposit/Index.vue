@@ -25,9 +25,11 @@
 
           <th>value</th>
           <th>profit and loss</th>
+          <th>expected profit</th>
           <th>memo</th>
-
+          <!--
           <th></th>
+          -->
           <th></th>
           <th></th>
         </tr>
@@ -57,8 +59,9 @@
           </td>
           <td>{{ numberFormat(deposit.value) }}</td>
           <td>{{ numberFormat(deposit.pl) }}</td>
+          <td>{{ numberFormat(deposit.expected) }}</td>
           <td>{{ deposit.memo }}</td>
-
+          <!--
           <td>
             <router-link
               custom
@@ -68,6 +71,7 @@
               <button class="btn btn-primary" @click="navigate">Show</button>
             </router-link>
           </td>
+          -->
           <td>
             <router-link
               custom
@@ -164,15 +168,21 @@ export default {
           console.log(result);
           this.deposits = result.data.listDeposits.items;
 
-          //calc profit and loss----
+          //calc profit and loss, expected profit----
           for (const kd in this.deposits) {
             var d = this.deposits[kd];
             if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+              //calc profit and loss
               const pri = d.principal * d.principalAccount.exchangeRate;
               const val = d.value * d.valueAccount.exchangeRate;
-
               d.pl = val - pri;
             }
+
+            //calc expected profit
+            //consider tax
+            d.expected =
+              ((((d.principal * d.interestRate) / 100) * d.duration) / 12) *
+              0.8;            
           }
 
           this.sortBy("date");
