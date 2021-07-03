@@ -2,9 +2,8 @@
   <div>
     <h1>Summary</h1>
 
-<hr/>
+    <hr />
     <h3>Check ratio of investment amount</h3>
-
     <ul>
       <li>safe: {{ safe5.toLocaleString() }}</li>
       <ul>
@@ -20,6 +19,23 @@
     </ul>
 
     <button class="btn btn-primary" @click="calc5()">calc</button>
+
+    <hr />
+    <h3>Check profit and loss</h3>
+    <br />
+    depositeDiff: {{ this.depositDiff.toLocaleString() }}
+    <br />
+    <br />
+    deposite active: {{ this.depositActive.toLocaleString() }}
+    <br />
+    valueAccount: {{ this.valueAccount.toLocaleString() }}
+    <br />
+    value tb: {{ this.valueTB.toLocaleString() }}
+    <br />
+    <br />
+    total: {{ this.pl2.toLocaleString() }}
+    <br />
+    <button class="btn btn-primary" @click="calc2()">calc</button>
 
     <hr />
     <button class="btn btn-primary" @click="calc4()">calc4</button>
@@ -87,9 +103,9 @@
     total: {{ this.pl3.toLocaleString() }}
 
     <hr />
-
     <button class="btn btn-primary" @click="getData()">表示</button>
 
+    <hr />
     principal: {{ this.principal.toLocaleString() }}
     <br />
     - deposit: {{ this.principalDeposit.toLocaleString() }}
@@ -118,24 +134,7 @@
 
     profit and loss: {{ this.pl.toLocaleString() }}
     <br />
-
-    <button class="btn btn-primary" @click="calc2()">calc2</button>
-
-    <br />
-    depositeDiff: {{ this.depositDiff.toLocaleString() }}
-    <br />
-    <br />
-    deposite active: {{ this.depositActive.toLocaleString() }}
-    <br />
-    valueAccount: {{ this.valueAccount.toLocaleString() }}
-    <br />
-    value tb: {{ this.valueTB.toLocaleString() }}
-    <br />
-    <br />
-    total: {{ this.pl2.toLocaleString() }}
-
-    <hr />
-
+    <button class="btn btn-primary" @click="calc1()">calc</button>
     <br />
   </div>
 </template>
@@ -159,174 +158,7 @@ import * as Enum from "@/Enum";
 export default {
   name: "DepositIndex",
 
-  async created() {
-    //this.getDeposits();
-
-    //this.principal = 1;
-    //calc principal--------
-    //calc value---------
-    var principal = 0;
-    var principalDeposit = 0;
-    var principalTrustTransaction = 0;
-
-    var value = 0;
-
-    var valueDepositActive = 0;
-    var valueDepositFinished = 0;
-    var valueTBJPY = 0;
-    var valueTBFC = 0;
-    var valueAccountFC = 0;
-    var valueTT = 0;
-
-    //get accounts---
-    var accounts;
-    await API.graphql({
-      query: listAccounts,
-    })
-      .then((result) => {
-        //console.log(result);
-        accounts = result.data.listAccounts.items;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    const dAccounts = [];
-    for (const ka in accounts) {
-      const a = accounts[ka];
-      dAccounts[a.currency] = a;
-    }
-    //console.log("-------123");
-    //console.log(dAccounts);
-
-    //get deposits----
-    var deposits;
-    await API.graphql({
-      query: listDeposits,
-    })
-      .then((result) => {
-        //console.log(result);
-        deposits = result.data.listDeposits.items;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    for (const kd in deposits) {
-      const d = deposits[kd];
-
-      //principal---
-      //console.log("---20", d);
-      if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
-        //console.log("---21", d);
-        principal += d.principal;
-        principalDeposit += d.principal;
-      }
-
-      //value-------
-      //value - deposit----
-      if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
-        if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
-          value += d.principal;
-          valueDepositActive += d.principal;
-        } else {
-          //foreign, evaluate with exchange rate---
-          const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
-          //console.log("---------2");
-          value += exrate * d.principal;
-          valueDepositActive += exrate * d.principal;
-        }
-      } else {
-        if (d.valueAccount.currency == Enum.EnumCurrency.JPY.val) {
-          value += d.value;
-          valueDepositFinished += d.value;
-        }
-      }
-    }
-
-    //value - account----
-    for (const ka in accounts) {
-      const a = accounts[ka];
-      if (a.currency != Enum.EnumCurrency.JPY.val) {
-        value += a.balance * a.exchangeRate;
-        valueAccountFC += a.balance * a.exchangeRate;
-        //console.log("------3");
-        //console.log(a.balance * a.exchangeRate);
-      }
-    }
-
-    // principal, value - trust transaction----
-    var trusttransactions = {};
-    await API.graphql({
-      query: listTrustTransactions,
-    })
-      .then((result) => {
-        console.log(result);
-        trusttransactions = result.data.listTrustTransactions.items;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    for (const ktt in trusttransactions) {
-      const tt = trusttransactions[ktt];
-      if (tt.account.currency == Enum.EnumCurrency.JPY.val) {
-        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          //console.log("-------1");
-          //console.log(tt);
-          principal += tt.buy;
-          principalTrustTransaction += tt.buy;
-        } else {
-          value += tt.sell;
-          valueTT += tt.sell;
-          value += tt.dividend;
-          valueTT += tt.dividend;
-        }
-      }
-    }
-
-    // value - trust balance----
-    var trustbalances = {};
-    await API.graphql({
-      query: listTrustBalances,
-    })
-      .then((result) => {
-        console.log(result);
-        trustbalances = result.data.listTrustBalances.items;
-        //this.TrustBalances = result.data.listTrustBalances.items;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    //console.log(trustbalances);
-
-    for (const ktb in trustbalances) {
-      const tb = trustbalances[ktb];
-      if (tb.currency == Enum.EnumCurrency.JPY.val) {
-        value += tb.balance;
-        valueTBJPY += tb.balance;
-      } else {
-        //foreign currency
-        value += tb.balance * dAccounts[tb.currency].exchangeRate;
-        valueTBFC += tb.balance * dAccounts[tb.currency].exchangeRate;
-      }
-    }
-    //console.log(principal);
-    this.principal = principal;
-    this.principalDeposit = principalDeposit;
-    this.principalTrustTransaction = principalTrustTransaction;
-
-    this.value = value;
-    this.valueDepositActive = valueDepositActive;
-    this.valueDepositFinished = valueDepositFinished;
-    this.valueTBJPY = valueTBJPY;
-    this.valueTBFC = valueTBFC;
-    this.valueAccountFC = valueAccountFC;
-    //console.log("-----6",valueTT);
-    this.valueTT = valueTT;
-
-    this.pl = this.value - this.principal;
-  },
+  async created() {},
   data() {
     return {
       //albums: [],
@@ -426,6 +258,174 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    async calc1() {
+      //this.getDeposits();
+
+      //this.principal = 1;
+      //calc principal--------
+      //calc value---------
+      var principal = 0;
+      var principalDeposit = 0;
+      var principalTrustTransaction = 0;
+
+      var value = 0;
+
+      var valueDepositActive = 0;
+      var valueDepositFinished = 0;
+      var valueTBJPY = 0;
+      var valueTBFC = 0;
+      var valueAccountFC = 0;
+      var valueTT = 0;
+
+      //get accounts---
+      var accounts;
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      const dAccounts = [];
+      for (const ka in accounts) {
+        const a = accounts[ka];
+        dAccounts[a.currency] = a;
+      }
+      //console.log("-------123");
+      //console.log(dAccounts);
+
+      //get deposits----
+      var deposits;
+      await API.graphql({
+        query: listDeposits,
+      })
+        .then((result) => {
+          //console.log(result);
+          deposits = result.data.listDeposits.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      for (const kd in deposits) {
+        const d = deposits[kd];
+
+        //principal---
+        //console.log("---20", d);
+        if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
+          //console.log("---21", d);
+          principal += d.principal;
+          principalDeposit += d.principal;
+        }
+
+        //value-------
+        //value - deposit----
+        if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
+          if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
+            value += d.principal;
+            valueDepositActive += d.principal;
+          } else {
+            //foreign, evaluate with exchange rate---
+            const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
+            //console.log("---------2");
+            value += exrate * d.principal;
+            valueDepositActive += exrate * d.principal;
+          }
+        } else {
+          if (d.valueAccount.currency == Enum.EnumCurrency.JPY.val) {
+            value += d.value;
+            valueDepositFinished += d.value;
+          }
+        }
+      }
+
+      //value - account----
+      for (const ka in accounts) {
+        const a = accounts[ka];
+        if (a.currency != Enum.EnumCurrency.JPY.val) {
+          value += a.balance * a.exchangeRate;
+          valueAccountFC += a.balance * a.exchangeRate;
+          //console.log("------3");
+          //console.log(a.balance * a.exchangeRate);
+        }
+      }
+
+      // principal, value - trust transaction----
+      var trusttransactions = {};
+      await API.graphql({
+        query: listTrustTransactions,
+      })
+        .then((result) => {
+          console.log(result);
+          trusttransactions = result.data.listTrustTransactions.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      for (const ktt in trusttransactions) {
+        const tt = trusttransactions[ktt];
+        if (tt.account.currency == Enum.EnumCurrency.JPY.val) {
+          if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+            //console.log("-------1");
+            //console.log(tt);
+            principal += tt.buy;
+            principalTrustTransaction += tt.buy;
+          } else {
+            value += tt.sell;
+            valueTT += tt.sell;
+            value += tt.dividend;
+            valueTT += tt.dividend;
+          }
+        }
+      }
+
+      // value - trust balance----
+      var trustbalances = {};
+      await API.graphql({
+        query: listTrustBalances,
+      })
+        .then((result) => {
+          console.log(result);
+          trustbalances = result.data.listTrustBalances.items;
+          //this.TrustBalances = result.data.listTrustBalances.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      //console.log(trustbalances);
+
+      for (const ktb in trustbalances) {
+        const tb = trustbalances[ktb];
+        if (tb.currency == Enum.EnumCurrency.JPY.val) {
+          value += tb.balance;
+          valueTBJPY += tb.balance;
+        } else {
+          //foreign currency
+          value += tb.balance * dAccounts[tb.currency].exchangeRate;
+          valueTBFC += tb.balance * dAccounts[tb.currency].exchangeRate;
+        }
+      }
+      //console.log(principal);
+      this.principal = principal;
+      this.principalDeposit = principalDeposit;
+      this.principalTrustTransaction = principalTrustTransaction;
+
+      this.value = value;
+      this.valueDepositActive = valueDepositActive;
+      this.valueDepositFinished = valueDepositFinished;
+      this.valueTBJPY = valueTBJPY;
+      this.valueTBFC = valueTBFC;
+      this.valueAccountFC = valueAccountFC;
+      //console.log("-----6",valueTT);
+      this.valueTT = valueTT;
+
+      this.pl = this.value - this.principal;
     },
     async calc2() {
       //calc principal--------
@@ -1106,8 +1106,7 @@ export default {
       this.unsafetrust5 = unsafetrust5;
 
       this.total5 = safe5 + unsafedeposit5 + unsafetrust5;
-      this.rate5 = (unsafedeposit5 + unsafetrust5) /this.total5;
-      
+      this.rate5 = (unsafedeposit5 + unsafetrust5) / this.total5;
     },
   },
 };
