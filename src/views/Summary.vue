@@ -2,6 +2,9 @@
   <div>
     <h1>Summary</h1>
 
+<hr/>
+    <h3>Check ratio of investment amount</h3>
+
     <ul>
       <li>safe: {{ safe5.toLocaleString() }}</li>
       <ul>
@@ -16,7 +19,7 @@
       <li>rate (unsafe/total): {{ rate5.toLocaleString() }}</li>
     </ul>
 
-    <button class="btn btn-primary" @click="calc5()">calc5</button>
+    <button class="btn btn-primary" @click="calc5()">calc</button>
 
     <hr />
     <button class="btn btn-primary" @click="calc4()">calc4</button>
@@ -376,6 +379,8 @@ export default {
       safe5: 0,
       unsafedeposit5: 0,
       unsafetrust5: 0,
+      total5: 0,
+      rate5: 0,
     };
   },
   methods: {
