@@ -33,7 +33,8 @@
     value tb: {{ this.valueTB.toLocaleString() }}
     <br />
     <br />
-    total (deposit active + value account + value tb): {{ this.pl2.toLocaleString() }}
+    total (deposit active + value account + value tb):
+    {{ this.pl2.toLocaleString() }}
     <br />
     <button class="btn btn-primary" @click="calc2()">calc</button>
 
@@ -471,153 +472,50 @@ export default {
       for (const kd in deposits) {
         const d = deposits[kd];
 
-        //console.log("----3");
-        /*
-        if (d.status == "FINISHED") {
-          //console.log("----31---",d.value);
-          if (d.value == null) {
-            console.log("----31", d);
-          }
-        }
-*/
-        //principal---
-        //console.log("---20", d);
-        /*
-        if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
-          //console.log("---21", d);
-          principal += d.principal;
-          principalDeposit += d.principal;
-        }
-*/
         //value-------
         //value - deposit----
         if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
           const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
           depositActive += exrate * d.principal;
-
-          /*
-          if (d.principalAccount.currency == Enum.EnumCurrency.JPY.val) {
-            value += d.principal;
-            valueDepositActive += d.principal;
-          } else {
-            //foreign, evaluate with exchange rate---
-            const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
-            //console.log("---------2");
-            value += exrate * d.principal;
-            valueDepositActive += exrate * d.principal;
-          }
-          */
         } else {
           const exratePri = dAccounts[d.principalAccount.currency].exchangeRate;
           const exrateVal = dAccounts[d.valueAccount.currency].exchangeRate;
-          //console.log("---------2");
-          //value += exrate * d.principal;
-          //valueDepositActive += exrate * d.principal;
           depositDiff += d.value * exrateVal - d.principal * exratePri;
-
-          /*
-          if (d.valueAccount.currency == Enum.EnumCurrency.JPY.val) {
-            value += d.value;
-            valueDepositFinished += d.value;
-          }
-          */
         }
       }
 
       //value - account----
       for (const ka in accounts) {
         const a = accounts[ka];
-        //if (a.currency != Enum.EnumCurrency.JPY.val) {
-        //value += a.balance * a.exchangeRate;
         valueAccount += a.balance * a.exchangeRate;
-        console.log("------3", valueAccount, a);
-        //console.log(a.balance * a.exchangeRate);
-        //}
+        //console.log("------3", valueAccount, a);
       }
 
-      // principal, value - trust transaction----
-      /*
-      var trusttransactions = {};
-      await API.graphql({
-        query: listTrustTransactions,
-      })
-        .then((result) => {
-          console.log(result);
-          trusttransactions = result.data.listTrustTransactions.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-
-      for (const ktt in trusttransactions) {
-        const tt = trusttransactions[ktt];
-        if (tt.account.currency == Enum.EnumCurrency.JPY.val) {
-          if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-            //console.log("-------1");
-            //console.log(tt);
-            principal += tt.buy;
-            principalTrustTransaction += tt.buy;
-          } else {
-            value += tt.sell;
-            valueTT += tt.sell;
-            value += tt.dividend;
-            valueTT += tt.dividend;
-          }
-        }
-      }
-*/
       // value - trust balance----
       var trustbalances = {};
       await API.graphql({
         query: listTrustBalances,
       })
         .then((result) => {
-          console.log(result);
+          //console.log(result);
           trustbalances = result.data.listTrustBalances.items;
-          //this.TrustBalances = result.data.listTrustBalances.items;
         })
         .catch((error) => {
           console.log(error);
         });
-      //console.log(trustbalances);
 
       for (const ktb in trustbalances) {
         const tb = trustbalances[ktb];
-        //if (tb.currency == Enum.EnumCurrency.JPY.val) {
-        //          value += tb.balance;
-        //valueTBJPY += tb.balance;
-        //} else {
-        //foreign currency
-        //   value += tb.balance * dAccounts[tb.currency].exchangeRate;
         valueTB += tb.balance * dAccounts[tb.currency].exchangeRate;
-        //        }
       }
-      /*
-       */
-      //console.log(principal);
-      /*
-      this.principal = principal;
-      this.principalDeposit = principalDeposit;
-      this.principalTrustTransaction = principalTrustTransaction;
 
-      this.value = value;
-      this.valueDepositActive = valueDepositActive;
-      this.valueDepositFinished = valueDepositFinished;
-      this.valueTBJPY = valueTBJPY;
-      this.valueTBFC = valueTBFC;
-      this.valueAccountFC = valueAccountFC;
-      //console.log("-----6",valueTT);
-      this.valueTT = valueTT;
-
-      this.pl = this.value - this.principal;
-      */
       this.depositDiff = depositDiff;
 
       this.depositActive = depositActive;
       this.valueAccount = valueAccount;
       this.valueTB = valueTB;
 
-      this.pl2 =  depositActive + valueAccount + valueTB;
+      this.pl2 = depositActive + valueAccount + valueTB;
     },
     async calc3() {
       //calc principal--------
@@ -684,7 +582,7 @@ export default {
         variables: { filter: filter },
       })
         .then((result) => {
-          console.log("----31", result);
+          //console.log("----31", result);
           //console.log(result);
           deposits = result.data.listDeposits.items;
         })
@@ -699,7 +597,7 @@ export default {
 
         dAccounts[d.principalAccountId].balance -= d.principal;
 
-        console.log("----3", d.date);
+        //console.log("----3", d.date);
         if (d.status == "FINISHED") {
           dAccounts[d.valueAccountId].balance += d.value;
         } else {
