@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">InvMng</a>
+      <a class="navbar-brand" href="#">InvMng <BIconBank/></a>
       <button
         class="navbar-toggler"
         type="button"
@@ -48,8 +48,13 @@
 </template>
 
 <script>
+import { BIconBank } from "bootstrap-icons-vue";
+
 export default {
   name: "Header",
+  components: {
+    BIconBank,
+  },
   computed: {
     loginStatus() {
       return this.$store.state.loginStatus;
