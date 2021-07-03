@@ -56,7 +56,7 @@
             >
           </td>
           <td>{{ numberFormat(deposit.value) }}</td>
-          <td>{{ numberFormat(deposit.value - deposit.principal) }}</td>
+          <td>{{ numberFormat(deposit.pl) }}</td>
           <td>{{ deposit.memo }}</td>
 
           <td>
@@ -113,6 +113,8 @@ import { deleteDeposit } from "../../graphql/mutations";
 
 import moment from "moment";
 
+import * as Enum from "@/Enum";
+
 export default {
   name: "DepositIndex",
 
@@ -161,6 +163,18 @@ export default {
         .then((result) => {
           console.log(result);
           this.deposits = result.data.listDeposits.items;
+
+          //calc profit and loss----
+          for (const kd in this.deposits) {
+            var d = this.deposits[kd];
+            if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+              const pri = d.principal * d.principalAccount.exchangeRate;
+              const val = d.value * d.valueAccount.exchangeRate;
+
+              d.pl = val - pri;
+            }
+          }
+
           this.sortBy("date");
         })
         .catch((error) => {
