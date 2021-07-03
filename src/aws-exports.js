@@ -3,18 +3,18 @@
 
 const awsmobile = {
     "aws_project_region": "ap-northeast-1",
-    "aws_cognito_identity_pool_id": "ap-northeast-1:4ebcd379-60ef-4d5b-90a4-bce71444513a",
+    "aws_cognito_identity_pool_id": "ap-northeast-1:51da04b0-a2fb-4cc5-b292-d502c63e55cd",
     "aws_cognito_region": "ap-northeast-1",
-    "aws_user_pools_id": "ap-northeast-1_C4m0bZP7D",
-    "aws_user_pools_web_client_id": "7bo0oc447vg668rr359bsd71ss",
+    "aws_user_pools_id": "ap-northeast-1_QMnssRr5O",
+    "aws_user_pools_web_client_id": "1br6sguhmg6kk4j7ojgdd2frhc",
     "oauth": {},
-    "aws_appsync_graphqlEndpoint": "https://ln47mvwh3rhave4p4ekyeu5pe4.appsync-api.ap-northeast-1.amazonaws.com/graphql",
+    "aws_appsync_graphqlEndpoint": "https://k5nzwcst4jcjxer3uewsienv4u.appsync-api.ap-northeast-1.amazonaws.com/graphql",
     "aws_appsync_region": "ap-northeast-1",
     "aws_appsync_authenticationType": "AMAZON_COGNITO_USER_POOLS",
     "aws_cloud_logic_custom": [
         {
             "name": "apif8da427c",
-            "endpoint": "https://0u1224nf5k.execute-api.ap-northeast-1.amazonaws.com/prod",
+            "endpoint": "https://pstzaydvn3.execute-api.ap-northeast-1.amazonaws.com/dev",
             "region": "ap-northeast-1"
         }
     ]
@@ -22,4 +22,3 @@ const awsmobile = {
 
 
 export default awsmobile;
-

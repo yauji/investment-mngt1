@@ -74,7 +74,6 @@ import {
   listTrustTransactions,
 } from "../../graphql/queries";
 import { deleteAccount, updateAccount } from "../../graphql/mutations";
-//import { deleteAccount, updateAccount } from "../../graphql/mutations";
 
 import moment from "moment";
 
@@ -83,12 +82,10 @@ import * as Enum from "@/Enum";
 export default {
   name: "AccountIndex",
   async created() {
-    //this.getAccounts();
     this.getAccounts();
   },
   data() {
     return {
-      //albums: [],
       accounts: [],
     };
   },
@@ -111,7 +108,6 @@ export default {
         .then((result) => {
           console.log(result);
           this.accounts = result.data.listAccounts.items;
-          //this.Accounts = result.data.listAccounts.items;
         })
         .catch((error) => {
           console.log(error);
@@ -270,7 +266,6 @@ export default {
       }
 
       console.log("-----4", dicAccountIdBalance);
-      //hoge
 
       //update account balances---
       for (const ka in this.accounts) {
@@ -281,6 +276,7 @@ export default {
         delete a.createdAt;
         delete a.updatedAt;
         delete a.owner;
+        delete a.activedeposit;
 
         await API.graphql({
           query: updateAccount,
@@ -294,8 +290,6 @@ export default {
             console.log(error);
           });
       }
-
-      //hoge
     },
   },
 };

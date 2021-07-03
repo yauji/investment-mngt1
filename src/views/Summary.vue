@@ -23,17 +23,17 @@
     <hr />
     <h3>Check profit and loss</h3>
     <br />
-    depositeDiff: {{ this.depositDiff.toLocaleString() }}
+    deposit Diff: {{ this.depositDiff.toLocaleString() }}
     <br />
     <br />
-    deposite active: {{ this.depositActive.toLocaleString() }}
+    deposit active: {{ this.depositActive.toLocaleString() }}
     <br />
-    valueAccount: {{ this.valueAccount.toLocaleString() }}
+    value Account: {{ this.valueAccount.toLocaleString() }}
     <br />
     value tb: {{ this.valueTB.toLocaleString() }}
     <br />
     <br />
-    total: {{ this.pl2.toLocaleString() }}
+    total (deposit active + value account + value tb): {{ this.pl2.toLocaleString() }}
     <br />
     <button class="btn btn-primary" @click="calc2()">calc</button>
 
@@ -428,23 +428,6 @@ export default {
       this.pl = this.value - this.principal;
     },
     async calc2() {
-      //calc principal--------
-      //calc value---------
-      // var principal = 0;
-      //var principalDeposit = 0;
-      //var principalTrustTransaction = 0;
-
-      //var value = 0;
-
-      /*
-    var valueDepositActive = 0;
-    //var valueDepositFinished = 0;
-    var valueTBJPY = 0;
-    var valueTBFC = 0;
-    var valueAccountFC = 0;
-    var valueTT = 0;
-    */
-
       var depositActive = 0;
       var depositDiff = 0;
       var valueAccount = 0;
@@ -489,13 +472,14 @@ export default {
         const d = deposits[kd];
 
         //console.log("----3");
+        /*
         if (d.status == "FINISHED") {
           //console.log("----31---",d.value);
           if (d.value == null) {
             console.log("----31", d);
           }
         }
-
+*/
         //principal---
         //console.log("---20", d);
         /*
@@ -509,7 +493,6 @@ export default {
         //value - deposit----
         if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
           const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
-
           depositActive += exrate * d.principal;
 
           /*
@@ -547,7 +530,7 @@ export default {
         //if (a.currency != Enum.EnumCurrency.JPY.val) {
         //value += a.balance * a.exchangeRate;
         valueAccount += a.balance * a.exchangeRate;
-        //console.log("------3");
+        console.log("------3", valueAccount, a);
         //console.log(a.balance * a.exchangeRate);
         //}
       }
@@ -628,13 +611,13 @@ export default {
 
       this.pl = this.value - this.principal;
       */
-      this.depositActive = depositActive;
       this.depositDiff = depositDiff;
-      this.valueAccount = valueAccount;
 
+      this.depositActive = depositActive;
+      this.valueAccount = valueAccount;
       this.valueTB = valueTB;
 
-      this.pl2 = depositActive + valueAccount + valueTB;
+      this.pl2 =  depositActive + valueAccount + valueTB;
     },
     async calc3() {
       //calc principal--------
