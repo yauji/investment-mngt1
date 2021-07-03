@@ -3,7 +3,9 @@
     <h1>Deposits</h1>
 
     <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
-      <button class="btn btn-primary" @click="navigate">Add Deposit</button>
+      <button class="btn btn-primary" @click="navigate">
+        <BIconBookmark />Add Deposit
+      </button>
     </router-link>
 
     <table class="table table-striped">
@@ -78,7 +80,9 @@
               v-slot="{ navigate }"
               :to="{ name: 'DepositEdit', params: { depositId: deposit.id } }"
             >
-              <button class="btn btn-primary" @click="navigate">Edit</button>
+              <button class="btn btn-primary" @click="navigate">
+                <BIconPencil />
+              </button>
             </router-link>
           </td>
           <td>
@@ -95,7 +99,7 @@
               class="btn btn-primary"
               @click="deleteDeposit(index, deposit.id)"
             >
-              Delete
+              <BIconTrash />
             </button>
           </td>
         </tr>
@@ -115,13 +119,19 @@ import { API } from "aws-amplify";
 import { listDeposits } from "../../graphql/queries";
 import { deleteDeposit } from "../../graphql/mutations";
 
+//import bi from "bootstrap-icons";
+import { BIconPencil, BIconTrash } from "bootstrap-icons-vue";
+
 import moment from "moment";
 
 import * as Enum from "@/Enum";
 
 export default {
   name: "DepositIndex",
-
+  components: {
+    BIconPencil,
+    BIconTrash,
+  },
   async created() {
     this.getDeposits();
   },
@@ -182,7 +192,7 @@ export default {
             //consider tax
             d.expected =
               ((((d.principal * d.interestRate) / 100) * d.duration) / 12) *
-              0.8;            
+              0.8;
           }
 
           this.sortBy("date");
