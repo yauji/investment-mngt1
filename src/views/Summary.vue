@@ -2,6 +2,23 @@
   <div>
     <h1>Summary</h1>
 
+    <ul>
+      <li>safe: {{ safe5.toLocaleString() }}</li>
+      <ul>
+        <li>ACTIVE, JPY, interestrate=0</li>
+        <li>全体を管理するために、普通口座もdepositとして登録</li>
+      </ul>
+      <li>unsafe (deposit): {{ unsafedeposit5.toLocaleString() }}</li>
+      <li>unsafe (trust): {{ unsafetrust5.toLocaleString() }}</li>
+    </ul>
+    <ul>
+      <li>total: {{ total5.toLocaleString() }}</li>
+      <li>rate (unsafe/total): {{ rate5.toLocaleString() }}</li>
+    </ul>
+
+    <button class="btn btn-primary" @click="calc5()">calc5</button>
+
+    <hr />
     <button class="btn btn-primary" @click="calc4()">calc4</button>
 
     <input type="checkbox" id="jpy" value="jpy" v-model="checkedCurrencys" />
@@ -68,10 +85,7 @@
 
     <hr />
 
-    <b-col sm="12" class="mb-5">
-      <b-button variant="success" v-on:click="getData">表示</b-button>
-      <hr />
-    </b-col>
+    <button class="btn btn-primary" @click="getData()">表示</button>
 
     principal: {{ this.principal.toLocaleString() }}
     <br />
@@ -358,6 +372,10 @@ export default {
       dactive4: 0,
       vaccount4: 0,
       total4: 0,
+
+      safe5: 0,
+      unsafedeposit5: 0,
+      unsafetrust5: 0,
     };
   },
   methods: {
@@ -996,6 +1014,95 @@ export default {
       //      this.valueTB3 = valueTB;
 
       //this.pl3 = depositActive + valueAccount + valueTB;
+    },
+    async calc5() {
+      var safe5 = 0;
+      var unsafedeposit5 = 0;
+      var unsafetrust5 = 0;
+
+      //console.log("-----111");
+
+      //get accounts---
+      var accounts;
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      const dAccounts = [];
+      for (const ka in accounts) {
+        const a = accounts[ka];
+        dAccounts[a.currency] = a;
+      }
+
+      //console.log("----1", dAccounts);
+
+      //deposit----
+      var deposits0;
+
+      await API.graphql({
+        query: listDeposits,
+      })
+        .then((result) => {
+          //console.log(result);
+          deposits0 = result.data.listDeposits.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      //update account balance---
+      for (const kd in deposits0) {
+        const d = deposits0[kd];
+
+        if (d.status == "ACTIVE") {
+          if (d.interestRate == 0 && d.principalAccount.currency == "JPY") {
+            safe5 += d.principal;
+          } else {
+            const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
+            unsafedeposit5 += exrate * d.principal;
+          }
+        }
+      }
+      //console.log("----6", safe5);
+
+      //unsafe trust-----
+      var trustbalances = {};
+      await API.graphql({
+        query: listTrustBalances,
+      })
+        .then((result) => {
+          console.log(result);
+          trustbalances = result.data.listTrustBalances.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      //console.log(trustbalances);
+
+      for (const ktb in trustbalances) {
+        const tb = trustbalances[ktb];
+        if (tb.currency == Enum.EnumCurrency.JPY.val) {
+          unsafetrust5 += tb.balance;
+        } else {
+          //foreign currency
+          unsafetrust5 += tb.balance * dAccounts[tb.currency].exchangeRate;
+        }
+      }
+
+      this.safe5 = safe5;
+      this.unsafedeposit5 = unsafedeposit5;
+      this.unsafetrust5 = unsafetrust5;
+
+      this.total5 = safe5 + unsafedeposit5 + unsafetrust5;
+      this.rate5 = (unsafedeposit5 + unsafetrust5) /this.total5;
+      
     },
   },
 };
