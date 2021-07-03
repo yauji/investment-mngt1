@@ -35,10 +35,13 @@
           <li class="nav-item">
             <router-link class="nav-link active" to="/summary">Summary</router-link>
           </li>
+          <li class="nav-item">
+            <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
+          </li>
         </ul>
 
         
-        <amplify-sign-out   button-text="Sign out"></amplify-sign-out>
+        
         
         
       </div>
@@ -48,12 +51,13 @@
 </template>
 
 <script>
-import { BIconBank } from "bootstrap-icons-vue";
+import { BIconBank,BIconGear } from "bootstrap-icons-vue";
 
 export default {
   name: "Header",
   components: {
     BIconBank,
+    BIconGear,
   },
   computed: {
     loginStatus() {
