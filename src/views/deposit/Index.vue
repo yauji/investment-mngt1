@@ -10,7 +10,6 @@
       <thead>
         <tr>
           <th @click="sortBy('name')">name</th>
-          <th>memo</th>
           <th @click="sortBy('status')">status</th>
           <th @click="sortBy('date')">date</th>
 
@@ -25,6 +24,9 @@
           <th>value account</th>
 
           <th>value</th>
+          <th>profit and loss</th>
+          <th>memo</th>
+
           <th></th>
           <th></th>
           <th></th>
@@ -33,7 +35,6 @@
       <tbody>
         <tr v-for="(deposit, index) in deposits" :key="deposit.id">
           <td>{{ deposit.name }}</td>
-          <td>{{ deposit.memo }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ moment(deposit.date) }}</td>
           <td>
@@ -55,6 +56,8 @@
             >
           </td>
           <td>{{ numberFormat(deposit.value) }}</td>
+          <td>{{ numberFormat(deposit.value - deposit.principal) }}</td>
+          <td>{{ deposit.memo }}</td>
 
           <td>
             <router-link
