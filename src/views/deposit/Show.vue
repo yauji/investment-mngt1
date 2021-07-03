@@ -1,78 +1,48 @@
 <template>
   <div>
-    <h1>アルバム詳細</h1>
-    <h2>{{ album.name }}</h2>
-    <router-link
-      custom
-      v-slot="{ navigate }"
-      :to="{ name: 'PhotoCreate', params: { albumId: albumId } }"
-    >
-      <button @click="navigate">Add Photo</button>
-    </router-link>
-    <table border="1">
-      <tr v-for="(photo, index) in album.photos.items" :key="photo.id">
-        <td>{{ photo.name }}</td>
-        <td>
-          ここに画像表示
-        </td>
-        <td>
-          <button @click="deletePhoto(index, photo)">Delete Photo</button>
-        </td>
-      </tr>
-    </table>
+    <h1>Deposit</h1>
+    <h2>{{ deposit.name }}</h2>
+
+
+    
   </div>
 </template>
 
 <script>
 import { API } from "aws-amplify";
-import { getAlbum } from "../../graphql/queries";
-import { deletePhoto } from "../../graphql/mutations";
+import { getDeposit } from "../../graphql/queries";
+//import { deletePhoto } from "../../graphql/mutations";
 
 export default {
-  name: "AlbumShow",
+  name: "DepositShow",
   props: {
-    albumId: String,
+    depositId: String,
   },
   async created() {
-    this.getAlbum();
+    this.getDeposit();
   },
   data() {
     return {
-      album: {
+      deposit: {
         name: null,
-        photos: []
       },
     };
   },
   methods: {
-    async getAlbum() {
+    async getDeposit() {
       await API.graphql({
-        query: getAlbum,
-        variables: { id: this.albumId },
+        query: getDeposit,
+        variables: { id: this.depositId },
       })
         .then((result) => {
           console.log(result);
-          this.album = result.data.getAlbum;
+          this.deposit = result.data.getDeposit;
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    async deletePhoto(index, photo) {
-      if (!confirm("Delete Photo?")) return;
-
-      await API.graphql({
-        query: deletePhoto,
-        variables: { input: { id: photo.id } },
-      })
-        .then((result) => {
-          console.log(result);
-          this.album.photos.items.splice(index, 1);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
+   
   },
 };
 </script>

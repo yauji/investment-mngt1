@@ -3,7 +3,9 @@
     <h1>Deposits</h1>
 
     <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
-      <button class="btn btn-primary" @click="navigate">Add Deposit</button>
+      <button class="btn btn-primary" @click="navigate">
+        <BIconBookmark />Add Deposit
+      </button>
     </router-link>
 
     <table class="table table-striped">
@@ -25,9 +27,11 @@
 
           <th>value</th>
           <th>profit and loss</th>
+          <th>expected profit</th>
           <th>memo</th>
-
+          <!--
           <th></th>
+          -->
           <th></th>
           <th></th>
         </tr>
@@ -56,9 +60,10 @@
             >
           </td>
           <td>{{ numberFormat(deposit.value) }}</td>
-          <td>{{ numberFormat(deposit.value - deposit.principal) }}</td>
+          <td>{{ numberFormat(deposit.pl) }}</td>
+          <td>{{ numberFormat(deposit.expected) }}</td>
           <td>{{ deposit.memo }}</td>
-
+          <!--
           <td>
             <router-link
               custom
@@ -68,13 +73,16 @@
               <button class="btn btn-primary" @click="navigate">Show</button>
             </router-link>
           </td>
+          -->
           <td>
             <router-link
               custom
               v-slot="{ navigate }"
               :to="{ name: 'DepositEdit', params: { depositId: deposit.id } }"
             >
-              <button class="btn btn-primary" @click="navigate">Edit</button>
+              <button class="btn btn-primary" @click="navigate">
+                <BIconPencil />
+              </button>
             </router-link>
           </td>
           <td>
@@ -91,7 +99,7 @@
               class="btn btn-primary"
               @click="deleteDeposit(index, deposit.id)"
             >
-              Delete
+              <BIconTrash />
             </button>
           </td>
         </tr>
@@ -111,11 +119,19 @@ import { API } from "aws-amplify";
 import { listDeposits } from "../../graphql/queries";
 import { deleteDeposit } from "../../graphql/mutations";
 
+//import bi from "bootstrap-icons";
+import { BIconPencil, BIconTrash } from "bootstrap-icons-vue";
+
 import moment from "moment";
+
+import * as Enum from "@/Enum";
 
 export default {
   name: "DepositIndex",
-
+  components: {
+    BIconPencil,
+    BIconTrash,
+  },
   async created() {
     this.getDeposits();
   },
@@ -161,6 +177,24 @@ export default {
         .then((result) => {
           console.log(result);
           this.deposits = result.data.listDeposits.items;
+
+          //calc profit and loss, expected profit----
+          for (const kd in this.deposits) {
+            var d = this.deposits[kd];
+            if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+              //calc profit and loss
+              const pri = d.principal * d.principalAccount.exchangeRate;
+              const val = d.value * d.valueAccount.exchangeRate;
+              d.pl = val - pri;
+            }
+
+            //calc expected profit
+            //consider tax
+            d.expected =
+              ((((d.principal * d.interestRate) / 100) * d.duration) / 12) *
+              0.8;
+          }
+
           this.sortBy("date");
         })
         .catch((error) => {
