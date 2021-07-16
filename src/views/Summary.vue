@@ -1169,7 +1169,7 @@ export default {
       }
 
       // value - trust balance----
-      
+
       var trustbalances = {};
       await API.graphql({
         query: listTrustBalances,
@@ -1185,9 +1185,10 @@ export default {
       for (const ktb in trustbalances) {
         const tb = trustbalances[ktb];
         console.log("----41", tb);
-        valueTBFc += tb.balance * this.fc[tb.currency];
+        if (tb.currency != "JPY") {
+          valueTBFc += tb.balance * this.fc[tb.currency];
+        }
       }
-
 
       //value - account----
       for (const ka in accounts) {
