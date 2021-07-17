@@ -55,8 +55,6 @@
     JPY:
     <input type="number" step="0.01" class="form-control" v-model="fc.JPY" />
 
-    hoge
-
     <br />
     deposit Diff: {{ this.depositDiffFc.toLocaleString() }}
     <br />
@@ -1062,31 +1060,9 @@ export default {
       for (const a in accounts) {
         dicAccountIdBalance[accounts[a].id] = 0;
       }
-      //hoge
-      /*
-      for (const kd in deposits) {
-        //console.log(deposits[kd]);
-        const d = deposits[kd];
 
-        //console.log("-------11", d.principal, d.value);
-        dicAccountIdBalance[d.principalAccountId] -= d.principal;
 
-        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
-          //console.log("-----3", d.status);
-          dicAccountIdBalance[d.valueAccountId] += d.value;
-        }
-      }
-*/
-      //hoge
-      /*
-      const dAccounts = [];
-      for (const ka in accounts) {
-        const a = accounts[ka];
-        dAccounts[a.currency] = a;
-      }
-      */
-      //console.log("-------123");
-      //console.log(dAccounts);
+   
 
       //get deposits----
       var deposits;
@@ -1133,9 +1109,8 @@ export default {
         }
       }
 
-      console.log("---1", dicAccountIdBalance);
+      //console.log("---1", dicAccountIdBalance);
 
-      //todo - trust
       var trusttransactions = {};
       await API.graphql({
         query: listTrustTransactions,
@@ -1151,8 +1126,6 @@ export default {
 
       for (const ktt in trusttransactions) {
         const tt = trusttransactions[ktt];
-
-        console.log("----31", tt);
 
         if (tt.account.currency != "JPY") {
           if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
@@ -1184,7 +1157,7 @@ export default {
 
       for (const ktb in trustbalances) {
         const tb = trustbalances[ktb];
-        console.log("----41", tb);
+        //console.log("----41", tb);
         if (tb.currency != "JPY") {
           valueTBFc += tb.balance * this.fc[tb.currency];
         }
@@ -1203,7 +1176,7 @@ export default {
         //        valueAccountFc += a.balance * a.exchangeRate;
         //console.log("------3", valueAccount, a);
       }
-      console.log("---2", valueAccountFc);
+      //console.log("---2", valueAccountFc);
 
       this.depositDiffFc = depositDiffFc;
 
