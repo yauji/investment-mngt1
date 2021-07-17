@@ -22,7 +22,7 @@
           <th>interest Rate</th>
           <th>duration</th>
 
-          <th>end Date</th>
+          <th @click="sortBy('endDate')">end date</th>
           <th>value account</th>
 
           <th>value</th>

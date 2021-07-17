@@ -1061,9 +1061,6 @@ export default {
         dicAccountIdBalance[accounts[a].id] = 0;
       }
 
-
-   
-
       //get deposits----
       var deposits;
       await API.graphql({

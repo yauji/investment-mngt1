@@ -42,7 +42,11 @@
 
         <div class="mb-3">
           <label for="" class="form-label">date *</label>
-          <datepicker v-model="form.date" class="form-control" required />
+          <datepicker
+            v-model="form.date"
+            required
+            class="form-control"
+          />
           <!--             
              <datepicker  v-model="picked" />
           <input type="text" class="form-control" v-model="form.date" />
@@ -98,7 +102,7 @@
             v-bind:disabled="dPrincipal"
           />
         </div>
-<!--
+        <!--
         <div class="mb-3">
           <label for="" class="form-label">Principal Foreign</label>
           <input
@@ -117,7 +121,7 @@
             class="form-control"
             v-model="form.exchangeRate"
             v-bind:disabled="dExchangeRate"
-            step="0.01"            
+            step="0.01"
           />
         </div>
 
@@ -192,7 +196,6 @@
             v-bind:disabled="dValue"
           />
         </div>
-
 
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
@@ -378,8 +381,6 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-
-      
     },
   },
 };
