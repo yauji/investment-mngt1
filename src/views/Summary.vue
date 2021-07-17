@@ -39,6 +39,39 @@
     <button class="btn btn-primary" @click="calc2()">calc</button>
 
     <hr />
+    <h3>check profit and loss for fc</h3>
+    <ul>
+      <li>外貨をいつ円に戻せばいいか確認用。</li>
+      <li>事前にtrust balanceの更新が必要。</li>
+    </ul>
+    USD:
+    <input type="number" step="0.01" class="form-control" v-model="fc.USD" />
+    AUD:
+    <input type="number" step="0.01" class="form-control" v-model="fc.AUD" />
+    NZD:
+    <input type="number" step="0.01" class="form-control" v-model="fc.NZD" />
+    EUR:
+    <input type="number" step="0.01" class="form-control" v-model="fc.EUR" />
+    JPY:
+    <input type="number" step="0.01" class="form-control" v-model="fc.JPY" />
+
+    <br />
+    deposit Diff: {{ this.depositDiffFc.toLocaleString() }}
+    <br />
+    <br />
+    deposit active: {{ this.depositActiveFc.toLocaleString() }}
+    <br />
+    value Account: {{ this.valueAccountFc.toLocaleString() }}
+    <br />
+    value tb: {{ this.valueTBFc.toLocaleString() }}
+    <br />
+    <br />
+    total (deposit active + value account + value tb):
+    {{ this.pl6.toLocaleString() }}
+    <br />
+    <button class="btn btn-primary" @click="calc6()">calc6</button>
+
+    <hr />
     <button class="btn btn-primary" @click="calc4()">calc4</button>
 
     <input type="checkbox" id="jpy" value="jpy" v-model="checkedCurrencys" />
@@ -214,6 +247,16 @@ export default {
       unsafetrust5: 0,
       total5: 0,
       rate5: 0,
+
+      //---calc6
+      fc: { USD: 110, AUD: 80, NZD: 80, EUR: 130, JPY: 1 },
+
+      depositActiveFc: 0,
+      depositDiffFc: 0,
+      valueAccountFc: 0,
+
+      valueTBFc: 0,
+      pl6: 0,
     };
   },
   methods: {
@@ -988,6 +1031,160 @@ export default {
 
       this.total5 = safe5 + unsafedeposit5 + unsafetrust5;
       this.rate5 = (unsafedeposit5 + unsafetrust5) / this.total5;
+    },
+
+    async calc6() {
+      var depositActiveFc = 0;
+      var depositDiffFc = 0;
+      var valueAccountFc = 0;
+
+      var valueTBFc = 0;
+
+      //console.log(this.fc);
+
+      //get accounts---
+      var accounts;
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          accounts = result.data.listAccounts.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      // create dic----
+      var dicAccountIdBalance = [];
+      for (const a in accounts) {
+        dicAccountIdBalance[accounts[a].id] = 0;
+      }
+
+
+   
+
+      //get deposits----
+      var deposits;
+      await API.graphql({
+        query: listDeposits,
+      })
+        .then((result) => {
+          //console.log(result);
+          deposits = result.data.listDeposits.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      for (const kd in deposits) {
+        const d = deposits[kd];
+
+        //value-------
+        //value - deposit----
+        if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
+          if (d.principalAccount.currency != "JPY") {
+            //const exrate = dAccounts[d.principalAccount.currency].exchangeRate;
+            //depositActiveFc += exrate * d.principal;
+            dicAccountIdBalance[d.principalAccountId] -= d.principal;
+
+            const exrate = this.fc[d.principalAccount.currency];
+            //console.log("----01", exrate);
+            depositActiveFc += exrate * d.principal;
+          }
+        } else {
+          if (
+            d.principalAccount.currency != "JPY" ||
+            d.valueAccount.currency != "JPY"
+          ) {
+            dicAccountIdBalance[d.principalAccountId] -= d.principal;
+            dicAccountIdBalance[d.valueAccountId] += d.value;
+            /*
+            const exratePri =
+              dAccounts[d.principalAccount.currency].exchangeRate;
+            const exrateVal = dAccounts[d.valueAccount.currency].exchangeRate;
+            depositDiffFc += d.value * exrateVal - d.principal * exratePri;
+            */
+          }
+        }
+      }
+
+      //console.log("---1", dicAccountIdBalance);
+
+      var trusttransactions = {};
+      await API.graphql({
+        query: listTrustTransactions,
+      })
+        .then((result) => {
+          console.log(result);
+          trusttransactions = result.data.listTrustTransactions.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      //console.log(trusttransactions);
+
+      for (const ktt in trusttransactions) {
+        const tt = trusttransactions[ktt];
+
+        if (tt.account.currency != "JPY") {
+          if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+            dicAccountIdBalance[tt.accountId] -= tt.buy;
+            //          console.log("------31", tt.buy);
+          } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
+            dicAccountIdBalance[tt.accountId] += tt.sell;
+            //        console.log("------32", tt.sell);
+          } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
+            dicAccountIdBalance[tt.accountId] += tt.dividend;
+            //      console.log("------33", tt);
+          }
+        }
+      }
+
+      // value - trust balance----
+
+      var trustbalances = {};
+      await API.graphql({
+        query: listTrustBalances,
+      })
+        .then((result) => {
+          //console.log(result);
+          trustbalances = result.data.listTrustBalances.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      for (const ktb in trustbalances) {
+        const tb = trustbalances[ktb];
+        //console.log("----41", tb);
+        if (tb.currency != "JPY") {
+          valueTBFc += tb.balance * this.fc[tb.currency];
+        }
+      }
+
+      //value - account----
+      for (const ka in accounts) {
+        const a = accounts[ka];
+
+        const balance = dicAccountIdBalance[a.id];
+
+        //console.log("----1", a.currency);
+        //console.log("----11", this.fc[a.currency]);
+
+        valueAccountFc += balance * this.fc[a.currency];
+        //        valueAccountFc += a.balance * a.exchangeRate;
+        //console.log("------3", valueAccount, a);
+      }
+      //console.log("---2", valueAccountFc);
+
+      this.depositDiffFc = depositDiffFc;
+
+      this.depositActiveFc = depositActiveFc;
+      this.valueAccountFc = valueAccountFc;
+      this.valueTBFc = valueTBFc;
+
+      this.pl6 = depositActiveFc + valueAccountFc + valueTBFc;
     },
   },
 };
