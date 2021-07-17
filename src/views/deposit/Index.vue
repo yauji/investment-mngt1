@@ -3,10 +3,33 @@
     <h1>Deposits</h1>
 
     <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
-      <button class="btn btn-primary" @click="navigate">
-        <BIconBookmark />Add Deposit
-      </button>
+      <button class="btn btn-primary" @click="navigate">Add Deposit</button>
     </router-link>
+
+    <div>
+      <input
+        type="checkbox"
+        id="fStatusActive"
+        value="fStatusActive"
+        v-model="checkedFStatuses"
+        checked
+      />
+      <label for="fStatusActive">active</label>
+      <input
+        type="checkbox"
+        id="fStatusFinished"
+        value="fStatusFinished"
+        v-model="checkedFStatuses"
+        checked
+      />
+      <label for="fStatusFinished">Finished</label>
+
+      <button class="btn btn-primary" @click="filter()">Filter</button>
+
+<!--
+      <span>Checked names: {{ checkedFStatuses }}</span>
+      -->
+    </div>
 
     <table class="table table-striped">
       <thead>
@@ -140,6 +163,10 @@ export default {
       deposits: [],
       sort_key: "date",
       sort_asc: true,
+
+      //filter--
+      //checkedFStatuses: { fStatusActive: true },
+      checkedFStatuses: ["fStatusActive", "fStatusFinished"],
     };
   },
 
@@ -215,6 +242,29 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    async filter() {
+      await this.getDeposits();
+
+      var tmpdeposits = [];
+
+      for (const kd in this.deposits) {
+        //console.log("---1", this.deposits[kd]);
+        if (
+          this.checkedFStatuses.includes("fStatusActive") &&
+          this.deposits[kd].status == Enum.EnumDepositStatus.ACTIVE.val
+        ) {
+          tmpdeposits.push(this.deposits[kd]);
+        }
+        if (
+          this.checkedFStatuses.includes("fStatusFinished") &&
+          this.deposits[kd].status == Enum.EnumDepositStatus.FINISHED.val
+        ) {
+          tmpdeposits.push(this.deposits[kd]);
+        }
+      }
+
+      this.deposits = tmpdeposits;
     },
   },
 };
