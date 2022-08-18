@@ -51,71 +51,7 @@
           </select>
         </div>
 
-  
 
-        <!-- -->
-
-     
-
-        <!--
-        <div class="mb-3">
-          <label for="" class="form-label">principalCurrency</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            @change="onChangePrincipalCurrency()"
-            required
-          >
-           
-            <option
-              v-for="n in refEnum.EnumCurrency"
-              v-bind:key="n"
-              v-bind:value="n.val"
-            >
-              {{ n.text }}
-            </option>
-          </select>
-        </div>
--->
-
-        <!--
-        <div class="mb-3">
-          <label for="" class="form-label">Principal Foreign</label>
-          <input
-            type="number"
-            step="0.01"
-            class="form-control"
-            v-model="form.principalForeign"
-            v-bind:disabled="dPrincipalForeign"
-          />
-        </div>
--->
-     
-
-      
-
-
-        <!--
-        <div class="mb-3">
-          <label for="" class="form-label">valueCurrency</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            v-bind:disabled="dvalueCurrency"
-          >
-            <option
-              v-for="n in refEnum.EnumCurrency"
-              v-bind:key="n"
-              v-bind:value="n.val"
-            >
-              {{ n.text }}
-            </option>
-          </select>
-        </div>
--->
-    
-
-    
 
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
@@ -293,16 +229,14 @@ export default {
     async submitCreate() {
       delete this.form.depositType;
 
-      console.log("----submit");
-      console.log(this.form);
+      // console.log("----submit");
+      // console.log(this.form);
 
-      //hoge
       var memo = this.form.memo.replace(/\r\n|\r/g, "\n");
       var lines = memo.split("\n");
       //var outArray = new Array();
 
       for (var i = 0; i < lines.length; i++) {
-        // 空行は無視する
         if (lines[i] == "") {
           continue;
         }
@@ -352,7 +286,7 @@ export default {
 
       this.form.status = Enum.EnumDepositStatus.ACTIVE.val;
 
-      console.log(this.form);
+      // console.log(this.form);
 
       await API.graphql({
         query: createDeposit,
