@@ -283,7 +283,6 @@ export default {
 
       //fix
       this.form.memo = "";
-
       this.form.status = Enum.EnumDepositStatus.ACTIVE.val;
 
       // console.log(this.form);
