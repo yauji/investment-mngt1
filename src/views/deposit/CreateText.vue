@@ -1,19 +1,14 @@
 <template>
   <div>
-    <h1>New Deposit</h1>
+    <h1>New Deposit with text</h1>
 
     <form @submit.prevent="submitCreate">
       <input type="submit" value="Submit" />
 
       <div class="mb-3">
         <div class="mb-3">
-          <label for="" class="form-label">name *</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.name"
-            required
-          />
+          <label for="" class="form-label">memo</label>
+          <textarea class="form-control" v-model="form.memo" />
         </div>
 
         <div class="mb-3">
@@ -36,17 +31,26 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">memo</label>
-          <textarea class="form-control" v-model="form.memo" />
+          <label for="" class="form-label">Principal -> semi auto</label>
+          <input
+            type="number"
+            step="0.01"
+            class="form-control"
+            v-model="form.principal"
+            v-bind:disabled="dPrincipal"
+          />
+        </div>
+
+        <!-- -->
+
+        <div class="mb-3">
+          <label for="" class="form-label">name * auto</label>
+          <input type="text" class="form-control" v-model="form.name" />
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">date *</label>
-          <datepicker
-            v-model="form.date"
-            required
-            class="form-control"
-          />
+          <label for="" class="form-label">date * auto</label>
+          <datepicker v-model="form.date" class="form-control" />
           <!--             
              <datepicker  v-model="picked" />
           <input type="text" class="form-control" v-model="form.date" />
@@ -74,13 +78,12 @@
         </div>
 -->
         <div class="mb-3">
-          <label for="" class="form-label">principal account</label>
+          <label for="" class="form-label">principal account -> auto</label>
           <select
             class="form-select"
             aria-label="Default select example"
             v-model="form.principalAccountId"
             @change="onChangePrincipalCurrency()"
-            required
           >
             <option
               v-for="n in this.accounts"
@@ -92,16 +95,6 @@
           </select>
         </div>
 
-        <div class="mb-3">
-          <label for="" class="form-label">Principal</label>
-          <input
-            type="number"
-            step="0.01"
-            class="form-control"
-            v-model="form.principal"
-            v-bind:disabled="dPrincipal"
-          />
-        </div>
         <!--
         <div class="mb-3">
           <label for="" class="form-label">Principal Foreign</label>
@@ -115,7 +108,7 @@
         </div>
 -->
         <div class="mb-3">
-          <label for="" class="form-label">exchange rate</label>
+          <label for="" class="form-label">exchange rate -> auto</label>
           <input
             type="number"
             class="form-control"
@@ -126,7 +119,7 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">interest rate</label>
+          <label for="" class="form-label">interest rate -> auto</label>
           <input
             type="number"
             class="form-control"
@@ -137,7 +130,7 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">duration</label>
+          <label for="" class="form-label">duration -> auto</label>
           <input
             type="text"
             class="form-control"
@@ -147,7 +140,7 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">end date</label>
+          <label for="" class="form-label">end date -> auto</label>
           <datepicker v-model="form.endDate" class="form-control" />
         </div>
         <!--
@@ -169,7 +162,7 @@
         </div>
 -->
         <div class="mb-3">
-          <label for="" class="form-label">value account</label>
+          <label for="" class="form-label">value account -> n/a</label>
           <select
             class="form-select"
             aria-label="Default select example"
@@ -187,7 +180,7 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">value </label>
+          <label for="" class="form-label">value -> n/a </label>
           <input
             type="number"
             step="0.01"
@@ -218,7 +211,7 @@ import * as Enum from "@/Enum";
 //import * as Enum from '../../enum';
 
 export default {
-  name: "DepositCreate",
+  name: "DepositCreateText",
   async created() {
     this.getAccounts();
   },
@@ -237,12 +230,15 @@ export default {
         name: "",
         //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
         //depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",
+        depositType: Enum.EnumDepositType.DEPOSIT.val,
         //typeDeposit
+
         memo: "",
         //status: "FINISHED",
         //status: "",
 
         //date: new Date(),
+
         date: "",
         //principalCurrency: "JPY",
         //principalJPY: 1000,
@@ -369,6 +365,52 @@ export default {
 
     async submitCreate() {
       delete this.form.depositType;
+
+      console.log("----submit");
+      console.log(this.form);
+
+      //hoge
+      var memo = this.form.memo.replace(/\r\n|\r/g, "\n");
+      var lines = memo.split("\n");
+      //var outArray = new Array();
+
+      for (var i = 0; i < lines.length; i++) {
+        // 空行は無視する
+        if (lines[i] == "") {
+          continue;
+        }
+
+        console.log(lines[i]);
+        var resultDate = /(預入日)\t(\d+\/\d+\/\d+)/.exec(lines[i]);
+        if (resultDate != null) {
+          //var tdate = resultDate[2].replaceAll(/\//,"-");
+          //this.form.date = resultDate[2].replaceAll(/\//g,"-");
+          this.form.date = new Date(resultDate[2]);
+        }
+        // console.log(resultDate);
+
+        var resultEndDate = /(満期日)\t(\d+\/\d+\/\d+)/.exec(lines[i]);
+        if (resultEndDate != null) {
+          // this.form.endDate = resultEndDate[2].replaceAll(/\//g,"-");
+          this.form.endDate = new Date(resultEndDate[2]);
+        }
+
+        var result = /(預入金額)\t([0-9,]+)/.exec(lines[i]);
+        if (result != null) {
+          this.form.principal = Number(result[2].replaceAll(/,/g, ""));
+        }
+
+        var result0 = /(商品名)\t(.+)/.exec(lines[i]);
+        if (result0 != null) {
+          this.form.name = result0[2];
+        }
+      }
+
+      //fix
+      this.form.memo = "";
+      this.form.duration = 1;
+
+      this.form.status = Enum.EnumDepositStatus.ACTIVE.val;
 
       console.log(this.form);
 
