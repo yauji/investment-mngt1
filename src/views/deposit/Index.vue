@@ -6,6 +6,10 @@
       <button class="btn btn-primary" @click="navigate">Add Deposit</button>
     </router-link>
 
+    <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreateText' }">
+      <button class="btn btn-primary" @click="navigate">Add Deposit with text</button>
+    </router-link>
+
     <div>
       <input
         type="checkbox"

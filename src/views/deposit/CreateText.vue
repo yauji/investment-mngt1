@@ -1,20 +1,36 @@
 <template>
   <div>
-    <h1>New Deposit</h1>
+    <h1>New Deposit with text</h1>
 
     <form @submit.prevent="submitCreate">
       <input type="submit" value="Submit" />
 
       <div class="mb-3">
         <div class="mb-3">
-          <label for="" class="form-label">name *</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.name"
-            required
-          />
+          <label for="" class="form-label">memo</label>
+          <textarea class="form-control" v-model="form.memo" />
         </div>
+
+        <div class="mb-3">
+          <label for="" class="form-label">principal account *</label>
+          <select
+            class="form-select"
+            aria-label="Default select example"
+            v-model="form.principalAccountId"
+            @change="onChangePrincipalCurrency()"
+            required
+          >
+            <option
+              v-for="n in this.accounts"
+              v-bind:key="n"
+              v-bind:value="n.id"
+            >
+              {{ n.currency }} - {{ n.name }}
+            </option>
+          </select>
+        </div>
+
+
 
         <div class="mb-3">
           <label for="" class="form-label">type *</label>
@@ -35,167 +51,7 @@
           </select>
         </div>
 
-        <div class="mb-3">
-          <label for="" class="form-label">memo</label>
-          <textarea class="form-control" v-model="form.memo" />
-        </div>
 
-        <div class="mb-3">
-          <label for="" class="form-label">date *</label>
-          <datepicker
-            v-model="form.date"
-            required
-            class="form-control"
-          />
-          <!--             
-             <datepicker  v-model="picked" />
-          <input type="text" class="form-control" v-model="form.date" />
-          -->
-        </div>
-
-        <!--
-        <div class="mb-3">
-          <label for="" class="form-label">principalCurrency</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            @change="onChangePrincipalCurrency()"
-            required
-          >
-           
-            <option
-              v-for="n in refEnum.EnumCurrency"
-              v-bind:key="n"
-              v-bind:value="n.val"
-            >
-              {{ n.text }}
-            </option>
-          </select>
-        </div>
--->
-        <div class="mb-3">
-          <label for="" class="form-label">principal account</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            v-model="form.principalAccountId"
-            @change="onChangePrincipalCurrency()"
-            required
-          >
-            <option
-              v-for="n in this.accounts"
-              v-bind:key="n"
-              v-bind:value="n.id"
-            >
-              {{ n.currency }} - {{ n.name }}
-            </option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">Principal</label>
-          <input
-            type="number"
-            step="0.01"
-            class="form-control"
-            v-model="form.principal"
-            v-bind:disabled="dPrincipal"
-          />
-        </div>
-        <!--
-        <div class="mb-3">
-          <label for="" class="form-label">Principal Foreign</label>
-          <input
-            type="number"
-            step="0.01"
-            class="form-control"
-            v-model="form.principalForeign"
-            v-bind:disabled="dPrincipalForeign"
-          />
-        </div>
--->
-        <div class="mb-3">
-          <label for="" class="form-label">exchange rate</label>
-          <input
-            type="number"
-            class="form-control"
-            v-model="form.exchangeRate"
-            v-bind:disabled="dExchangeRate"
-            step="0.01"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">interest rate</label>
-          <input
-            type="number"
-            class="form-control"
-            v-model="form.interestRate"
-            v-bind:disabled="dInterestRate"
-            step="0.01"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">duration</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.duration"
-            v-bind:disabled="dDuration"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">end date</label>
-          <datepicker v-model="form.endDate" class="form-control" />
-        </div>
-        <!--
-        <div class="mb-3">
-          <label for="" class="form-label">valueCurrency</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            v-bind:disabled="dvalueCurrency"
-          >
-            <option
-              v-for="n in refEnum.EnumCurrency"
-              v-bind:key="n"
-              v-bind:value="n.val"
-            >
-              {{ n.text }}
-            </option>
-          </select>
-        </div>
--->
-        <div class="mb-3">
-          <label for="" class="form-label">value account</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            v-model="form.valueAccountId"
-            @change="onChangePrincipalCurrency()"
-          >
-            <option
-              v-for="n in this.accounts"
-              v-bind:key="n"
-              v-bind:value="n.id"
-            >
-              {{ n.currency }} - {{ n.name }}
-            </option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">value </label>
-          <input
-            type="number"
-            step="0.01"
-            class="form-control"
-            v-model="form.value"
-            v-bind:disabled="dValue"
-          />
-        </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
@@ -212,19 +68,19 @@ import { listAccounts } from "../../graphql/queries";
 //import { createDeposit, updateAccount } from "../../graphql/mutations";
 //import { listAccounts } from "../../graphql/queries";
 
-import Datepicker from "vue3-datepicker";
+//import Datepicker from "vue3-datepicker";
 
 import * as Enum from "@/Enum";
 //import * as Enum from '../../enum';
 
 export default {
-  name: "DepositCreate",
+  name: "DepositCreateText",
   async created() {
     this.getAccounts();
   },
 
   components: {
-    Datepicker,
+    //Datepicker,
   },
   computed: {
     refEnum: () => Enum,
@@ -237,12 +93,15 @@ export default {
         name: "",
         //typeDeposit: Enum.EnumDepositeType.BUY_FOREIGN_CURRENCY_BY_JPY.val,
         //depositType: "BUY_FOREIGN_CURRENCY_BY_JPY",
+        depositType: Enum.EnumDepositType.DEPOSIT.val,
         //typeDeposit
+
         memo: "",
         //status: "FINISHED",
         //status: "",
 
         //date: new Date(),
+
         date: "",
         //principalCurrency: "JPY",
         //principalJPY: 1000,
@@ -370,7 +229,63 @@ export default {
     async submitCreate() {
       delete this.form.depositType;
 
-      console.log(this.form);
+      // console.log("----submit");
+      // console.log(this.form);
+
+      var memo = this.form.memo.replace(/\r\n|\r/g, "\n");
+      var lines = memo.split("\n");
+      //var outArray = new Array();
+
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i] == "") {
+          continue;
+        }
+
+        console.log(lines[i]);
+        var resultDate = /(預入日)\t(\d+\/\d+\/\d+)/.exec(lines[i]);
+        if (resultDate != null) {
+          //var tdate = resultDate[2].replaceAll(/\//,"-");
+          //this.form.date = resultDate[2].replaceAll(/\//g,"-");
+          this.form.date = new Date(resultDate[2]);
+        }
+        // console.log(resultDate);
+
+        var resultEndDate = /(満期日)\t(\d+\/\d+\/\d+)/.exec(lines[i]);
+        if (resultEndDate != null) {
+          // this.form.endDate = resultEndDate[2].replaceAll(/\//g,"-");
+          this.form.endDate = new Date(resultEndDate[2]);
+        }
+
+        var result = /(預入金額)\t([0-9,]+)/.exec(lines[i]);
+        if (result != null) {
+          this.form.principal = Number(result[2].replaceAll(/,/g, ""));
+        }
+
+        var result0 = /(商品名)\t(.+)/.exec(lines[i]);
+        if (result0 != null) {
+          this.form.name = result0[2];
+        }
+
+        var result1 = /(期間)\t([0-9]+)/.exec(lines[i]);
+        if (result1 != null) {
+          this.form.duration = Number(result1[2]);
+        }
+
+        //var result2 = /(金利\(税引前･年率\))\t(.+) /.exec(lines[i]);
+        var result2 = /(\d\.\d+)/.exec(lines[i]);
+        //console.log("----1223---");
+        //console.log(result2);
+        if (result2 != null) {
+          this.form.interestRate = Number(result2[1]);
+        }
+
+      }
+
+      //fix
+      this.form.memo = "";
+      this.form.status = Enum.EnumDepositStatus.ACTIVE.val;
+
+      // console.log(this.form);
 
       await API.graphql({
         query: createDeposit,
