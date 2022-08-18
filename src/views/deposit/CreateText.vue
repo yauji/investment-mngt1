@@ -12,6 +12,27 @@
         </div>
 
         <div class="mb-3">
+          <label for="" class="form-label">principal account *</label>
+          <select
+            class="form-select"
+            aria-label="Default select example"
+            v-model="form.principalAccountId"
+            @change="onChangePrincipalCurrency()"
+            required
+          >
+            <option
+              v-for="n in this.accounts"
+              v-bind:key="n"
+              v-bind:value="n.id"
+            >
+              {{ n.currency }} - {{ n.name }}
+            </option>
+          </select>
+        </div>
+
+
+
+        <div class="mb-3">
           <label for="" class="form-label">type *</label>
           <select
             class="form-select"
@@ -30,32 +51,11 @@
           </select>
         </div>
 
-        <div class="mb-3">
-          <label for="" class="form-label">Principal -> semi auto</label>
-          <input
-            type="number"
-            step="0.01"
-            class="form-control"
-            v-model="form.principal"
-            v-bind:disabled="dPrincipal"
-          />
-        </div>
+  
 
         <!-- -->
 
-        <div class="mb-3">
-          <label for="" class="form-label">name * auto</label>
-          <input type="text" class="form-control" v-model="form.name" />
-        </div>
-
-        <div class="mb-3">
-          <label for="" class="form-label">date * auto</label>
-          <datepicker v-model="form.date" class="form-control" />
-          <!--             
-             <datepicker  v-model="picked" />
-          <input type="text" class="form-control" v-model="form.date" />
-          -->
-        </div>
+     
 
         <!--
         <div class="mb-3">
@@ -77,23 +77,6 @@
           </select>
         </div>
 -->
-        <div class="mb-3">
-          <label for="" class="form-label">principal account -> auto</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            v-model="form.principalAccountId"
-            @change="onChangePrincipalCurrency()"
-          >
-            <option
-              v-for="n in this.accounts"
-              v-bind:key="n"
-              v-bind:value="n.id"
-            >
-              {{ n.currency }} - {{ n.name }}
-            </option>
-          </select>
-        </div>
 
         <!--
         <div class="mb-3">
@@ -107,42 +90,11 @@
           />
         </div>
 -->
-        <div class="mb-3">
-          <label for="" class="form-label">exchange rate -> auto</label>
-          <input
-            type="number"
-            class="form-control"
-            v-model="form.exchangeRate"
-            v-bind:disabled="dExchangeRate"
-            step="0.01"
-          />
-        </div>
+     
 
-        <div class="mb-3">
-          <label for="" class="form-label">interest rate -> auto</label>
-          <input
-            type="number"
-            class="form-control"
-            v-model="form.interestRate"
-            v-bind:disabled="dInterestRate"
-            step="0.01"
-          />
-        </div>
+      
 
-        <div class="mb-3">
-          <label for="" class="form-label">duration -> auto</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.duration"
-            v-bind:disabled="dDuration"
-          />
-        </div>
 
-        <div class="mb-3">
-          <label for="" class="form-label">end date -> auto</label>
-          <datepicker v-model="form.endDate" class="form-control" />
-        </div>
         <!--
         <div class="mb-3">
           <label for="" class="form-label">valueCurrency</label>
@@ -161,34 +113,9 @@
           </select>
         </div>
 -->
-        <div class="mb-3">
-          <label for="" class="form-label">value account -> n/a</label>
-          <select
-            class="form-select"
-            aria-label="Default select example"
-            v-model="form.valueAccountId"
-            @change="onChangePrincipalCurrency()"
-          >
-            <option
-              v-for="n in this.accounts"
-              v-bind:key="n"
-              v-bind:value="n.id"
-            >
-              {{ n.currency }} - {{ n.name }}
-            </option>
-          </select>
-        </div>
+    
 
-        <div class="mb-3">
-          <label for="" class="form-label">value -> n/a </label>
-          <input
-            type="number"
-            step="0.01"
-            class="form-control"
-            v-model="form.value"
-            v-bind:disabled="dValue"
-          />
-        </div>
+    
 
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
@@ -205,7 +132,7 @@ import { listAccounts } from "../../graphql/queries";
 //import { createDeposit, updateAccount } from "../../graphql/mutations";
 //import { listAccounts } from "../../graphql/queries";
 
-import Datepicker from "vue3-datepicker";
+//import Datepicker from "vue3-datepicker";
 
 import * as Enum from "@/Enum";
 //import * as Enum from '../../enum';
@@ -217,7 +144,7 @@ export default {
   },
 
   components: {
-    Datepicker,
+    //Datepicker,
   },
   computed: {
     refEnum: () => Enum,
@@ -404,11 +331,24 @@ export default {
         if (result0 != null) {
           this.form.name = result0[2];
         }
+
+        var result1 = /(期間)\t([0-9]+)/.exec(lines[i]);
+        if (result1 != null) {
+          this.form.duration = Number(result1[2]);
+        }
+
+        //var result2 = /(金利\(税引前･年率\))\t(.+) /.exec(lines[i]);
+        var result2 = /(\d\.\d+)/.exec(lines[i]);
+        //console.log("----1223---");
+        //console.log(result2);
+        if (result2 != null) {
+          this.form.interestRate = Number(result2[1]);
+        }
+
       }
 
       //fix
       this.form.memo = "";
-      this.form.duration = 1;
 
       this.form.status = Enum.EnumDepositStatus.ACTIVE.val;
 
