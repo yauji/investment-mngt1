@@ -69,7 +69,7 @@ import {
 
 import moment from "moment";
 
-//import * as Enum from "@/Enum";
+import * as Enum from "@/Enum";
 
 export default {
   name: "AccountShow",
@@ -123,14 +123,12 @@ export default {
     },
     */
     getAccountById: function (id) {
-
       for (const a in this.accounts) {
         //console.log(a, id);
         if (this.accounts[a].id == id) {
           return this.accounts[a];
         }
       }
-
     },
     async getAccount() {
       //console.log(this.accountId);
@@ -191,18 +189,20 @@ export default {
           //console.log("-----11", d);
           d.principalAccountName = this.form.name + " " + this.form.currency;
 
-          //for display
-          const tmpa = this.getAccountById(d.valueAccountId);
-          //console.log(tmpa);
-          d.valueAccountName = tmpa.name + " " + tmpa.currency;
+          if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+            //for display
+            const tmpa = this.getAccountById(d.valueAccountId);
+            //console.log(tmpa);
+            d.valueAccountName = tmpa.name + " " + tmpa.currency;
+          }
 
           this.deposits.push(d);
-        }else if (d.valueAccountId == this.form.id) {
+        } else if (d.valueAccountId == this.form.id) {
           //console.log("-----11", d);
           d.valueAccountName = this.form.name + " " + this.form.currency;
 
           //for display
-          const tmpa = this.getAccountById(d.principalAccountId);          
+          const tmpa = this.getAccountById(d.principalAccountId);
           d.principalAccountName = tmpa.name + " " + tmpa.currency;
 
           this.deposits.push(d);
