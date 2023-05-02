@@ -83,12 +83,6 @@ export default {
       form: {},
       deposits: [],
       trusttransactions: [],
-      /*
-      album: {
-        name: null,
-        photos: []
-      },
-      */
     };
   },
 
@@ -131,7 +125,7 @@ export default {
           console.log(error);
         });
 
-      console.log("-----1", this.accounts);
+      //console.log("-----1", this.accounts);
       //var accounts = this.accounts;
 
       // create dic----
@@ -146,7 +140,7 @@ export default {
         const d = deposits[kd];
 
         if (d.principalAccountId == this.form.id) {
-          console.log("-----11", d);
+          //console.log("-----11", d);
           this.deposits.push(d);
         }
 
@@ -173,19 +167,19 @@ export default {
         query: listTrustTransactions,
       })
         .then((result) => {
-          console.log(result);
+          //console.log(result);
           trusttransactions = result.data.listTrustTransactions.items;
         })
         .catch((error) => {
           console.log(error);
         });
-      console.log(trusttransactions);
+      //console.log(trusttransactions);
 
       for (const ktt in trusttransactions) {
         const tt = trusttransactions[ktt];
 
         if (tt.accountId == this.form.id) {
-          console.log(tt);
+        //  console.log(tt);
           this.trusttransactions.push(tt);
         }
         /*
