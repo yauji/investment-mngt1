@@ -79,11 +79,10 @@ export default {
   async created() {
     //hoge
     //for display other account name
-    this.getAllAccounts();
+    await this.getAllAccounts();
 
     this.getAccount();
     this.getTrans();
-
   },
   data() {
     return {
@@ -127,15 +126,16 @@ export default {
     getAccountById: function (id) {
       //hoge
       for (const a in this.accounts) {
-        console.log(a, id);
-        if(a.id == id){
-          return a;
+        //console.log(a, id);
+        if (this.accounts[a].id == id) {
+          return this.accounts[a];
         }
       }
       //return "hogeaa";
     },
     async getAccount() {
       //console.log(this.accountId);
+      //console.log(this.accounts);
 
       await API.graphql({
         query: getAccount,
@@ -193,11 +193,9 @@ export default {
           d.principalAccountName = this.form.name + " " + this.form.currency;
 
           //for display
-          //hoge
-
-          //const tmpa = await this.getAccountById(d.valueAccountId);
-          //d.valueAccountName = this.getAccountById(d.valueAccountId).name;
-          //d.valueAccountName = "hoge";
+          const tmpa = this.getAccountById(d.valueAccountId);
+          //console.log(tmpa);
+          d.valueAccountName = tmpa.name + " " + tmpa.currency;
 
           this.deposits.push(d);
         }
@@ -206,12 +204,9 @@ export default {
           d.valueAccountName = this.form.name + " " + this.form.currency;
 
           //for display
-          //hoge
-          /*
-          d.principalAccountName = this.getAccountById(
-            d.principalAccountId
-          ).name;
-*/
+          const tmpa = this.getAccountById(d.principalAccountId);          
+          d.principalAccountName = tmpa.name + " " + tmpa.currency;
+
           this.deposits.push(d);
         }
 
