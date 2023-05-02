@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h1>Account detail - {{ form.name }}</h1>
+    <h1>Account detail - {{ form.name }} - {{ form.currency }}</h1>
 
-    <h2>Deposites</h2>
+    <h3>Deposites</h3>
     <table class="table table-striped">
       <thead>
         <tr>
@@ -10,6 +10,7 @@
           <th>date</th>
           <th>status</th>
           <th>principal</th>
+          <th></th>
           <th>value</th>
           <th></th>
         </tr>
@@ -20,12 +21,14 @@
           <td>{{ moment(deposit.date) }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ numberFormat(deposit.principal) }}</td>
+          <td>{{ deposit.principalAccountName }}</td>
           <td>{{ numberFormat(deposit.value) }}</td>
+          <td>{{ deposit.valueAccountName }}</td>
         </tr>
       </tbody>
     </table>
 
-    <h2>Trust transactions</h2>
+    <h3>Trust transactions</h3>
     <table class="table table-striped">
       <thead>
         <tr>
@@ -55,7 +58,7 @@
 import { API } from "aws-amplify";
 import { getAccount } from "../../graphql/queries";
 import {
-  //listAccounts,
+  listAccounts,
   listDeposits,
   listTrustTransactions,
 } from "../../graphql/queries";
@@ -74,14 +77,20 @@ export default {
     accountId: String,
   },
   async created() {
-    this.getAccount();
+    //hoge
+    //for display other account name
+    this.getAllAccounts();
 
+    this.getAccount();
     this.getTrans();
+
   },
   data() {
     return {
       form: {},
       deposits: [],
+      //for display other account name
+      accounts: [],
       trusttransactions: [],
     };
   },
@@ -97,6 +106,34 @@ export default {
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
     },
+    /*
+    async getAccountById (id) {
+      
+      await API.graphql({
+        query: getAccount,
+        variables: { id: id },
+      })
+        .then((result) => {
+          console.log(result);
+          //this.form = result.data.getAccount;
+          //return result.name, result.currency;
+          return result.data.getAccount;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    */
+    getAccountById: function (id) {
+      //hoge
+      for (const a in this.accounts) {
+        console.log(a, id);
+        if(a.id == id){
+          return a;
+        }
+      }
+      //return "hogeaa";
+    },
     async getAccount() {
       //console.log(this.accountId);
 
@@ -106,6 +143,18 @@ export default {
       })
         .then((result) => {
           this.form = result.data.getAccount;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async getAllAccounts() {
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          this.accounts = result.data.listAccounts.items;
         })
         .catch((error) => {
           console.log(error);
@@ -141,6 +190,28 @@ export default {
 
         if (d.principalAccountId == this.form.id) {
           //console.log("-----11", d);
+          d.principalAccountName = this.form.name + " " + this.form.currency;
+
+          //for display
+          //hoge
+
+          //const tmpa = await this.getAccountById(d.valueAccountId);
+          //d.valueAccountName = this.getAccountById(d.valueAccountId).name;
+          //d.valueAccountName = "hoge";
+
+          this.deposits.push(d);
+        }
+        if (d.valueAccountId == this.form.id) {
+          //console.log("-----11", d);
+          d.valueAccountName = this.form.name + " " + this.form.currency;
+
+          //for display
+          //hoge
+          /*
+          d.principalAccountName = this.getAccountById(
+            d.principalAccountId
+          ).name;
+*/
           this.deposits.push(d);
         }
 
@@ -179,7 +250,7 @@ export default {
         const tt = trusttransactions[ktt];
 
         if (tt.accountId == this.form.id) {
-        //  console.log(tt);
+          //  console.log(tt);
           this.trusttransactions.push(tt);
         }
         /*
