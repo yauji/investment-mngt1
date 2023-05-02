@@ -12,7 +12,7 @@
           <th>exchangeRate</th>
           <th>memo</th>
           <th>active deposit</th>
-          <th>trust</th>
+          <th>trust (not implemented)</th>
           <th></th>
         </tr>
       </thead>
@@ -82,6 +82,7 @@
     <router-link custom v-slot="{ navigate }" :to="{ name: 'AccountCreate' }">
       <button class="btn btn-primary" @click="navigate">Add Account</button>
     </router-link>
+
   </div>
 </template>
 
@@ -91,7 +92,7 @@ import { API } from "aws-amplify";
 import {
   listAccounts,
   listDeposits,
-  listTrustTransactions,
+  //listTrustTransactions,
 } from "../../graphql/queries";
 import { deleteAccount, updateAccount } from "../../graphql/mutations";
 
@@ -165,6 +166,39 @@ export default {
             console.log(error);
           });
         a.activedeposit = tad;
+
+                //calc active trust----
+        //a.activedeposit = 1;
+
+        //calc active deposit----
+        /*
+        filter = {
+          principalAccountId: {
+            eq: a.id,
+          },
+        };
+
+        var tad = 0;
+        await API.graphql({
+          query: listDeposits,
+          variables: { filter: filter },
+        })
+          .then((result) => {
+            //console.log(result);
+            var tdeposits = result.data.listDeposits.items;
+
+            for (const kd in tdeposits) {
+              const d = tdeposits[kd];
+              if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
+                tad += d.principal;
+              }
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        a.activedeposit = tad;
+        */
       }
 
       //calc trust balance-----
@@ -247,6 +281,7 @@ export default {
       //TODO
       //kokokara: update schema for account
 
+      /*
       var trusttransactions = {};
       await API.graphql({
         query: listTrustTransactions,
@@ -283,7 +318,7 @@ export default {
 
         }
         */
-      }
+      //      }
 
       //console.log("-----4", dicAccountIdBalance);
 
