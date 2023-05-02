@@ -106,7 +106,7 @@ export default {
         query: listAccounts,
       })
         .then((result) => {
-          console.log(result);
+          //console.log(result);
           this.accounts = result.data.listAccounts.items;
         })
         .catch((error) => {
@@ -131,7 +131,7 @@ export default {
           variables: { filter: filter },
         })
           .then((result) => {
-            console.log(result);
+            //console.log(result);
             var tdeposits = result.data.listDeposits.items;
 
             for (const kd in tdeposits) {
@@ -197,7 +197,7 @@ export default {
           console.log(error);
         });
 */
-      console.log("-----1", this.accounts);
+      //console.log("-----1", this.accounts);
       //var accounts = this.accounts;
 
       // create dic----
@@ -232,26 +232,26 @@ export default {
         query: listTrustTransactions,
       })
         .then((result) => {
-          console.log(result);
+          //console.log(result);
           trusttransactions = result.data.listTrustTransactions.items;
         })
         .catch((error) => {
           console.log(error);
         });
-      console.log(trusttransactions);
+      //console.log(trusttransactions);
 
       for (const ktt in trusttransactions) {
         const tt = trusttransactions[ktt];
 
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
           dicAccountIdBalance[tt.accountId] -= tt.buy;
-          console.log("------31", tt.buy);
+          //console.log("------31", tt.buy);
         } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
           dicAccountIdBalance[tt.accountId] += tt.sell;
-          console.log("------32", tt.sell);
+          //console.log("------32", tt.sell);
         } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
           dicAccountIdBalance[tt.accountId] += tt.dividend;
-          console.log("------33", tt);
+          //console.log("------33", tt);
         }
 
         /*
@@ -265,13 +265,13 @@ export default {
         */
       }
 
-      console.log("-----4", dicAccountIdBalance);
+      //console.log("-----4", dicAccountIdBalance);
 
       //update account balances---
       for (const ka in this.accounts) {
         var a = this.accounts[ka];
         a.balance = dicAccountIdBalance[a.id];
-        console.log("-----41", a);
+        //console.log("-----41", a);
 
         delete a.createdAt;
         delete a.updatedAt;
@@ -283,7 +283,7 @@ export default {
           variables: { input: a },
         })
           .then((result) => {
-            console.log(result);
+            console.log(result);            
             //this.$router.push({ name: "AccountIndex" });
           })
           .catch((error) => {

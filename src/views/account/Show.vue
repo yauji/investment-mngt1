@@ -2,10 +2,7 @@
   <div>
     <h1>Account detail - {{ form.name }}</h1>
 
-* 作成中：関連するdeposite, trust transactionを表示。表示はされるはず。
-  
-
-  <h2>Deposites</h2>
+    <h2>Deposites</h2>
     <table class="table table-striped">
       <thead>
         <tr>
@@ -18,7 +15,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(deposit) in deposits" :key="deposit.id">
+        <tr v-for="deposit in deposits" :key="deposit.id">
           <td>{{ deposit.name }}</td>
           <td>{{ moment(deposit.date) }}</td>
           <td>{{ deposit.status }}</td>
@@ -28,30 +25,29 @@
       </tbody>
     </table>
 
-
-     <h2>Trust transactions</h2>
+    <h2>Trust transactions</h2>
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>name</th>
           <th>date</th>
-          <th>status</th>
-          <th>principal</th>
-          <th>value</th>
+          <th>buy</th>
+          <th>sell</th>
+          <th>trust</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(trusttransaction) in trusttransactions" :key="trusttransaction.id">
+        <tr
+          v-for="trusttransaction in trusttransactions"
+          :key="trusttransaction.id"
+        >
           <td>{{ moment(trusttransaction.date) }}</td>
           <td>{{ numberFormat(trusttransaction.buy) }}</td>
           <td>{{ numberFormat(trusttransaction.sell) }}</td>
-          
+          <td>{{ trusttransaction.trustBalance.name }}</td>
         </tr>
       </tbody>
     </table>
-    
-    
   </div>
 </template>
 
@@ -81,20 +77,12 @@ export default {
     this.getAccount();
 
     this.getTrans();
-
   },
   data() {
     return {
-      form: {
-      },
+      form: {},
       deposits: [],
       trusttransactions: [],
-      /*
-      album: {
-        name: null,
-        photos: []
-      },
-      */
     };
   },
 
@@ -105,10 +93,9 @@ export default {
       } else {
         return value.toLocaleString();
       }
-    }, 
+    },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
-      
     },
     async getAccount() {
       //console.log(this.accountId);
@@ -125,7 +112,7 @@ export default {
         });
     },
     async getTrans() {
-       //get deposits-----
+      //get deposits-----
       var deposits;
       await API.graphql({
         query: listDeposits,
@@ -138,7 +125,7 @@ export default {
           console.log(error);
         });
 
-      console.log("-----1", this.accounts);
+      //console.log("-----1", this.accounts);
       //var accounts = this.accounts;
 
       // create dic----
@@ -152,15 +139,15 @@ export default {
         //console.log(deposits[kd]);
         const d = deposits[kd];
 
-        if(d.principalAccountId == this.form.id){
-          console.log("-----11", d);
+        if (d.principalAccountId == this.form.id) {
+          //console.log("-----11", d);
           this.deposits.push(d);
         }
 
         //console.log("-------11", d.principal, d.value);
         //dicAccountIdBalance[d.principalAccountId] -= d.principal;
 
-/*
+        /*
         if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
           //console.log("-----3", d.status);
           dicAccountIdBalance[d.valueAccountId] += d.value;
@@ -180,22 +167,22 @@ export default {
         query: listTrustTransactions,
       })
         .then((result) => {
-          console.log(result);
+          //console.log(result);
           trusttransactions = result.data.listTrustTransactions.items;
         })
         .catch((error) => {
           console.log(error);
         });
-      console.log(trusttransactions);
+      //console.log(trusttransactions);
 
       for (const ktt in trusttransactions) {
         const tt = trusttransactions[ktt];
 
-        if(tt.accountId == this.form.id){
-          console.log(tt);
+        if (tt.accountId == this.form.id) {
+        //  console.log(tt);
           this.trusttransactions.push(tt);
         }
-/*
+        /*
         if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
           dicAccountIdBalance[tt.accountId] -= tt.buy;
           console.log("------31", tt.buy);
@@ -207,10 +194,7 @@ export default {
           console.log("------33", tt);
         }
         */
-
-        
       }
-      
     },
   },
 };
