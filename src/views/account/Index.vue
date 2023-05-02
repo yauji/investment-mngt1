@@ -82,7 +82,6 @@
     <router-link custom v-slot="{ navigate }" :to="{ name: 'AccountCreate' }">
       <button class="btn btn-primary" @click="navigate">Add Account</button>
     </router-link>
-
   </div>
 </template>
 
@@ -92,7 +91,7 @@ import { API } from "aws-amplify";
 import {
   listAccounts,
   listDeposits,
-  //listTrustTransactions,
+  listTrustTransactions,
 } from "../../graphql/queries";
 import { deleteAccount, updateAccount } from "../../graphql/mutations";
 
@@ -167,7 +166,7 @@ export default {
           });
         a.activedeposit = tad;
 
-                //calc active trust----
+        //calc active trust----
         //a.activedeposit = 1;
 
         //calc active deposit----
@@ -278,10 +277,6 @@ export default {
       //console.log(dicAccountIdBalance);
 
       //trust transaction----
-      //TODO
-      //kokokara: update schema for account
-
-      /*
       var trusttransactions = {};
       await API.graphql({
         query: listTrustTransactions,
@@ -318,7 +313,7 @@ export default {
 
         }
         */
-      //      }
+      }
 
       //console.log("-----4", dicAccountIdBalance);
 

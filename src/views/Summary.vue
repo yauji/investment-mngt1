@@ -24,6 +24,7 @@
     <h3>Check profit and loss</h3>
     <br />
     deposit Diff: {{ this.depositDiff.toLocaleString() }}
+    （参考）
     <br />
     <br />
     deposit active: {{ this.depositActive.toLocaleString() }}
@@ -33,8 +34,17 @@
     value tb: {{ this.valueTB.toLocaleString() }}
     <br />
     <br />
-    total (deposit active + value account + value tb):
+    total profit and loss(deposit active + value account + value tb):
     {{ this.pl2.toLocaleString() }}
+    <br />
+    <ul>
+      <li>事前にすべき処理</li>
+      <ul>
+        <li>accountをupdateすること</li>
+        <li>trans balanceをupdateすること</li>
+      </ul>
+    </ul>
+
     <br />
     <button class="btn btn-primary" @click="calc2()">calc</button>
 

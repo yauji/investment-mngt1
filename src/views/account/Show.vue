@@ -1,16 +1,17 @@
 <template>
   <div>
-    <h1>Account detail - {{ form.name }}</h1>
+    <h1>Account detail - {{ form.name }} - {{ form.currency }}</h1>
 
-    <h2>Deposites</h2>
+    <h3>Deposites</h3>
     <table class="table table-striped">
       <thead>
         <tr>
           <th>name</th>
           <th>date</th>
           <th>status</th>
-          <th>principal</th>
-          <th>value</th>
+          <th>principal (expense)</th>
+          <th></th>
+          <th>value (income)</th>
           <th></th>
         </tr>
       </thead>
@@ -20,18 +21,20 @@
           <td>{{ moment(deposit.date) }}</td>
           <td>{{ deposit.status }}</td>
           <td>{{ numberFormat(deposit.principal) }}</td>
+          <td>{{ deposit.principalAccountName }}</td>
           <td>{{ numberFormat(deposit.value) }}</td>
+          <td>{{ deposit.valueAccountName }}</td>
         </tr>
       </tbody>
     </table>
 
-    <h2>Trust transactions</h2>
+    <h3>Trust transactions</h3>
     <table class="table table-striped">
       <thead>
         <tr>
           <th>date</th>
-          <th>buy</th>
-          <th>sell</th>
+          <th>buy (expense)</th>
+          <th>sell (income)</th>
           <th>trust</th>
           <th></th>
         </tr>
@@ -55,7 +58,7 @@
 import { API } from "aws-amplify";
 import { getAccount } from "../../graphql/queries";
 import {
-  //listAccounts,
+  listAccounts,
   listDeposits,
   listTrustTransactions,
 } from "../../graphql/queries";
@@ -74,14 +77,18 @@ export default {
     accountId: String,
   },
   async created() {
-    this.getAccount();
+    //for display other account name
+    await this.getAllAccounts();
 
+    this.getAccount();
     this.getTrans();
   },
   data() {
     return {
       form: {},
       deposits: [],
+      //for display other account name
+      accounts: [],
       trusttransactions: [],
     };
   },
@@ -97,8 +104,37 @@ export default {
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
     },
+    /*
+    async getAccountById (id) {
+      
+      await API.graphql({
+        query: getAccount,
+        variables: { id: id },
+      })
+        .then((result) => {
+          console.log(result);
+          //this.form = result.data.getAccount;
+          //return result.name, result.currency;
+          return result.data.getAccount;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    */
+    getAccountById: function (id) {
+
+      for (const a in this.accounts) {
+        //console.log(a, id);
+        if (this.accounts[a].id == id) {
+          return this.accounts[a];
+        }
+      }
+
+    },
     async getAccount() {
       //console.log(this.accountId);
+      //console.log(this.accounts);
 
       await API.graphql({
         query: getAccount,
@@ -106,6 +142,18 @@ export default {
       })
         .then((result) => {
           this.form = result.data.getAccount;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async getAllAccounts() {
+      await API.graphql({
+        query: listAccounts,
+      })
+        .then((result) => {
+          //console.log(result);
+          this.accounts = result.data.listAccounts.items;
         })
         .catch((error) => {
           console.log(error);
@@ -141,6 +189,23 @@ export default {
 
         if (d.principalAccountId == this.form.id) {
           //console.log("-----11", d);
+          d.principalAccountName = this.form.name + " " + this.form.currency;
+
+          //for display
+          const tmpa = this.getAccountById(d.valueAccountId);
+          //console.log(tmpa);
+          d.valueAccountName = tmpa.name + " " + tmpa.currency;
+
+          this.deposits.push(d);
+        }
+        if (d.valueAccountId == this.form.id) {
+          //console.log("-----11", d);
+          d.valueAccountName = this.form.name + " " + this.form.currency;
+
+          //for display
+          const tmpa = this.getAccountById(d.principalAccountId);          
+          d.principalAccountName = tmpa.name + " " + tmpa.currency;
+
           this.deposits.push(d);
         }
 
@@ -179,7 +244,7 @@ export default {
         const tt = trusttransactions[ktt];
 
         if (tt.accountId == this.form.id) {
-        //  console.log(tt);
+          //  console.log(tt);
           this.trusttransactions.push(tt);
         }
         /*
