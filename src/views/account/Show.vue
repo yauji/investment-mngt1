@@ -197,8 +197,7 @@ export default {
           d.valueAccountName = tmpa.name + " " + tmpa.currency;
 
           this.deposits.push(d);
-        }
-        if (d.valueAccountId == this.form.id) {
+        }else if (d.valueAccountId == this.form.id) {
           //console.log("-----11", d);
           d.valueAccountName = this.form.name + " " + this.form.currency;
 
