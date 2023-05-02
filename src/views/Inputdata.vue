@@ -75,7 +75,7 @@
     <br />
 
     <hr />
-    <h3>trust transaction buy</h3>
+    <h3>trust transaction buy (rakuten)</h3>
     <br />
 
     <form @submit.prevent="submitCreateTrustTransactionBuy">
