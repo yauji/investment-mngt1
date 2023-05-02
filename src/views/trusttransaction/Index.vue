@@ -138,7 +138,7 @@ export default {
         query: listTrustTransactions,
       })
         .then((result) => {
-          //console.log(result);
+          console.log(result);
           this.trusttransactions = result.data.listTrustTransactions.items;
           //this.TrustTransactions = result.data.listTrustTransactions.items;
           this.sortBy("date");
