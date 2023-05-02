@@ -9,9 +9,9 @@
           <th>name</th>
           <th>date</th>
           <th>status</th>
-          <th>principal</th>
+          <th>principal (expense)</th>
           <th></th>
-          <th>value</th>
+          <th>value (income)</th>
           <th></th>
         </tr>
       </thead>
@@ -33,8 +33,8 @@
       <thead>
         <tr>
           <th>date</th>
-          <th>buy</th>
-          <th>sell</th>
+          <th>buy (expense)</th>
+          <th>sell (income)</th>
           <th>trust</th>
           <th></th>
         </tr>
@@ -77,7 +77,6 @@ export default {
     accountId: String,
   },
   async created() {
-    //hoge
     //for display other account name
     await this.getAllAccounts();
 
@@ -124,14 +123,14 @@ export default {
     },
     */
     getAccountById: function (id) {
-      //hoge
+
       for (const a in this.accounts) {
         //console.log(a, id);
         if (this.accounts[a].id == id) {
           return this.accounts[a];
         }
       }
-      //return "hogeaa";
+
     },
     async getAccount() {
       //console.log(this.accountId);
