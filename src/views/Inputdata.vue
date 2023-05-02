@@ -114,6 +114,52 @@
       <input type="submit" value="Submit" />
     </form>
 
+
+
+
+
+    <br />
+
+    <hr />
+    <h3>trust transaction buy (monex)</h3>
+    <br />
+
+    <form @submit.prevent="submitCreateTrustTransactionBuyM">
+      <div class="mb-3">
+        <label for="" class="form-label">principal account</label>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          v-model="form.principalAccountId"
+        >
+          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
+            {{ n.currency }} - {{ n.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="" class="form-label">trust balance *</label>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          v-model="form.trustBalanceId"
+          required
+        >
+          <option v-for="n in trustbalances" v-bind:key="n" v-bind:value="n.id">
+            {{ n.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="" class="form-label">trust transaction buy</label>
+        <textarea class="form-control" v-model="form.dataTTBuyM" />
+      </div>
+
+      <input type="submit" value="Submit" />
+    </form>
+
     <br />
   </div>
 </template>
@@ -260,7 +306,6 @@ export default {
         }
         var form = {};
 
-        //hoge
         form.date = new Date(arr2[0]);
         form.tradeType = Enum.EnumTradeType.BUY.val;
 
@@ -269,31 +314,48 @@ export default {
 
         form.basicPrice = parseFloat(arr2[8].replace(/,/g, ""));
 
-        //TODO
+        //hard code
         form.noItem = parseFloat(arr2[7].replace(/,/g, "")) / 10000;
         form.buy = parseFloat(arr2[12].replace(/,/g, ""));
-        //form.sell
-        //form.dividend
+        
 
-        /*
-      date
-      tradeType
-      trustBalanceId
-      accountId
+        await API.graphql({
+          query: createTrustTransaction,
+          variables: { input: form },
+        })
+          .then((result) => {
+            console.log(result);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    },
+    async submitCreateTrustTransactionBuyM() {
+      console.log("---12");
+      const str = this.form.dataTTBuyM;
+      //console.log(str);
+      var arr = str.split(/\r\n|\n/);
 
-getTrustTransaction(id: $id) {
-      id
-      basicPrice
-      noItem
-      buy
-      sell
-      dividend
-      createdAt
-      updatedAt
-      owner
-      */
+      for (var i = 0; i < arr.length; i++) {
+        var arr2 = arr[i].split(/xxx/);
+        for (const k2 in arr2) {
+          console.log(k2, arr2[k2]);
+        }
+        var form = {};
 
-        console.log("---active---", form);
+        //hoge
+        form.date = new Date(arr2[7]);
+        form.tradeType = Enum.EnumTradeType.BUY.val;
+
+        form.trustBalanceId = this.form.trustBalanceId;
+        form.accountId = this.form.principalAccountId;
+
+        form.basicPrice = parseFloat(arr2[10].replace(/,/g, ""));
+
+        //hard code
+        form.noItem = parseFloat(arr2[9].replace(/,/g, "")) / 10000;
+        form.buy = parseFloat(arr2[12].replace(/,/g, "")) * -1;
 
         await API.graphql({
           query: createTrustTransaction,
