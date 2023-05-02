@@ -2,35 +2,62 @@
   <div>
     <h1>Deposits</h1>
 
-    <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreate' }">
-      <button class="btn btn-primary" @click="navigate">Add Deposit</button>
-    </router-link>
+    <div class="container text-center">
+      <div class="row row-cols-auto">
+        </div>
+      <div class="row row-cols-auto">
+        <div class="col">
+          <router-link
+            custom
+            v-slot="{ navigate }"
+            :to="{ name: 'DepositCreate' }"
+          >
+            <button class="btn btn-primary" @click="navigate">
+              Add Deposit
+            </button>
+          </router-link>
+        </div>
+        <div class="col">
+          <router-link
+            custom
+            v-slot="{ navigate }"
+            :to="{ name: 'DepositCreateText' }"
+          >
+            <button class="btn btn-primary" @click="navigate">
+              Add Deposit with text
+            </button>
+          </router-link>
+        </div>
+      </div>
+      
+      <div class="row row-cols-auto">
+        <div class="col p-1">
+          <input
+            type="checkbox"
+            id="fStatusActive"
+            value="fStatusActive"
+            v-model="checkedFStatuses"
+            checked
+          />
+          <label for="fStatusActive">active</label>
+        </div>
+        <div class="col p-1">
+          <input
+            type="checkbox"
+            id="fStatusFinished"
+            value="fStatusFinished"
+            v-model="checkedFStatuses"
+          />
 
-    <router-link custom v-slot="{ navigate }" :to="{ name: 'DepositCreateText' }">
-      <button class="btn btn-primary" @click="navigate">Add Deposit with text</button>
-    </router-link>
+          <label for="fStatusFinished">Finished</label>
+        </div>
+        <div class=" col p-1">
+                    <button class="btn btn-primary" @click="filter()">Filter</button>
+          
+        </div>
+      </div>
 
-    <div>
-      <input
-        type="checkbox"
-        id="fStatusActive"
-        value="fStatusActive"
-        v-model="checkedFStatuses"
-        checked
-      />
-      <label for="fStatusActive">active</label>
-      <input
-        type="checkbox"
-        id="fStatusFinished"
-        value="fStatusFinished"
-        v-model="checkedFStatuses"
-        checked
-      />
-      <label for="fStatusFinished">Finished</label>
-
-      <button class="btn btn-primary" @click="filter()">Filter</button>
-
-<!--
+      <!--
       <span>Checked names: {{ checkedFStatuses }}</span>
       -->
     </div>
@@ -160,7 +187,8 @@ export default {
     BIconTrash,
   },
   async created() {
-    this.getDeposits();
+    //this.getDeposits();
+    this.init_filter();
   },
   data() {
     return {
@@ -170,7 +198,8 @@ export default {
 
       //filter--
       //checkedFStatuses: { fStatusActive: true },
-      checkedFStatuses: ["fStatusActive", "fStatusFinished"],
+      checkedFStatuses: ["fStatusActive"],
+      //checkedFStatuses: ["fStatusActive", "fStatusFinished"],
     };
   },
 
@@ -263,6 +292,24 @@ export default {
         if (
           this.checkedFStatuses.includes("fStatusFinished") &&
           this.deposits[kd].status == Enum.EnumDepositStatus.FINISHED.val
+        ) {
+          tmpdeposits.push(this.deposits[kd]);
+        }
+      }
+
+      this.deposits = tmpdeposits;
+    },
+    // show only active deposits on created
+    async init_filter() {
+      await this.getDeposits();
+
+      var tmpdeposits = [];
+
+      for (const kd in this.deposits) {
+        //console.log("---1", this.deposits[kd]);
+        if (
+          //this.checkedFStatuses.includes("fStatusActive") &&
+          this.deposits[kd].status == Enum.EnumDepositStatus.ACTIVE.val
         ) {
           tmpdeposits.push(this.deposits[kd]);
         }
