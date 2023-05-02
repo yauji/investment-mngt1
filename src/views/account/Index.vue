@@ -27,26 +27,46 @@
           <td>{{ numberFormat(account.activedeposit) }}</td>
           <td>{{ numberFormat(account.trust) }}</td>
           <td>
-            <router-link
-              custom
-              v-slot="{ navigate }"
-              :to="{ name: 'AccountShow', params: { accountId: account.id } }"
-            >
-              <button class="btn btn-primary" @click="navigate">Show</button>
-            </router-link>
-            <router-link
-              custom
-              v-slot="{ navigate }"
-              :to="{ name: 'AccountEdit', params: { accountId: account.id } }"
-            >
-              <button class="btn btn-primary" @click="navigate">Edit</button>
-            </router-link>
-            <button
-              class="btn btn-primary"
-              @click="deleteAccount(index, account.id)"
-            >
-              Delete
-            </button>
+            <div class="container text-center">
+              <div class="row row-cols-auto">
+                <div class="col">
+                  <router-link
+                    custom
+                    v-slot="{ navigate }"
+                    :to="{
+                      name: 'AccountShow',
+                      params: { accountId: account.id },
+                    }"
+                  >
+                    <button class="btn btn-primary btn-sm" @click="navigate">
+                      Show
+                    </button>
+                  </router-link>
+                </div>
+                <div class="col">
+                  <router-link
+                    custom
+                    v-slot="{ navigate }"
+                    :to="{
+                      name: 'AccountEdit',
+                      params: { accountId: account.id },
+                    }"
+                  >
+                    <button class="btn btn-primary btn-sm" @click="navigate">
+                      Edit
+                    </button>
+                  </router-link>
+                </div>
+                <div class="col">
+                  <button
+                    class="btn btn-primary btn-sm"
+                    @click="deleteAccount(index, account.id)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -283,7 +303,7 @@ export default {
           variables: { input: a },
         })
           .then((result) => {
-            console.log(result);            
+            console.log(result);
             //this.$router.push({ name: "AccountIndex" });
           })
           .catch((error) => {

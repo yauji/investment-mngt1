@@ -1,10 +1,8 @@
 <template>
   <div>
-    <h1>Deposits</h1>
+    <h2>Deposits</h2>
 
     <div class="container text-center">
-      <div class="row row-cols-auto">
-        </div>
       <div class="row row-cols-auto">
         <div class="col">
           <router-link
@@ -23,13 +21,13 @@
             v-slot="{ navigate }"
             :to="{ name: 'DepositCreateText' }"
           >
-            <button class="btn btn-primary" @click="navigate">
+            <button class="btn btn-secondary" @click="navigate">
               Add Deposit with text
             </button>
           </router-link>
         </div>
       </div>
-      
+
       <div class="row row-cols-auto">
         <div class="col p-1">
           <input
@@ -51,9 +49,8 @@
 
           <label for="fStatusFinished">Finished</label>
         </div>
-        <div class=" col p-1">
-                    <button class="btn btn-primary" @click="filter()">Filter</button>
-          
+        <div class="col p-1">
+          <button class="btn btn-info btn-sm" @click="filter()">Filter</button>
         </div>
       </div>
 
