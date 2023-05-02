@@ -1,77 +1,216 @@
 <template>
   <div>
-    <h1>アルバム詳細</h1>
-    <h2>{{ album.name }}</h2>
-    <router-link
-      custom
-      v-slot="{ navigate }"
-      :to="{ name: 'PhotoCreate', params: { albumId: albumId } }"
-    >
-      <button @click="navigate">Add Photo</button>
-    </router-link>
-    <table border="1">
-      <tr v-for="(photo, index) in album.photos.items" :key="photo.id">
-        <td>{{ photo.name }}</td>
-        <td>
-          ここに画像表示
-        </td>
-        <td>
-          <button @click="deletePhoto(index, photo)">Delete Photo</button>
-        </td>
-      </tr>
+    <h1>Account detail - {{ form.name }}</h1>
+
+* 作成中：関連するdeposite, trust transactionを表示。表示はされるはず。
+  
+
+  <h2>Deposites</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>name</th>
+          <th>date</th>
+          <th>status</th>
+          <th>principal</th>
+          <th>value</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(deposit) in deposits" :key="deposit.id">
+          <td>{{ deposit.name }}</td>
+          <td>{{ moment(deposit.date) }}</td>
+          <td>{{ deposit.status }}</td>
+          <td>{{ numberFormat(deposit.principal) }}</td>
+          <td>{{ numberFormat(deposit.value) }}</td>
+        </tr>
+      </tbody>
     </table>
+
+
+     <h2>Trust transactions</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>name</th>
+          <th>date</th>
+          <th>status</th>
+          <th>principal</th>
+          <th>value</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(trusttransaction) in trusttransactions" :key="trusttransaction.id">
+          <td>{{ moment(trusttransaction.date) }}</td>
+          <td>{{ numberFormat(trusttransaction.buy) }}</td>
+          <td>{{ numberFormat(trusttransaction.sell) }}</td>
+          
+        </tr>
+      </tbody>
+    </table>
+    
+    
   </div>
 </template>
 
 <script>
 import { API } from "aws-amplify";
-import { getAlbum } from "../../graphql/queries";
-import { deletePhoto } from "../../graphql/mutations";
+import { getAccount } from "../../graphql/queries";
+import {
+  //listAccounts,
+  listDeposits,
+  listTrustTransactions,
+} from "../../graphql/queries";
+
+//import { updateAccount } from "../../graphql/mutations";
+
+//import Datepicker from "vue3-datepicker";
+
+import moment from "moment";
+
+//import * as Enum from "@/Enum";
 
 export default {
-  name: "AlbumShow",
+  name: "AccountShow",
   props: {
-    albumId: String,
+    accountId: String,
   },
   async created() {
-    this.getAlbum();
+    this.getAccount();
+
+    this.getTrans();
+
   },
   data() {
     return {
+      form: {
+      },
+      deposits: [],
+      trusttransactions: [],
+      /*
       album: {
         name: null,
         photos: []
       },
+      */
     };
   },
+
   methods: {
-    async getAlbum() {
+    numberFormat: function (value) {
+      if (value == null) {
+        return "---";
+      } else {
+        return value.toLocaleString();
+      }
+    }, 
+    moment: function (date) {
+      return moment(date).format("YYYY/MM/DD");
+      
+    },
+    async getAccount() {
+      //console.log(this.accountId);
+
       await API.graphql({
-        query: getAlbum,
-        variables: { id: this.albumId },
+        query: getAccount,
+        variables: { id: this.accountId },
       })
         .then((result) => {
-          console.log(result);
-          this.album = result.data.getAlbum;
+          this.form = result.data.getAccount;
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    async deletePhoto(index, photo) {
-      if (!confirm("Delete Photo?")) return;
-
+    async getTrans() {
+       //get deposits-----
+      var deposits;
       await API.graphql({
-        query: deletePhoto,
-        variables: { input: { id: photo.id } },
+        query: listDeposits,
       })
         .then((result) => {
-          console.log(result);
-          this.album.photos.items.splice(index, 1);
+          //console.log(result);
+          deposits = result.data.listDeposits.items;
         })
         .catch((error) => {
           console.log(error);
         });
+
+      console.log("-----1", this.accounts);
+      //var accounts = this.accounts;
+
+      // create dic----
+      var dicAccountIdBalance = [];
+
+      for (const a in this.accounts) {
+        dicAccountIdBalance[this.accounts[a].id] = 0;
+      }
+
+      for (const kd in deposits) {
+        //console.log(deposits[kd]);
+        const d = deposits[kd];
+
+        if(d.principalAccountId == this.form.id){
+          console.log("-----11", d);
+          this.deposits.push(d);
+        }
+
+        //console.log("-------11", d.principal, d.value);
+        //dicAccountIdBalance[d.principalAccountId] -= d.principal;
+
+/*
+        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+          //console.log("-----3", d.status);
+          dicAccountIdBalance[d.valueAccountId] += d.value;
+        }
+        */
+      }
+
+      //console.log("------12");
+      //console.log(dicAccountIdBalance);
+
+      //trust transaction----
+      //TODO
+      //kokokara: update schema for account
+
+      var trusttransactions = {};
+      await API.graphql({
+        query: listTrustTransactions,
+      })
+        .then((result) => {
+          console.log(result);
+          trusttransactions = result.data.listTrustTransactions.items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      console.log(trusttransactions);
+
+      for (const ktt in trusttransactions) {
+        const tt = trusttransactions[ktt];
+
+        if(tt.accountId == this.form.id){
+          console.log(tt);
+          this.trusttransactions.push(tt);
+        }
+/*
+        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+          dicAccountIdBalance[tt.accountId] -= tt.buy;
+          console.log("------31", tt.buy);
+        } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
+          dicAccountIdBalance[tt.accountId] += tt.sell;
+          console.log("------32", tt.sell);
+        } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
+          dicAccountIdBalance[tt.accountId] += tt.dividend;
+          console.log("------33", tt);
+        }
+        */
+
+        
+      }
+      
     },
   },
 };

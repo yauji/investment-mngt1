@@ -78,8 +78,8 @@ type TrustTransaction
   trustBalanceId: ID!
   trustBalance: TrustBalance! @connection(fields: ["trustBalanceId"])
 
-  accountId: ID!
-  account: Account! @connection(fields: ["accountId"])
+  accountId: ID
+  account: Account @connection(fields: ["accountId"])
 
   date: String!
   tradeType: TradeType!
