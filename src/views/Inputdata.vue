@@ -344,7 +344,6 @@ export default {
         }
         var form = {};
 
-        //hoge
         form.date = new Date(arr2[7]);
         form.tradeType = Enum.EnumTradeType.BUY.val;
 
