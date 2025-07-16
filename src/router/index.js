@@ -30,6 +30,7 @@ import TrustBalanceShow from "../views/trustbalance/Show.vue";
 import TrustBalanceEdit from "../views/trustbalance/Edit.vue";
 
 import Summary from "../views/Summary.vue";
+import Summary2 from "../views/Summary2.vue";
 import Setting from "../views/Setting.vue";
 
 import Inputdata from "../views/Inputdata.vue";
@@ -174,6 +175,14 @@ const routes = [
     props: true,
     meta: { requireAuth: true },
   },
+  {
+    path: "/summary2",
+    name: "Summary2",
+    component: Summary2,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  
   {
     path: "/setting",
     name: "Setting",

@@ -36,6 +36,9 @@
             <router-link class="nav-link active" to="/summary">Summary</router-link>
           </li>
           <li class="nav-item">
+            <router-link class="nav-link active" to="/summary2">Summary2</router-link>
+          </li>
+          <li class="nav-item">
             <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
           </li>
         </ul>
