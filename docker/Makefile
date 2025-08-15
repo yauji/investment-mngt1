@@ -14,3 +14,12 @@ run:
 	  $(IMAGE_NAME)
 
 dev: build run
+
+down:
+	docker rm -f $(CONTAINER_NAME)
+
+rebuild: down build run
+
+sh:
+	docker exec -it $(CONTAINER_NAME) /bin/bash
+
