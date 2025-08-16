@@ -1,48 +1,41 @@
 {
-  "auth": {
-    "investmentmngt19c723015": {
-      "service": "Cognito",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [],
-      "customAuth": false
-    }
-  },
   "api": {
-    "investmentmngt1": {
-      "service": "AppSync",
+    "apif8da427c": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "investmentmngt1853be231"
+        }
+      ],
       "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
+    "investmentmngt1": {
       "output": {
         "authConfig": {
+          "additionalAuthenticationProviders": [],
           "defaultAuthentication": {
             "authenticationType": "AMAZON_COGNITO_USER_POOLS",
             "userPoolConfig": {
               "userPoolId": "authinvestmentmngt19c723015"
             }
-          },
-          "additionalAuthenticationProviders": []
+          }
         }
-      }
-    },
-    "apif8da427c": {
-      "service": "API Gateway",
+      },
       "providerPlugin": "awscloudformation",
-      "dependsOn": [
-        {
-          "category": "function",
-          "resourceName": "investmentmngt1853be231",
-          "attributes": [
-            "Name",
-            "Arn"
-          ]
-        }
-      ]
+      "service": "AppSync"
     }
   },
-  "hosting": {
-    "amplifyhosting": {
-      "service": "amplifyhosting",
-      "type": "cicd",
-      "lastPushTimeStamp": "2021-06-12T23:33:21.613Z"
+  "auth": {
+    "investmentmngt19c723015": {
+      "customAuth": false,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
     }
   },
   "function": {
@@ -50,6 +43,47 @@
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    }
+  },
+  "hosting": {
+    "amplifyhosting": {
+      "lastPushTimeStamp": "2021-06-12T23:33:21.613Z",
+      "service": "amplifyhosting",
+      "type": "cicd"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_investmentmngt1853be231_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "investmentmngt1853be231"
+        }
+      ]
+    },
+    "AMPLIFY_function_investmentmngt1853be231_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "investmentmngt1853be231"
+        }
+      ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_appId": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
+        }
+      ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_type": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
+        }
+      ]
     }
   }
 }
