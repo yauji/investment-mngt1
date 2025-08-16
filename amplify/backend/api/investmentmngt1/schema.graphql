@@ -102,6 +102,8 @@ type TrustBalance
   balance:Float!
   noItem:Float!
   basicPrice:Float!
+  """平均取得価格（平均単価）"""
+  averageAcquisitionPrice: Float!
 
   trustTransactions: [TrustTransaction] @connection(keyName: "byTrustBalance", fields: ["id"])
 }

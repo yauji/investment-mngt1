@@ -11,7 +11,7 @@ services:
     volumes:
       - ../:/workspace:cached
       # ホストの AWS 資格情報を読み取り（SSO/プロファイル含む）
-      - ../.aws:/root/.aws:ro
+      - ../.aws:/root/.aws:rw
       # （任意）npm キャッシュを共有してビルドを高速化
       - npm-cache:/root/.npm
     environment:
