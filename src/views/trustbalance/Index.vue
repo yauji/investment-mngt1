@@ -28,7 +28,7 @@
           <td>{{ trustbalance.memo }}</td>
           <td>{{ numberFormat(trustbalance.noItem) }}</td>
           <td>{{ trustbalance.basicPrice }}</td>
-          <td>{{ numberFormat(trustbalance.averageAcquisitionPrice) }}</td>
+          <td>{{ numberFormat(trustbalance.averagePurchasePrice) }}</td>
           <td>{{ numberFormat(trustbalance.balance) }}</td>
 
           <td>
