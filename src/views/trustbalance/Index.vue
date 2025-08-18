@@ -8,9 +8,10 @@
           <th>currency</th>
           <th>name</th>
           <th>memo</th>
-          <th>balance</th>
           <th>noItem</th>
           <th>basic price</th>
+          <th>平均取得価格</th>
+          <th>balance</th>
 
           <th></th>
           <th></th>
@@ -25,9 +26,10 @@
           <td>{{ trustbalance.currency }}</td>
           <td>{{ trustbalance.name }}</td>
           <td>{{ trustbalance.memo }}</td>
-          <td>{{ numberFormat(trustbalance.balance) }}</td>
           <td>{{ numberFormat(trustbalance.noItem) }}</td>
           <td>{{ trustbalance.basicPrice }}</td>
+          <td>{{ numberFormat(trustbalance.averageAcquisitionPrice) }}</td>
+          <td>{{ numberFormat(trustbalance.balance) }}</td>
 
           <td>
             <router-link

@@ -28,7 +28,18 @@
 
       <div class="mb-3">
         <label for="" class="form-label">memo</label>
-        <textarea class="form-control" v-model="form.memo" />
+        <textarea class="form-control" v-model="form.memo"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">平均取得価格 *</label>
+        <input
+          type="number"
+          class="form-control"
+          v-model.number="form.averageAcquisitionPrice"
+          step="any"
+          required
+        />
       </div>
 
       <button type="submit" class="btn btn-primary">Submit</button>
@@ -40,6 +51,14 @@
 import { API } from "aws-amplify";
 
 import { createTrustBalance } from "../../graphql/mutations";
+
+const GET_CREATE_TRUSTBALANCE_FIELDS = /* GraphQL */ `
+  query __GetCreateTrustBalanceInput {
+    __type(name: "CreateTrustBalanceInput") {
+      inputFields { name }
+    }
+  }
+`;
 
 //import { createTrustBalance, updateAccount } from "../../graphql/mutations";
 //import { listAccounts } from "../../graphql/queries";
@@ -59,11 +78,11 @@ export default {
   },
   data() {
     return {
-      //picked: "",
       form: {
-        balance: 0,
-        noItem: 0,
-        basicPrice: 0,
+        currency: "",
+        name: "",
+        memo: "",
+        averageAcquisitionPrice: 0,
       },
     };
   },
@@ -114,17 +133,64 @@ export default {
     },
 */
     async submitCreate() {
-      await API.graphql({
-        query: createTrustBalance,
-        variables: { input: this.form },
-      })
-        .then((result) => {
-          console.log(result);
-          this.$router.push({ name: "TrustBalanceIndex" });
-        })
-        .catch((error) => {
-          console.log(error);
+      try {
+        // 1) Introspect the schema to get the exact allowed fields for CreateTrustBalanceInput
+        const introspection = await API.graphql({ query: GET_CREATE_TRUSTBALANCE_FIELDS });
+        const fields = (introspection?.data?.__type?.inputFields || []).map((f) => f.name);
+        if (!fields.length) {
+          console.warn("[CreateTrustBalance] Introspection returned no fields. Falling back to conservative whitelist.");
+        }
+
+        // Conservative fallback whitelist if introspection is disabled
+        const fallback = ["currency", "name", "memo", "averageAcquisitionPrice"];
+        const allowed = fields.length ? new Set(fields) : new Set(fallback);
+
+        // 2) Build candidate input from the form
+        const candidate = {
+          currency: this.form.currency,
+          name: this.form.name,
+          memo: this.form.memo,
+          averageAcquisitionPrice: this.form.averageAcquisitionPrice,
+        };
+
+        // 3) Normalize values (empty strings -> null, numbers -> Number)
+        for (const k of Object.keys(candidate)) {
+          const v = candidate[k];
+          if (typeof v === "string") {
+            candidate[k] = v.trim() === "" ? null : v.trim();
+          } else if (typeof v === "number") {
+            candidate[k] = Number.isFinite(v) ? Number(v) : null;
+          }
+        }
+
+        // 4) Filter to only allowed keys
+        const input = Object.fromEntries(
+          Object.entries(candidate).filter(([k, v]) => allowed.has(k) && v !== undefined)
+        );
+
+        const dropped = Object.keys(candidate).filter((k) => !allowed.has(k));
+        if (dropped.length) {
+          console.warn("[CreateTrustBalance] Dropped fields not in CreateTrustBalanceInput:", dropped);
+        }
+
+        // 5) Call mutation
+        const result = await API.graphql({
+          query: createTrustBalance,
+          variables: { input },
         });
+
+        console.log("[CreateTrustBalance] mutation result", result);
+        this.$router.push({ name: "TrustBalanceIndex" });
+      } catch (error) {
+        try {
+          console.error("GraphQL error", JSON.stringify(error, null, 2));
+        } catch (_) {
+          console.error(error);
+        }
+        alert(
+          "作成に失敗しました。スキーマの入力項目と送信項目に不一致があります。コンソールの Dropped fields ログを確認してください。"
+        );
+      }
     },
   },
 };

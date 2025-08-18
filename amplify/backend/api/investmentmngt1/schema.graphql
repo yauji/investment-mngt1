@@ -102,6 +102,7 @@ type TrustBalance
   balance:Float!
   noItem:Float!
   basicPrice:Float!
+  averagePurchasePrice:Float
 
   trustTransactions: [TrustTransaction] @connection(keyName: "byTrustBalance", fields: ["id"])
 }
