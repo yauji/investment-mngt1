@@ -2,6 +2,7 @@
   <div>
     <h1>Trust Balances</h1>
 
+
     <table class="table table-striped">
       <thead>
         <tr>
