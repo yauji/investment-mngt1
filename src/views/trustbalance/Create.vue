@@ -32,13 +32,45 @@
       </div>
 
       <div class="mb-3">
+        <label class="form-label">basicPrice *</label>
+        <input
+          type="number"
+          class="form-control"
+          v-model.number="form.basicPrice"
+          step="any"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">noItem *</label>
+        <input
+          type="number"
+          class="form-control"
+          v-model.number="form.noItem"
+          step="any"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">balance *</label>
+        <input
+          type="number"
+          class="form-control"
+          v-model.number="form.balance"
+          step="any"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
         <label class="form-label">平均取得価格 *</label>
         <input
           type="number"
           class="form-control"
-          v-model.number="form.averageAcquisitionPrice"
+          v-model.number="form.averagePurchasePrice"
           step="any"
-          required
         />
       </div>
 
@@ -82,7 +114,10 @@ export default {
         currency: "",
         name: "",
         memo: "",
-        averageAcquisitionPrice: 0,
+        basicPrice: 0,
+        noItem: 0,
+        balance: 0,
+        averagePurchasePrice: null,
       },
     };
   },
@@ -142,7 +177,7 @@ export default {
         }
 
         // Conservative fallback whitelist if introspection is disabled
-        const fallback = ["currency", "name", "memo", "averageAcquisitionPrice"];
+        const fallback = ["currency", "name", "memo", "basicPrice", "noItem", "balance", "averagePurchasePrice"];
         const allowed = fields.length ? new Set(fields) : new Set(fallback);
 
         // 2) Build candidate input from the form
@@ -150,16 +185,20 @@ export default {
           currency: this.form.currency,
           name: this.form.name,
           memo: this.form.memo,
-          averageAcquisitionPrice: this.form.averageAcquisitionPrice,
+          basicPrice: Number(this.form.basicPrice),
+          noItem: Number(this.form.noItem),
+          balance: Number(this.form.balance),
+          averagePurchasePrice:
+            this.form.averagePurchasePrice === null || this.form.averagePurchasePrice === ""
+              ? null
+              : Number(this.form.averagePurchasePrice),
         };
 
-        // 3) Normalize values (empty strings -> null, numbers -> Number)
-        for (const k of Object.keys(candidate)) {
+        // 3) Normalize strings (empty -> null) — numbers are already coerced above
+        for (const k of ["currency", "name", "memo"]) {
           const v = candidate[k];
           if (typeof v === "string") {
             candidate[k] = v.trim() === "" ? null : v.trim();
-          } else if (typeof v === "number") {
-            candidate[k] = Number.isFinite(v) ? Number(v) : null;
           }
         }
 
@@ -167,6 +206,14 @@ export default {
         const input = Object.fromEntries(
           Object.entries(candidate).filter(([k, v]) => allowed.has(k) && v !== undefined)
         );
+
+        // Guard required Float! fields
+        const requiredFloat = ["basicPrice", "noItem", "balance"]; // schema requires these
+        const missing = requiredFloat.filter((k) => input[k] === null || input[k] === undefined || Number.isNaN(input[k]));
+        if (missing.length) {
+          alert(`数値必須項目の未入力があります: ${missing.join(', ')}`);
+          return;
+        }
 
         const dropped = Object.keys(candidate).filter((k) => !allowed.has(k));
         if (dropped.length) {
