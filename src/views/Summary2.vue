@@ -56,6 +56,7 @@
 
     <hr />
     <button class="btn btn-primary" @click="calc4()">calc4</button>
+    <button class="btn btn-secondary" style="margin-left:8px" @click="calcAvgTrustPurchasePrice()">calc trust avg price</button>
 
     <input type="checkbox" id="jpy" value="jpy" v-model="checkedCurrencys" />
     <label for="jpy">jpy</label>
@@ -96,7 +97,8 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listDeposits, listAccounts, listTrustBalances } from "../graphql/queries";
+import { listDeposits, listAccounts, listTrustBalances, listTrustTransactions } from "../graphql/queries";
+import { updateTrustBalance } from "../graphql/mutations";
 import { mapState } from 'vuex';
 
 import * as Enum from "@/Enum";
@@ -121,7 +123,95 @@ export default {
     };
   },
   methods: {
+    async calcAvgTrustPurchasePrice() {
+      try {
+        // 0) 事前に trust balances を取得（存在確認用）
+        const tbMap = new Map();
+        {
+          let nextToken = null;
+          do {
+            const res = await API.graphql({
+              query: listTrustBalances,
+              variables: { limit: 1000, nextToken },
+            });
+            const data = res.data?.listTrustBalances;
+            for (const tb of data?.items || []) tbMap.set(tb.id, tb);
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
+        }
 
+        // 1) 全 TrustTransaction（全種別）をページングで取得
+        let nextToken = null;
+        const txs = [];
+        do {
+          const res = await API.graphql({
+            query: listTrustTransactions,
+            variables: { limit: 1000, nextToken },
+          });
+          const data = res.data?.listTrustTransactions;
+          if (data?.items) txs.push(...data.items);
+          nextToken = data?.nextToken || null;
+        } while (nextToken);
+
+        // 2) trustBalanceId ごとにグループ化し、日付昇順にソート
+        const byTB = new Map();
+        for (const t of txs) {
+          if (!t?.trustBalanceId) continue;
+          if (!byTB.has(t.trustBalanceId)) byTB.set(t.trustBalanceId, []);
+          byTB.get(t.trustBalanceId).push(t);
+        }
+        const parseDate = (s) => (s ? new Date(s).getTime() : 0);
+        for (const arr of byTB.values()) arr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+
+        // 3) 各 TB ごとにトランザクションを順に適用し、都度 averagePurchasePrice を更新
+        let updateCount = 0;
+        for (const [tbid, arr] of byTB.entries()) {
+          if (!tbMap.has(tbid)) continue; // 存在しないTBはスキップ
+          let units = 0;         // 走行口数
+          let cost  = 0;         // 走行原価（avg * units）
+          let avg   = 0;         // 平均取得価格
+
+          for (const t of arr) {
+            const qty = Number(t.noItem) || 0;
+            const price = Number(t.basicPrice) || 0;
+            const kind = t.tradeType;
+
+            if (kind === 'BUY') {
+              if (qty > 0 && price > 0) {
+                cost += price * qty;   // 追加コスト
+                units += qty;          // 口数増
+                avg = units > 0 ? cost / units : 0;
+              }
+            } else if (kind === 'SELL') {
+              if (qty > 0) {
+                // 売却：平均は維持、口数のみ減（ゼロ未満にしない）
+                units = Math.max(0, units - qty);
+                if (units === 0) {
+                  cost = 0; // 保有ゼロなら原価もリセット
+                  avg = 0;
+                } else {
+                  cost = avg * units; // 平均は据え置きで原価を再計算
+                }
+              }
+            } else {
+              // DIVIDEND 等は平均/口数に影響しない
+            }
+
+            // トランザクション適用ごとに TrustBalance.averagePurchasePrice を更新
+            await API.graphql({
+              query: updateTrustBalance,
+              variables: { input: { id: tbid, averagePurchasePrice: avg } },
+            });
+            updateCount += 1;
+          }
+        }
+
+        alert(`updated per-transaction average price steps: ${updateCount}`);
+      } catch (e) {
+        console.error(e);
+        alert('calc trust avg price (per tx) failed. See console for details.');
+      }
+    },
     async calc2() {
       var depositActive = 0;
       var depositDiff = 0;
