@@ -27,17 +27,17 @@
         >
           <td>{{ moment(trusttransaction.date) }}</td>
           <td>{{ trusttransaction.tradeType }}</td>
-          <td>{{ trusttransaction.trustBalance.name }}</td>
+          <td>{{ trusttransaction.trustBalance?.name || '-' }}</td>
           <td>
-            {{ trusttransaction.account.currency }}
-            {{ trusttransaction.account.name }}
+            {{ trusttransaction.account?.currency || '-' }}
+            {{ trusttransaction.account?.name || '-' }}
           </td>
           <td>{{ numberFormat(trusttransaction.basicPrice) }}</td>
           <td>{{ trusttransaction.noItem }}</td>
 
           <td>{{ numberFormat(trusttransaction.buy) }}</td>
-          <td>{{ trusttransaction.sell }}</td>
-          <td>{{ trusttransaction.dividend }}</td>
+          <td>{{ numberFormat(trusttransaction.sell) }}</td>
+          <td>{{ numberFormat(trusttransaction.dividend) }}</td>
           <td>
             <router-link
               custom
@@ -88,10 +88,38 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listTrustTransactions } from "../../graphql/queries";
+// import { listTrustTransactions } from "../../graphql/queries";
 import { deleteTrustTransaction } from "../../graphql/mutations";
 
 import moment from "moment";
+
+const LIST_TRUST_TX_WITH_RELATIONS = /* GraphQL */ `
+  query ListTrustTransactionsWithRelations {
+    listTrustTransactions {
+      items {
+        id
+        date
+        tradeType
+        basicPrice
+        noItem
+        buy
+        sell
+        dividend
+        trustBalanceId
+        trustBalance {
+          id
+          name
+        }
+        accountId
+        account {
+          id
+          name
+          currency
+        }
+      }
+    }
+  }
+`;
 
 export default {
   name: "TrustTransactionIndex",
@@ -117,8 +145,13 @@ export default {
       this.sort_asc ? (set = 1) : (set = -1);
 
       this.trusttransactions.sort((a, b) => {
-        if (a[this.sort_key] < b[this.sort_key]) return -1 * set;
-        if (a[this.sort_key] > b[this.sort_key]) return 1 * set;
+        const av = a[this.sort_key];
+        const bv = b[this.sort_key];
+        if (av == null && bv == null) return 0;
+        if (av == null) return 1 * set;
+        if (bv == null) return -1 * set;
+        if (av < bv) return -1 * set;
+        if (av > bv) return 1 * set;
         return 0;
       });
     },
@@ -135,7 +168,7 @@ export default {
     },
     async getTrustTransactions() {
       await API.graphql({
-        query: listTrustTransactions,
+        query: LIST_TRUST_TX_WITH_RELATIONS,
       })
         .then((result) => {
           console.log(result);

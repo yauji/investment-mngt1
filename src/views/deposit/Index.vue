@@ -93,8 +93,8 @@
           <td>{{ deposit.status }}</td>
           <td>{{ moment(deposit.date) }}</td>
           <td>
-            {{ deposit.principalAccount.currency }}
-            {{ deposit.principalAccount.name }}
+            {{ deposit.principalAccount?.currency || '-' }}
+            {{ deposit.principalAccount?.name || '-' }}
           </td>
 
           <td>{{ numberFormat(deposit.principal) }}</td>
@@ -105,10 +105,11 @@
 
           <td>{{ moment(deposit.endDate) }}</td>
           <td>
-            <a v-if="deposit.valueAccount != null">
-              {{ deposit.valueAccount.currency }}
-              {{ deposit.valueAccount.name }}</a
-            >
+            <span v-if="deposit.valueAccount">
+              {{ deposit.valueAccount?.currency || '-' }}
+              {{ deposit.valueAccount?.name || '-' }}
+            </span>
+            <span v-else>-</span>
           </td>
           <td>{{ numberFormat(deposit.value) }}</td>
           <td>{{ numberFormat(deposit.pl) }}</td>
@@ -167,7 +168,7 @@
 
 <script>
 import { API } from "aws-amplify";
-import { listDeposits } from "../../graphql/queries";
+// import { listDeposits } from "../../graphql/queries";
 import { deleteDeposit } from "../../graphql/mutations";
 
 //import bi from "bootstrap-icons";
@@ -176,6 +177,40 @@ import { BIconPencil, BIconTrash } from "bootstrap-icons-vue";
 import moment from "moment";
 
 import * as Enum from "@/Enum";
+
+const LIST_DEPOSITS_WITH_RELATIONS = /* GraphQL */ `
+  query ListDepositsWithRelations {
+    listDeposits {
+      items {
+        id
+        name
+        memo
+        status
+        date
+        principalAccountId
+        principalAccount {
+          id
+          name
+          currency
+          exchangeRate
+        }
+        principal
+        exchangeRate
+        interestRate
+        duration
+        endDate
+        valueAccountId
+        valueAccount {
+          id
+          name
+          currency
+          exchangeRate
+        }
+        value
+      }
+    }
+  }
+`;
 
 export default {
   name: "DepositIndex",
@@ -211,8 +246,13 @@ export default {
       this.sort_asc ? (set = 1) : (set = -1);
 
       this.deposits.sort((a, b) => {
-        if (a[this.sort_key] < b[this.sort_key]) return -1 * set;
-        if (a[this.sort_key] > b[this.sort_key]) return 1 * set;
+        const av = a[this.sort_key];
+        const bv = b[this.sort_key];
+        if (av == null && bv == null) return 0;
+        if (av == null) return 1 * set;
+        if (bv == null) return -1 * set;
+        if (av < bv) return -1 * set;
+        if (av > bv) return 1 * set;
         return 0;
       });
     },
@@ -229,7 +269,7 @@ export default {
     },
     async getDeposits() {
       await API.graphql({
-        query: listDeposits,
+        query: LIST_DEPOSITS_WITH_RELATIONS,
       })
         .then((result) => {
           console.log(result);
@@ -237,19 +277,26 @@ export default {
 
           //calc profit and loss, expected profit----
           for (const kd in this.deposits) {
-            var d = this.deposits[kd];
-            if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
-              //calc profit and loss
-              const pri = d.principal * d.principalAccount.exchangeRate;
-              const val = d.value * d.valueAccount.exchangeRate;
+            const d = this.deposits[kd];
+
+            // profit and loss (only when finished & both accounts exist)
+            if (
+              d.status == Enum.EnumDepositStatus.FINISHED.val &&
+              d.principalAccount?.exchangeRate != null &&
+              d.valueAccount?.exchangeRate != null
+            ) {
+              const pri = (d.principal || 0) * (d.principalAccount.exchangeRate || 0);
+              const val = (d.value || 0) * (d.valueAccount.exchangeRate || 0);
               d.pl = val - pri;
+            } else {
+              d.pl = null;
             }
 
-            //calc expected profit
-            //consider tax
-            d.expected =
-              ((((d.principal * d.interestRate) / 100) * d.duration) / 12) *
-              0.8;
+            // expected profit (tax-considered), guard nulls
+            const principal = Number(d.principal) || 0;
+            const ir = Number(d.interestRate) || 0;
+            const dur = Number(d.duration) || 0;
+            d.expected = (((principal * ir) / 100) * dur) / 12 * 0.8;
           }
 
           this.sortBy("date");
