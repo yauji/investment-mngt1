@@ -171,11 +171,17 @@ export default {
         }
 
         // 2) accountの評価額合計（JPY）
+        //    JPY口座はそのまま加算、外貨口座のみ円換算（balance * exchangeRate）
         let accountsJpy = 0;
         for (const a of accounts) {
-          const rate = Number(a.exchangeRate) || 0;
-          const bal = Number(a.balance) || 0;
-          accountsJpy += bal * rate;
+          const bal  = Number(a.balance) || 0;
+          const ccy  = String(a.currency || '').toUpperCase();
+          if (ccy === 'JPY') {
+            accountsJpy += bal;
+          } else {
+            const rate = Number(a.exchangeRate) || 0;
+            accountsJpy += bal * rate;
+          }
         }
         this.accountsJpy = accountsJpy;
         console.log("accountsJpy", accountsJpy);
