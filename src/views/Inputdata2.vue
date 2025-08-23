@@ -87,6 +87,18 @@
     <br />
 
     <hr />
+    <h3>deposits (CSV)</h3>
+    <p>ヘッダ付きCSVを貼り付けてください（id,date,endDate,duration,interestRate,exchangeRate,principal,value,status,memo,name,principalAccountId,valueAccountId を取り込みます）。</p>
+    <form @submit.prevent="submitCreateDepositsFromCSV">
+      <div class="mb-3">
+        <label for="" class="form-label">deposits CSV</label>
+        <textarea class="form-control" rows="6" v-model="form.dataDeposits" placeholder='"id","__typename","createdAt","date","duration","endDate","exchangeRate","interestRate","memo","name","owner","principal","principalAccountId","status","updatedAt","value","valueAccountId"
+  "414b9b00-c847-4de5-a6e2-6591a2dcacd3","Deposit","2021-06-25T07:54:11.909Z","2020-06-05T15:00:00.000Z","0","2020-07-10T15:00:00.000Z","0","0","金利：0.03%","""２週間満期預金 ""","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","6000000","3b0e7f98-e2f0-4dc9-9076-28c2a20019fa","FINISHED","2021-06-25T07:54:11.909Z","6000113","3b0e7f98-e2f0-4dc9-9076-28c2a20019fa"' />
+      </div>
+      <input type="submit" value="Import Deposits" />
+    </form>
+
+    <hr />
     <h3>trust transaction buy (rakuten)</h3>
     <br />
 
@@ -205,6 +217,7 @@ export default {
       form: {
         dataDJF: "",
         dataAccounts: "",
+        dataDeposits: "",
       },
       apiName: "apif8da427c",
 
@@ -240,6 +253,23 @@ export default {
     },
     // CSV全文を配列オブジェクトに変換
     parseAccountsCsv(text) {
+      if (!text) return [];
+      const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+      if (lines.length === 0) return [];
+      const header = this.splitCsvLine(lines[0]).map(h => h.trim());
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = this.splitCsvLine(lines[i]);
+        const row = {};
+        for (let j = 0; j < header.length; j++) {
+          row[header[j]] = cols[j] !== undefined ? cols[j] : '';
+        }
+        rows.push(row);
+      }
+      return rows;
+    },
+    // deposits 用CSVパース（ヘッダベース・クォート対応）
+    parseDepositsCsv(text) {
       if (!text) return [];
       const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
       if (lines.length === 0) return [];
@@ -344,6 +374,72 @@ export default {
       // 取り込み後に一覧を更新
       await this.getAccounts();
       alert("Accounts CSV import finished.");
+    },
+
+    // 日付文字列を安全に ISO8601 に変換（無効/空/0 は null を返す）
+    toSafeISO(s) {
+      if (s === undefined || s === null) return null;
+      const t = String(s).trim();
+      if (!t || t === "0" || t.toLowerCase() === "null" || t.toLowerCase() === "undefined") return null;
+      const d = new Date(t);
+      if (Number.isNaN(d.getTime())) return null;
+      return d.toISOString();
+    },
+
+    async submitCreateDepositsFromCSV() {
+      const rows = this.parseDepositsCsv(this.form.dataDeposits);
+      for (let idx = 0; idx < rows.length; idx++) {
+        const r = rows[idx];
+        try {
+          // CreateDepositInput をホワイトリストで構築
+          const input = {};
+          if (r.id && String(r.id).trim() !== '') input.id = String(r.id).trim();
+          if (r.name) input.name = String(r.name).trim();
+          if (r.memo !== undefined) input.memo = String(r.memo);
+          if (r.status) input.status = String(r.status).trim(); // e.g., FINISHED/ACTIVE
+
+          // 口座IDはCSV優先、空ならフォーム選択値で補完
+          const principalId = String(r.principalAccountId || this.form.principalAccountId || '').trim();
+          if (principalId) input.principalAccountId = principalId;
+          const valueId = String(r.valueAccountId || this.form.valueAccountId || '').trim();
+          if (valueId) input.valueAccountId = valueId;
+
+          // 日付は安全にパース（無効なら送らない）
+          const dateISO = this.toSafeISO(r.date);
+          if (dateISO) input.date = dateISO;
+          const endISO = this.toSafeISO(r.endDate);
+          if (endISO) input.endDate = endISO;
+
+          // 数値系（空/無効は送らない）
+          const principal = Number(r.principal);
+          if (!Number.isNaN(principal)) input.principal = principal;
+          const value = Number(r.value);
+          if (!Number.isNaN(value)) input.value = value;
+          const dur = Number(r.duration);
+          if (!Number.isNaN(dur)) input.duration = dur;
+          const ir = Number(r.interestRate);
+          if (!Number.isNaN(ir)) input.interestRate = ir;
+          const ex = Number(r.exchangeRate);
+          if (!Number.isNaN(ex)) input.exchangeRate = ex;
+
+          // バリデーション（必須想定: name, principalAccountId）
+          if (!input.name || !input.principalAccountId) {
+            console.warn(`[deposit csv] skip row ${idx} (required fields missing):`, r);
+            continue;
+          }
+
+          const res = await API.graphql({
+            query: createDeposit,
+            variables: { input },
+          });
+          console.log("created deposit:", res?.data?.createDeposit?.id || input.id);
+        } catch (e) {
+          console.error(`[deposit csv] row ${idx} failed:`, e, r);
+          // 続行（他行は処理する）
+          continue;
+        }
+      }
+      alert("Deposits CSV import finished.");
     },
 
     // deposit active の取り込み（元の処理をこちらに格納）
