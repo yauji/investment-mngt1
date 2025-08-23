@@ -98,22 +98,40 @@ export default {
         variables: { id: this.TrustBalanceId },
       })
         .then((result) => {
-          this.form = result.data.getTrustBalance;
+          const tb = result.data.getTrustBalance || {};
+          // 取得結果はそのままフォームに展開（送信時にホワイトリスト適用）
+          this.form = {
+            id: tb.id,
+            currency: tb.currency,
+            name: tb.name,
+            memo: tb.memo,
+            balance: tb.balance,
+            noItem: tb.noItem,
+            basicPrice: tb.basicPrice,
+            averagePurchasePrice: tb.averagePurchasePrice,
+          };
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async submitUpdate() {
-      delete this.form.createdAt;
-      delete this.form.updatedAt;
-      delete this.form.owner;
-      delete this.form.trustTransactions;
-
-
+      // GraphQLに送る入力は "UpdateTrustBalanceInput" に存在するキーのみ（推定）を送る
+      // ここでは id / noItem / balance / basicPrice / averagePurchasePrice のみに限定
+      const input = { id: this.form.id };
+      const numericKeys = ["noItem", "balance", "basicPrice", "averagePurchasePrice"];
+      for (const key of numericKeys) {
+        if (this.form[key] !== undefined && this.form[key] !== null && this.form[key] !== "") {
+          const n = Number(this.form[key]);
+          input[key] = Number.isNaN(n) ? undefined : n;
+        }
+      }
+      // 未定義は送らない
+      Object.keys(input).forEach((k) => input[k] === undefined && delete input[k]);
+    
       await API.graphql({
         query: updateTrustBalance,
-        variables: { input: this.form },
+        variables: { input },
       })
         .then((result) => {
           console.log(result);
