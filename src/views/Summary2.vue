@@ -145,6 +145,7 @@ export default {
       accountsJpy: 0,
       activePrincipalJpy: 0,
       trustPnLJpy: 0,
+      dividendsJpy: 0,
     };
   },
   methods: {
@@ -227,8 +228,41 @@ export default {
         this.trustPnLJpy = trustPnLJpy;
         console.log("trustPnLJpy", trustPnLJpy);
 
+        // 4.5) trust transaction の DIVIDEND 合計（JPY）
+        let dividendsJpy = 0;
+        try {
+          let nextToken = null;
+          do {
+            const res = await API.graphql({
+              query: listTrustTransactions,
+              variables: { limit: 1000, nextToken },
+            });
+            const data = res.data?.listTrustTransactions;
+            const items = data?.items || [];
+            for (const tx of items) {
+              const kind = tx?.tradeType;
+              if (kind === 'DIVIDEND' || kind === Enum.EnumTradeType?.DIVIDEND?.val) {
+                const amt = Number(tx?.dividend) || 0;
+                // 優先: トランザクションの入出金先アカウントの為替レート
+                let rate = 0;
+                if (tx?.accountId && accById.has(tx.accountId)) {
+                  rate = Number(accById.get(tx.accountId)?.exchangeRate) || 0;
+                } else if (tx?.account?.currency && rateByCcy.has(tx.account.currency)) {
+                  rate = Number(rateByCcy.get(tx.account.currency)) || 0;
+                }
+                dividendsJpy += amt * rate;
+              }
+            }
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
+        } catch (e) {
+          console.error('listTrustTransactions (DIVIDEND sum) failed', e);
+        }
+        this.dividendsJpy = dividendsJpy;
+        console.log("dividendsJpy", dividendsJpy);
+
         // 5) トータルリターン
-        this.totalReturn =  accountsJpy + activePrincipalJpy + trustPnLJpy;
+        this.totalReturn =  accountsJpy + activePrincipalJpy + trustPnLJpy + dividendsJpy;
       } catch (e) {
         console.error(e);
         this.totalReturn = 0;
