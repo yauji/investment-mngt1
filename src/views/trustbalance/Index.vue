@@ -86,6 +86,9 @@
         Add TrustBalance
       </button>
     </router-link>
+    <div>
+      Trust balanceのbasicpriceは最新の基準価格。
+    </div>
   </div>
 </template>
 
@@ -170,68 +173,57 @@ export default {
     },
     async updateBalances() {
       this.statusUpdate = "updating...";
-
-      // 1) 取引一覧を全ページ取得
-      const trusttransactions = await this.fetchAllTrustTransactions();
-
-      // create dic----
-      var dicIdTBNoItem = [];
-
-      for (const a in this.trustbalances) {
-        dicIdTBNoItem[this.trustbalances[a].id] = 0;
-      }
-
-      for (const ktt in trusttransactions) {
-        const tt = trusttransactions[ktt];
-
-        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          //console.log("---51",tt.noItem);
-          //console.log("---511",dicIdTBNoItem[tt.trustBalanceId]);
-          dicIdTBNoItem[tt.trustBalanceId] += tt.noItem;
-          //console.log("---512",dicIdTBNoItem[tt.trustBalanceId]);
-        } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
-          dicIdTBNoItem[tt.trustBalanceId] -= tt.noItem;
-        } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
-          //correct?
-          dicIdTBNoItem[tt.trustBalanceId] += tt.noItem;
+      try {
+        // 1) 取引一覧を全ページ取得
+        const trusttransactions = await this.fetchAllTrustTransactions();
+    
+        // 2) ID→口数 集計用の辞書（プレーンオブジェクト）
+        /** @type {Record<string, number>} */
+        const dicIdTBNoItem = {};
+        for (const tb of this.trustbalances) {
+          dicIdTBNoItem[tb.id] = 0;
         }
-        //console.log("---501",dicIdTBNoItem[tt.trustBalanceId]);
-      }
-      //console.log("------12");
-      //console.log(dicIdTBNoItem);
-
-      for (const ka in dicIdTBNoItem) {
-        var a = 0;
-        for (const ktb in this.trustbalances) {
-          if (ka == this.trustbalances[ktb].id) {
-            a = this.trustbalances[ktb];
+    
+        // 3) 取引からnoItemを集計（数値化して加減算）
+        for (const tt of trusttransactions) {
+          const key = tt.trustBalanceId;
+          if (!key) continue;
+          const qty = Number(tt.noItem) || 0;
+          if (tt.tradeType === Enum.EnumTradeType.BUY.val) {
+            dicIdTBNoItem[key] = (dicIdTBNoItem[key] || 0) + qty;
+          } else if (tt.tradeType === Enum.EnumTradeType.SELL.val) {
+            dicIdTBNoItem[key] = (dicIdTBNoItem[key] || 0) - qty;
+          } else if (tt.tradeType === Enum.EnumTradeType.DIVIDEND.val) {
+            dicIdTBNoItem[key] = (dicIdTBNoItem[key] || 0) + qty;
           }
         }
-        a.noItem = dicIdTBNoItem[ka];
-        //a.balance = dicTrustTransactionBalanceEachCurrency[a.currency];
-        console.log("----61",a);
-
-        delete a.createdAt;
-        delete a.updatedAt;
-        delete a.owner;
-        delete a.trustTransactions;
-
-        //a.balance = a.noItem * a.basicPrice;
-        a.balance = a.noItem * a.averagePurchasePrice;
-
-        await API.graphql({
-          query: updateTrustBalance,
-          variables: { input: a },
-        })
-          .then((result) => {
-            console.log(result);
-            //this.$router.push({ name: "TrustBalanceIndex" });
-          })
-          .catch((error) => {
-            console.log(error);
+    
+        // 4) DB更新（最小フィールドのみ送信: id, noItem, balance）
+        for (const tb of this.trustbalances) {
+          const newNoItem = Number(dicIdTBNoItem[tb.id]) || 0;
+          // balanceの計算は現在の平均取得価格を採用（必要に応じてbasicPriceに変更可）
+          const avg = Number(tb.basicPrice) || 0;
+          const newBalance = newNoItem * avg;
+    
+          const input = {
+            id: tb.id,
+            noItem: newNoItem,
+            balance: newBalance,
+          };
+    
+          await API.graphql({
+            query: updateTrustBalance,
+            variables: { input },
           });
+        }
+    
+        // 5) DBの最新値でUI更新
+        await this.getTrustBalances();
+        this.statusUpdate = "done.";
+      } catch (error) {
+        console.log(error);
+        this.statusUpdate = "error.";
       }
-      this.statusUpdate = "done.";
     },
   },
 };
