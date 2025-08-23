@@ -14,6 +14,8 @@
     active deposit principal (JPY): {{ this.activePrincipalJpy.toLocaleString() }}
     <br/>
     trust evaulated value (JPY): {{ this.trustPnLJpy.toLocaleString() }}
+    <br/>
+    dividends total (JPY): {{ this.dividendsJpy.toLocaleString() }}
     <hr/>
 
     <!-- 為替レート一覧表示 -->
