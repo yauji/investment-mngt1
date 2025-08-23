@@ -258,7 +258,8 @@ parseTrustTransactionsCsv(text) {
     // Accounts CSV 取り込み（単独メソッドとして定義）
     async submitCreateAccountsFromCSV() {
       const rows = this.parseAccountsCsv(this.form.dataAccounts);
-      for (const r of rows) {
+      for (let idx = 0; idx < rows.length; idx++) {
+        const r = rows[idx];
         // ホワイトリストでCreateAccountInputを構築
         const input = {};
         // idはCSVにあれば採用（任意）
@@ -266,16 +267,28 @@ parseTrustTransactionsCsv(text) {
         if (r.name) input.name = String(r.name).trim();
         if (r.currency) input.currency = String(r.currency).trim();
         if (r.memo !== undefined) input.memo = String(r.memo);
-        // 数値項目
-        const bal = Number(r.balance);
-        if (!Number.isNaN(bal)) input.balance = bal;
-        const rate = Number(r.exchangeRate);
-        if (!Number.isNaN(rate)) input.exchangeRate = rate;
-        // 空の必須項目チェック（name/currencyが無い場合はスキップ）
+
+        // 必須（想定）：name / currency
         if (!input.name || !input.currency) {
-          console.warn("skip row (name/currency missing):", r);
+          console.warn(`[account csv] skip row ${idx} (name/currency missing):`, r);
           continue;
         }
+
+        // 数値項目（Float! 対応で必ず値を入れる）
+        // balance: 空や非数は 0 にフォールバック
+        let balRaw = r.balance !== undefined ? String(r.balance).trim() : '';
+        let bal = Number(balRaw.replace(/,/g, ''));
+        if (Number.isNaN(bal)) bal = 0;
+        input.balance = bal;
+
+        // exchangeRate: 空や非数は 通貨に応じて既定値（JPY=1, それ以外=0）にフォールバック
+        let rateRaw = r.exchangeRate !== undefined ? String(r.exchangeRate).trim() : '';
+        let rate = Number(rateRaw.replace(/,/g, ''));
+        if (Number.isNaN(rate)) {
+          rate = String(input.currency).toUpperCase() === 'JPY' ? 1 : 0;
+        }
+        input.exchangeRate = rate;
+
         try {
           const res = await API.graphql({
             query: createAccount,
@@ -283,7 +296,7 @@ parseTrustTransactionsCsv(text) {
           });
           console.log("created account:", res?.data?.createAccount?.id || input.id);
         } catch (e) {
-          console.error("createAccount failed:", e, r);
+          console.error(`[account csv] createAccount failed (row ${idx}):`, e, r);
         }
       }
       // 取り込み後に一覧を更新
