@@ -2,53 +2,6 @@
   <div>
     <h1>Inputdata2</h1>
 
-    <h3>deposit finished</h3>
-    <br />
-
-    plus xxx interest rate xxx duration
-
-    <form @submit.prevent="submitCreate">
-      <div class="mb-3">
-        <label for="" class="form-label">principal account</label>
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="form.principalAccountId"
-        >
-          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
-            {{ n.currency }} - {{ n.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">value account</label>
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="form.valueAccountId"
-        >
-          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
-            {{ n.currency }} - {{ n.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">deposit jpy finished</label>
-        <textarea class="form-control" v-model="form.dataDJF" />
-      </div>
-
-      <!--
--->
-
-      <input type="submit" value="Submit" />
-    </form>
-
-    <hr />
-
-    <h3>deposit active</h3>
-    <br />
 
     <hr />
     <h3>accounts (CSV)</h3>
@@ -62,27 +15,7 @@
       <input type="submit" value="Import Accounts" />
     </form>
 
-    <form @submit.prevent="submitCreateActive">
-      <div class="mb-3">
-        <label for="" class="form-label">principal account</label>
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="form.principalAccountId"
-        >
-          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
-            {{ n.currency }} - {{ n.name }}
-          </option>
-        </select>
-      </div>
 
-      <div class="mb-3">
-        <label for="" class="form-label">deposit active</label>
-        <textarea class="form-control" v-model="form.dataDA" />
-      </div>
-
-      <input type="submit" value="Submit" />
-    </form>
 
     <br />
 
@@ -127,93 +60,8 @@
 
 
 
-    <hr />
-    <h3>trust transaction buy (rakuten)</h3>
-    <br />
-
-    <form @submit.prevent="submitCreateTrustTransactionBuy">
-      <div class="mb-3">
-        <label for="" class="form-label">principal account</label>
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="form.principalAccountId"
-        >
-          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
-            {{ n.currency }} - {{ n.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">trust balance *</label>
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="form.trustBalanceId"
-          required
-        >
-          <option v-for="n in trustbalances" v-bind:key="n" v-bind:value="n.id">
-            {{ n.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">trust transaction buy</label>
-        <textarea class="form-control" v-model="form.dataTTBuy" />
-      </div>
-
-      <input type="submit" value="Submit" />
-    </form>
 
 
-
-
-
-    <br />
-
-    <hr />
-    <h3>trust transaction buy (monex)</h3>
-    <br />
-
-    <form @submit.prevent="submitCreateTrustTransactionBuyM">
-      <div class="mb-3">
-        <label for="" class="form-label">principal account</label>
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="form.principalAccountId"
-        >
-          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
-            {{ n.currency }} - {{ n.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">trust balance *</label>
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="form.trustBalanceId"
-          required
-        >
-          <option v-for="n in trustbalances" v-bind:key="n" v-bind:value="n.id">
-            {{ n.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="" class="form-label">trust transaction buy</label>
-        <textarea class="form-control" v-model="form.dataTTBuyM" />
-      </div>
-
-      <input type="submit" value="Submit" />
-    </form>
-
-    <br />
   </div>
 </template>
 
