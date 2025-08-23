@@ -98,6 +98,21 @@
       <input type="submit" value="Import Deposits" />
     </form>
 
+
+    <hr />
+<h3>trust balances (CSV)</h3>
+<p>ヘッダ付きCSVを貼り付けてください（id,name,currency,noItem,basicPrice,balance[,memo] を取り込みます）。</p>
+<form @submit.prevent="submitCreateTrustBalancesFromCSV">
+  <div class="mb-3">
+    <label for="" class="form-label">trust balances CSV</label>
+    <textarea class="form-control" rows="6" v-model="form.dataTrustBalances" placeholder='"id","__typename","balance","basicPrice","createdAt","currency","name","noItem","owner","updatedAt"
+"65d25a84-4b6f-4e1f-9307-97b92fbee4c3","TrustBalance","995.38","314","2021-06-25T13:59:50.693Z","USD","ジャナス・セレクション ジャナス・バランス・ファンドクラスA（米ドル）受益証券（愛称：全天候型）","3.17","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","2025-02-22T22:52:43.575Z"' />
+  </div>
+  <input type="submit" value="Import TrustBalances" />
+</form>
+
+
+
     <hr />
     <h3>trust transaction buy (rakuten)</h3>
     <br />
@@ -196,7 +211,8 @@ import { listTrustBalances, listAccounts } from "../graphql/queries";
 //listDeposits,//listTrustTransactions,
 //listTrustBalances,
 
-import { createDeposit, createTrustTransaction, createAccount } from "../graphql/mutations";
+//import { createDeposit, createTrustTransaction, createAccount } from "../graphql/mutations";
+import { createDeposit, createTrustTransaction, createAccount, createTrustBalance } from "../graphql/mutations";
 
 //import { listDeposits } from "../../graphql/queries";
 //import { deleteDeposit } from "../../graphql/mutations";
@@ -218,6 +234,7 @@ export default {
         dataDJF: "",
         dataAccounts: "",
         dataDeposits: "",
+        dataTrustBalances: "",
       },
       apiName: "apif8da427c",
 
@@ -285,6 +302,23 @@ export default {
       }
       return rows;
     },
+    // trust balances 用CSVパース（ヘッダベース・クォート対応）
+parseTrustBalancesCsv(text) {
+  if (!text) return [];
+  const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+  if (lines.length === 0) return [];
+  const header = this.splitCsvLine(lines[0]).map(h => h.trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = this.splitCsvLine(lines[i]);
+    const row = {};
+    for (let j = 0; j < header.length; j++) {
+      row[header[j]] = cols[j] !== undefined ? cols[j] : '';
+    }
+    rows.push(row);
+  }
+  return rows;
+},
 
     async submitCreate() {
       //console.log("----11");
@@ -441,6 +475,44 @@ export default {
       }
       alert("Deposits CSV import finished.");
     },
+
+    async submitCreateTrustBalancesFromCSV() {
+  const rows = this.parseTrustBalancesCsv(this.form.dataTrustBalances);
+  for (let idx = 0; idx < rows.length; idx++) {
+    const r = rows[idx];
+    try {
+      // CreateTrustBalanceInput をホワイトリストで構築
+      const input = {};
+      if (r.id && String(r.id).trim() !== '') input.id = String(r.id).trim();
+      if (r.name) input.name = String(r.name).trim();
+      if (r.currency) input.currency = String(r.currency).trim();
+      if (r.memo !== undefined && r.memo !== null) input.memo = String(r.memo);
+      // 数値項目
+      const noItem = Number(r.noItem);
+      if (!Number.isNaN(noItem)) input.noItem = noItem;
+      const basicPrice = Number(r.basicPrice);
+      if (!Number.isNaN(basicPrice)) input.basicPrice = basicPrice;
+      const balance = Number(r.balance);
+      if (!Number.isNaN(balance)) input.balance = balance;
+      // バリデーション（必須想定: name, currency）
+      if (!input.name || !input.currency) {
+        console.warn(`[trustbalance csv] skip row ${idx} (name/currency missing):`, r);
+        continue;
+      }
+      const res = await API.graphql({
+        query: createTrustBalance,
+        variables: { input },
+      });
+      console.log("created trustbalance:", res?.data?.createTrustBalance?.id || input.id);
+    } catch (e) {
+      console.error(`[trustbalance csv] row ${idx} failed:`, e, r);
+      continue;
+    }
+  }
+  // 取り込み後に一覧を更新
+  await this.getTrustBalances();
+  alert("TrustBalances CSV import finished.");
+},
 
     // deposit active の取り込み（元の処理をこちらに格納）
     async submitCreateActive() {
