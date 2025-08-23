@@ -174,49 +174,76 @@ export default {
     async updateBalances() {
       this.statusUpdate = "updating...";
       try {
-        // 1) 取引一覧を全ページ取得
+        // 1) 全取引をページングで取得
         const trusttransactions = await this.fetchAllTrustTransactions();
-    
-        // 2) ID→口数 集計用の辞書（プレーンオブジェクト）
-        /** @type {Record<string, number>} */
-        const dicIdTBNoItem = {};
-        for (const tb of this.trustbalances) {
-          dicIdTBNoItem[tb.id] = 0;
+
+        // 2) trustBalanceId ごとにグループ化し、日付昇順でソート
+        const byTB = new Map();
+        const parseDate = (s) => (s ? new Date(s).getTime() : 0);
+        for (const t of trusttransactions) {
+          if (!t?.trustBalanceId) continue;
+          if (!byTB.has(t.trustBalanceId)) byTB.set(t.trustBalanceId, []);
+          byTB.get(t.trustBalanceId).push(t);
         }
-    
-        // 3) 取引からnoItemを集計（数値化して加減算）
-        for (const tt of trusttransactions) {
-          const key = tt.trustBalanceId;
-          if (!key) continue;
-          const qty = Number(tt.noItem) || 0;
-          if (tt.tradeType === Enum.EnumTradeType.BUY.val) {
-            dicIdTBNoItem[key] = (dicIdTBNoItem[key] || 0) + qty;
-          } else if (tt.tradeType === Enum.EnumTradeType.SELL.val) {
-            dicIdTBNoItem[key] = (dicIdTBNoItem[key] || 0) - qty;
-          } else if (tt.tradeType === Enum.EnumTradeType.DIVIDEND.val) {
-            dicIdTBNoItem[key] = (dicIdTBNoItem[key] || 0) + qty;
+        for (const arr of byTB.values()) {
+          arr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+        }
+
+        // 3) 各TBについて、口数(noItem)と平均取得価格(averagePurchasePrice)を算出
+        /** @type {Record<string, {units:number, avg:number}>} */
+        const agg = {};
+        for (const tb of this.trustbalances) {
+          agg[tb.id] = { units: 0, avg: 0 };
+        }
+
+        for (const [tbid, arr] of byTB.entries()) {
+          let units = 0;
+          let cost  = 0;  // avg * units
+          let avg   = 0;
+          for (const t of arr) {
+            const qty = Number(t.noItem) || 0;
+            const price = Number(t.basicPrice) || 0;
+            const kind = t.tradeType;
+            if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
+              if (qty > 0 && price > 0) {
+                cost  += price * qty;
+                units += qty;
+                avg = units > 0 ? cost / units : 0;
+              }
+            } else if (kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') {
+              if (qty > 0) {
+                units = Math.max(0, units - qty);
+                if (units === 0) {
+                  cost = 0;
+                  avg  = 0;
+                } else {
+                  cost = avg * units; // 平均は維持
+                }
+              }
+            } else {
+              // DIVIDEND 等は平均と口数に影響させない（必要ならここで加味）
+            }
           }
+          agg[tbid] = { units, avg };
         }
-    
-        // 4) DB更新（最小フィールドのみ送信: id, noItem, balance）
+
+        // 4) DB更新（最小フィールドのみ送信: id, noItem, balance, averagePurchasePrice）
         for (const tb of this.trustbalances) {
-          const newNoItem = Number(dicIdTBNoItem[tb.id]) || 0;
-          // balanceの計算は現在の平均取得価格を採用（必要に応じてbasicPriceに変更可）
-          const avg = Number(tb.basicPrice) || 0;
-          const newBalance = newNoItem * avg;
-    
+          const units = Number(agg[tb.id]?.units ?? 0) || 0;
+          const avg   = Number(agg[tb.id]?.avg ?? 0) || 0;
+          const basic = Number(tb.basicPrice) || 0;
           const input = {
             id: tb.id,
-            noItem: newNoItem,
-            balance: newBalance,
+            noItem: units,
+            balance: units * basic,
+            averagePurchasePrice: avg,
           };
-    
           await API.graphql({
             query: updateTrustBalance,
             variables: { input },
           });
         }
-    
+
         // 5) DBの最新値でUI更新
         await this.getTrustBalances();
         this.statusUpdate = "done.";

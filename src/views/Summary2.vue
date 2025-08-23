@@ -13,7 +13,7 @@
     <br/>
     active deposit principal (JPY): {{ this.activePrincipalJpy.toLocaleString() }}
     <br/>
-    trust PnL (JPY): {{ this.trustPnLJpy.toLocaleString() }}
+    trust evaulated value (JPY): {{ this.trustPnLJpy.toLocaleString() }}
     <hr/>
 
     <!-- 為替レート一覧表示 -->
