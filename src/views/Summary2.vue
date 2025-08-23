@@ -217,8 +217,10 @@ export default {
         for (const tb of trustbalances) {
           const units = Number(tb.noItem) || 0;
           const price = Number(tb.basicPrice) || 0;
-          const avg = Number(tb.averagePurchasePrice) || 0;
-          const diff = price - avg;
+          //const avg = Number(tb.averagePurchasePrice) || 0;
+          //const diff = price - avg;
+          //平均取得価格を引く必要なし。accountがマイナスになっているので。
+          const diff = price;
           const rate = rateByCcy.get(tb.currency) || 0;
           trustPnLJpy += units * diff * rate;
         }
