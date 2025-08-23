@@ -72,8 +72,8 @@
       </tbody>
     </table>
 
-    <button class="btn btn-primary" @click="updateBalances()">
-      Update balance
+    <button class="btn btn-primary" @click="updateBalances()" :disabled="isUpdating">
+      {{ isUpdating ? 'Updating…' : 'Update balance' }}
     </button>
 
     <br />
@@ -107,6 +107,7 @@ export default {
   data() {
     return {
       accounts: [],
+      isUpdating: false,
     };
   },
   methods: {
@@ -221,124 +222,163 @@ export default {
         });
     },
     async updateBalances() {
-      //get deposits-----
-      var deposits;
-      await API.graphql({
-        query: listDeposits,
-      })
-        .then((result) => {
-          //console.log(result);
-          deposits = result.data.listDeposits.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-
-      //console.log(deposits);
-
-      //get accounts---
-      /*
-      var accounts;
-      await API.graphql({
-        query: listAccounts,
-      })
-        .then((result) => {
-          //console.log(result);
-          accounts = result.data.listAccounts.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-*/
-      //console.log("-----1", this.accounts);
-      //var accounts = this.accounts;
-
-      // create dic----
-      var dicAccountIdBalance = [];
-
-      for (const a in this.accounts) {
-        dicAccountIdBalance[this.accounts[a].id] = 0;
-      }
-
-      for (const kd in deposits) {
-        //console.log(deposits[kd]);
-        const d = deposits[kd];
-
-        //console.log("-------11", d.principal, d.value);
-        dicAccountIdBalance[d.principalAccountId] -= d.principal;
-
-        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
-          //console.log("-----3", d.status);
-          dicAccountIdBalance[d.valueAccountId] += d.value;
-        }
-      }
-
-      //console.log("------12");
-      //console.log(dicAccountIdBalance);
-
-      //trust transaction----
-      var trusttransactions = {};
-      await API.graphql({
-        query: listTrustTransactions,
-      })
-        .then((result) => {
-          //console.log(result);
-          trusttransactions = result.data.listTrustTransactions.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      //console.log(trusttransactions);
-
-      for (const ktt in trusttransactions) {
-        const tt = trusttransactions[ktt];
-
-        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          dicAccountIdBalance[tt.accountId] -= tt.buy;
-          //console.log("------31", tt.buy);
-        } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
-          dicAccountIdBalance[tt.accountId] += tt.sell;
-          //console.log("------32", tt.sell);
-        } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
-          dicAccountIdBalance[tt.accountId] += tt.dividend;
-          //console.log("------33", tt);
-        }
-
-        /*
-        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          console.log("------3",tt.trustBalance.currency);
-          if(tt.trustBalance.currency != Enum.EnumCurrency.JPY.val){
-            dicAccountIdBalance[tt.trustBalance.currency] -= tt.buyForeign;
-          }
-
-        }
-        */
-      }
-
-      //console.log("-----4", dicAccountIdBalance);
-
-      //update account balances---
-      for (const ka in this.accounts) {
-        var a = this.accounts[ka];
-        a.balance = dicAccountIdBalance[a.id];
-        //console.log("-----41", a);
-
-        delete a.createdAt;
-        delete a.updatedAt;
-        delete a.owner;
-        delete a.activedeposit;
-
+      this.isUpdating = true;
+      try {
+        //get deposits-----
+        var deposits;
         await API.graphql({
-          query: updateAccount,
-          variables: { input: a },
+          query: listDeposits,
         })
           .then((result) => {
-            console.log(result);
-            //this.$router.push({ name: "AccountIndex" });
+            //console.log(result);
+            deposits = result.data.listDeposits.items;
           })
           .catch((error) => {
             console.log(error);
           });
+
+        //console.log(deposits);
+
+        //get accounts---
+        /*
+        var accounts;
+        await API.graphql({
+          query: listAccounts,
+        })
+          .then((result) => {
+            //console.log(result);
+            accounts = result.data.listAccounts.items;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+*/
+        //console.log("-----1", this.accounts);
+        //var accounts = this.accounts;
+
+        // create dic----
+        var dicAccountIdBalance = [];
+
+        for (const a in this.accounts) {
+          dicAccountIdBalance[this.accounts[a].id] = 0;
+        }
+
+        for (const kd in deposits) {
+          //console.log(deposits[kd]);
+          const d = deposits[kd];
+
+          //console.log("-------11", d.principal, d.value);
+          dicAccountIdBalance[d.principalAccountId] -= d.principal;
+
+          if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+            //console.log("-----3", d.status);
+            dicAccountIdBalance[d.valueAccountId] += d.value;
+          }
+        }
+
+        //console.log("------12");
+        //console.log(dicAccountIdBalance);
+
+        //trust transaction----
+        var trusttransactions = {};
+        await API.graphql({
+          query: listTrustTransactions,
+        })
+          .then((result) => {
+            //console.log(result);
+            trusttransactions = result.data.listTrustTransactions.items;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        //console.log(trusttransactions);
+
+        for (const ktt in trusttransactions) {
+          const tt = trusttransactions[ktt];
+
+          if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+            dicAccountIdBalance[tt.accountId] -= tt.buy;
+            //console.log("------31", tt.buy);
+          } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
+            dicAccountIdBalance[tt.accountId] += tt.sell;
+            //console.log("------32", tt.sell);
+          } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
+            dicAccountIdBalance[tt.accountId] += tt.dividend;
+            //console.log("------33", tt);
+          }
+
+          /*
+          if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+            console.log("------3",tt.trustBalance.currency);
+            if(tt.trustBalance.currency != Enum.EnumCurrency.JPY.val){
+              dicAccountIdBalance[tt.trustBalance.currency] -= tt.buyForeign;
+            }
+
+          }
+          */
+        }
+
+        //console.log("-----4", dicAccountIdBalance);
+
+        //update account balances---
+        for (const ka in this.accounts) {
+          const a = this.accounts[ka];
+          const newBalance = dicAccountIdBalance[a.id] ?? 0;
+
+          // Build strict input for update
+          const toNum = (v) => {
+            if (v === null || v === undefined || v === "") return null;
+            const n = typeof v === "number" ? v : parseFloat(v);
+            return Number.isFinite(n) ? n : 0;
+          };
+
+          const payload = { ...a };
+          payload.balance = toNum(newBalance);
+
+          // Remove graphql/meta/computed fields if present
+          delete payload.createdAt;
+          delete payload.updatedAt;
+          delete payload.owner;
+          delete payload.__typename;
+          delete payload._lastChangedAt;
+          delete payload.activedeposit; // computed in UI
+
+          // Whitelist for UpdateAccountInput (adjust to your schema)
+          const allowed = [
+            'id',
+            'name',
+            'currency',
+            'memo',
+            'exchangeRate',
+            'balance',
+            '_version', // Amplify/AppSync conflict detection
+          ];
+          const input = {};
+          for (const k of allowed) {
+            if (payload[k] !== undefined) input[k] = payload[k];
+          }
+
+          console.log('[AccountIndex] updateAccount input:', input);
+
+          try {
+            const result = await API.graphql({
+              query: updateAccount,
+              variables: { input },
+            });
+            console.log('[AccountIndex] updateAccount ok:', result);
+          } catch (error) {
+            console.error('[AccountIndex] updateAccount failed:', error);
+            if (error && error.errors) {
+              for (const e of error.errors) {
+                console.error('[AccountIndex] graphql error:', e.message, e);
+              }
+            }
+          }
+        }
+      } finally {
+        // refresh accounts list after updates and reset flag
+        await this.getAccounts();
+        this.isUpdating = false;
       }
     },
   },

@@ -75,9 +75,10 @@ export default {
   data() {
     return {
       form: {
-        //id: "",
-        //        date: new Date(),
-        //      endDate: new Date(),
+        id: this.accountId,
+        currency: "JPY",
+        exchangeRate: 0,
+        memo: "",
       },
     };
   },
@@ -86,35 +87,43 @@ export default {
       return moment(date).format("YYYY/MM/DD");
     },
     async getAccount() {
-      //console.log(this.accountId);
-
       await API.graphql({
         query: getAccount,
         variables: { id: this.accountId },
       })
         .then((result) => {
-          this.form = result.data.getAccount;          
+          const a = result.data.getAccount;
+          // keep only editable fields to avoid GraphQL input validation errors
+          this.form = {
+            id: a.id,
+            currency: a.currency,
+            exchangeRate: a.exchangeRate ?? 0,
+            memo: a.memo ?? "",
+          };
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async submitUpdate() {
-      delete this.form.createdAt;
-      delete this.form.updatedAt;
-      delete this.form.owner;
+      try {
+        // sanitize input: keep only allowed properties
+        const input = {
+          id: this.form.id,
+          currency: this.form.currency,
+          exchangeRate: Number(this.form.exchangeRate || 0),
+          memo: this.form.memo ?? "",
+        };
 
-      await API.graphql({
-        query: updateAccount,
-        variables: { input: this.form },
-      })
-        .then((result) => {
-          console.log(result);
-          this.$router.push({ name: "AccountIndex" });
-        })
-        .catch((error) => {
-          console.log(error);
+        const result = await API.graphql({
+          query: updateAccount,
+          variables: { input },
         });
+        console.log(result);
+        this.$router.push({ name: "AccountIndex" });
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
 };
