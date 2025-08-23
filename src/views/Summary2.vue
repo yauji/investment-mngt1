@@ -4,7 +4,16 @@
 
     <button class="btn btn-success" style="margin-left:8px" @click="calcTotalReturn()">calc total return</button>
     <br/>
+
+    <br/>
+
     total return: {{ this.totalReturn.toLocaleString() }}
+    <br/>
+    accounts total (JPY): {{ this.accountsJpy.toLocaleString() }}
+    <br/>
+    active deposit principal (JPY): {{ this.activePrincipalJpy.toLocaleString() }}
+    <br/>
+    trust PnL (JPY): {{ this.trustPnLJpy.toLocaleString() }}
     <hr/>
 
     <!-- 為替レート一覧表示 -->
@@ -133,6 +142,9 @@ export default {
       valueTB: 0,
       pl2: 0,
       totalReturn: 0,
+      accountsJpy: 0,
+      activePrincipalJpy: 0,
+      trustPnLJpy: 0,
     };
   },
   methods: {
@@ -162,6 +174,8 @@ export default {
           const bal = Number(a.balance) || 0;
           accountsJpy += bal * rate;
         }
+        this.accountsJpy = accountsJpy;
+        console.log("accountsJpy", accountsJpy);
 
         // 3) active deposit の principal 合計（JPY）
         let activePrincipalJpy = 0;
@@ -187,6 +201,8 @@ export default {
           }
           activePrincipalJpy += pri * rate;
         }
+        this.activePrincipalJpy = activePrincipalJpy;
+        console.log("activePrincipalJpy", activePrincipalJpy);
 
         // 4) trustbalance の評価益（JPY）= noItem * (basicPrice - averagePurchasePrice) * rate
         let trustPnLJpy = 0;
@@ -206,6 +222,8 @@ export default {
           const rate = rateByCcy.get(tb.currency) || 0;
           trustPnLJpy += units * diff * rate;
         }
+        this.trustPnLJpy = trustPnLJpy;
+        console.log("trustPnLJpy", trustPnLJpy);
 
         // 5) トータルリターン
         this.totalReturn = accountsJpy - activePrincipalJpy + trustPnLJpy;
