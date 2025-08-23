@@ -152,21 +152,27 @@ export default {
           console.log(error);
         });
     },
+    async fetchAllTrustTransactions() {
+      const all = [];
+      let nextToken = null;
+      do {
+        const res = await API.graphql({
+          query: listTrustTransactions,
+          variables: nextToken ? { nextToken } : {},
+        });
+        const data = res.data?.listTrustTransactions;
+        if (data?.items?.length) {
+          all.push(...data.items);
+        }
+        nextToken = data?.nextToken || null;
+      } while (nextToken);
+      return all;
+    },
     async updateBalances() {
       this.statusUpdate = "updating...";
 
-      //get trusttransactions-----
-      var trusttransactions;
-      await API.graphql({
-        query: listTrustTransactions,
-      })
-        .then((result) => {
-          //console.log(result);
-          trusttransactions = result.data.listTrustTransactions.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      // 1) 取引一覧を全ページ取得
+      const trusttransactions = await this.fetchAllTrustTransactions();
 
       // create dic----
       var dicIdTBNoItem = [];
@@ -203,14 +209,15 @@ export default {
         }
         a.noItem = dicIdTBNoItem[ka];
         //a.balance = dicTrustTransactionBalanceEachCurrency[a.currency];
-        //console.log("----61",a);
+        console.log("----61",a);
 
         delete a.createdAt;
         delete a.updatedAt;
         delete a.owner;
         delete a.trustTransactions;
 
-        a.balance = a.noItem * a.basicPrice;
+        //a.balance = a.noItem * a.basicPrice;
+        a.balance = a.noItem * a.averagePurchasePrice;
 
         await API.graphql({
           query: updateTrustBalance,
