@@ -2,6 +2,11 @@
   <div>
     <h1>Summary2</h1>
 
+    <button class="btn btn-success" style="margin-left:8px" @click="calcTotalReturn()">calc total return</button>
+    <br/>
+    total return: {{ this.totalReturn.toLocaleString() }}
+    <hr/>
+
     <!-- 為替レート一覧表示 -->
     <h2>為替レート一覧</h2>
     <table class="table table-bordered" style="max-width:400px;">
@@ -39,6 +44,8 @@
     total profit and loss(deposit active + value account + value tb):
     {{ this.pl2.toLocaleString() }}
     <br />
+    total return: {{ this.totalReturn.toLocaleString() }}
+    <br />
     <ul>
       <li>事前にすべき処理</li>
       <ul>
@@ -57,6 +64,7 @@
     <hr />
     <button class="btn btn-primary" @click="calc4()">calc4</button>
     <button class="btn btn-secondary" style="margin-left:8px" @click="calcAvgTrustPurchasePrice()">calc trust avg price</button>
+
 
     <input type="checkbox" id="jpy" value="jpy" v-model="checkedCurrencys" />
     <label for="jpy">jpy</label>
@@ -92,6 +100,10 @@
         </tr>
       </tbody>
     </table>
+
+
+    <hr/>
+  
   </div>
 </template>
 
@@ -120,9 +132,89 @@ export default {
       valueAccount: 0,
       valueTB: 0,
       pl2: 0,
+      totalReturn: 0,
     };
   },
   methods: {
+    async calcTotalReturn() {
+      try {
+        // 1) Accounts 取得 & マッピング
+        let accounts = [];
+        try {
+          const res = await API.graphql({ query: listAccounts });
+          accounts = res.data.listAccounts.items || [];
+        } catch (e) {
+          console.error('listAccounts failed', e);
+          accounts = [];
+        }
+        const accById = new Map();
+        const rateByCcy = new Map();
+        for (const a of accounts) {
+          accById.set(a.id, a);
+          // 通貨→代表アカウントの為替レート（同一通貨が複数あっても最後のを採用）
+          rateByCcy.set(a.currency, Number(a.exchangeRate) || 0);
+        }
+
+        // 2) accountの評価額合計（JPY）
+        let accountsJpy = 0;
+        for (const a of accounts) {
+          const rate = Number(a.exchangeRate) || 0;
+          const bal = Number(a.balance) || 0;
+          accountsJpy += bal * rate;
+        }
+
+        // 3) active deposit の principal 合計（JPY）
+        let activePrincipalJpy = 0;
+        let deposits = [];
+        try {
+          const res = await API.graphql({ query: listDeposits });
+          deposits = res.data.listDeposits.items || [];
+        } catch (e) {
+          console.error('listDeposits failed', e);
+          deposits = [];
+        }
+        for (const d of deposits) {
+          // v1環境では enum が文字列のことが多い。Enum も併存しているので両方ケア
+          const isActive = d.status === 'ACTIVE' || d.status === Enum.EnumDepositStatus?.ACTIVE?.val;
+          if (!isActive) continue;
+          const pri = Number(d.principal) || 0;
+          // principalAccountId を優先利用（なければ currency → rate）
+          let rate = 0;
+          if (d.principalAccountId && accById.has(d.principalAccountId)) {
+            rate = Number(accById.get(d.principalAccountId).exchangeRate) || 0;
+          } else if (d.principalAccount?.currency && rateByCcy.has(d.principalAccount.currency)) {
+            rate = Number(rateByCcy.get(d.principalAccount.currency)) || 0;
+          }
+          activePrincipalJpy += pri * rate;
+        }
+
+        // 4) trustbalance の評価益（JPY）= noItem * (basicPrice - averagePurchasePrice) * rate
+        let trustPnLJpy = 0;
+        let trustbalances = [];
+        try {
+          const res = await API.graphql({ query: listTrustBalances });
+          trustbalances = res.data.listTrustBalances.items || [];
+        } catch (e) {
+          console.error('listTrustBalances failed', e);
+          trustbalances = [];
+        }
+        for (const tb of trustbalances) {
+          const units = Number(tb.noItem) || 0;
+          const price = Number(tb.basicPrice) || 0;
+          const avg = Number(tb.averagePurchasePrice) || 0;
+          const diff = price - avg;
+          const rate = rateByCcy.get(tb.currency) || 0;
+          trustPnLJpy += units * diff * rate;
+        }
+
+        // 5) トータルリターン
+        this.totalReturn = accountsJpy - activePrincipalJpy + trustPnLJpy;
+      } catch (e) {
+        console.error(e);
+        this.totalReturn = 0;
+        alert('calc total return failed. See console for details.');
+      }
+    },
     async calcAvgTrustPurchasePrice() {
       try {
         // 0) 事前に trust balances を取得（存在確認用）
