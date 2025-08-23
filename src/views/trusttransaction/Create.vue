@@ -30,7 +30,7 @@
           v-model="form.accountId"
           required
         >
-          <option v-for="n in this.accounts" v-bind:key="n" v-bind:value="n.id">
+          <option v-for="n in accounts" v-bind:key="n" v-bind:value="n.id">
             {{ n.currency }} - {{ n.name }}
           </option>
         </select>
@@ -42,7 +42,6 @@
           class="form-select"
           aria-label="Default select example"
           v-model="form.tradeType"
-          @change="onChangeTrustTransactionType()"
           required
         >
           <option
@@ -61,9 +60,9 @@
           type="number"
           step="0.0001"
           class="form-control"
-          v-model="form.basicPrice"
-          v-bind:disabled="dBasicPrice"
-          @change="onChangeBasicPriceNoItem()"
+          v-model.number="form.basicPrice"
+          :disabled="isBasicPriceDisabled"
+          @input="onChangeBasicPriceNoItem()"
         />
       </div>
 
@@ -73,9 +72,9 @@
           type="number"
           step="0.0001"
           class="form-control"
-          v-model="form.noItem"
-          v-bind:disabled="dNoItem"
-          @change="onChangeBasicPriceNoItem()"
+          v-model.number="form.noItem"
+          :disabled="isNoItemDisabled"
+          @input="onChangeBasicPriceNoItem()"
         />
       </div>
 
@@ -85,8 +84,8 @@
           type="number"
           step="0.01"
           class="form-control"
-          v-model="form.buy"
-          v-bind:disabled="dBuy"
+          v-model.number="form.buy"
+          :disabled="isBuyDisabled"
         />
       </div>
 
@@ -96,8 +95,8 @@
           type="number"
           step="0.01"
           class="form-control"
-          v-model="form.sell"
-          v-bind:disabled="dSell"
+          v-model.number="form.sell"
+          :disabled="isSellDisabled"
         />
       </div>
 
@@ -107,8 +106,8 @@
           type="number"
           step="0.01"
           class="form-control"
-          v-model="form.dividend"
-          v-bind:disabled="dDividend"
+          v-model.number="form.dividend"
+          :disabled="isDividendDisabled"
         />
       </div>
 
@@ -139,6 +138,49 @@ export default {
   },
   computed: {
     refEnum: () => Enum,
+    isBasicPriceDisabled() {
+      const t = this.form.tradeType;
+      return !(
+        t === Enum.EnumTradeType.BUY.val ||
+        t === Enum.EnumTradeType.SELL.val ||
+        t === Enum.EnumTradeType.DIVIDEND.val
+      );
+    },
+    isNoItemDisabled() {
+      const t = this.form.tradeType;
+      return !(
+        t === Enum.EnumTradeType.BUY.val ||
+        t === Enum.EnumTradeType.SELL.val ||
+        t === Enum.EnumTradeType.DIVIDEND.val
+      );
+    },
+    isBuyDisabled() {
+      return this.form.tradeType !== Enum.EnumTradeType.BUY.val;
+    },
+    isSellDisabled() {
+      return this.form.tradeType !== Enum.EnumTradeType.SELL.val;
+    },
+    isDividendDisabled() {
+      return this.form.tradeType !== Enum.EnumTradeType.DIVIDEND.val;
+    },
+    // --- Backward-compat aliases for old template props ---
+    // Some compiled templates may still reference these names during HMR.
+    // Map them to the new computed props to avoid warnings.
+    dBasicPrice() {
+      return this.isBasicPriceDisabled;
+    },
+    dNoItem() {
+      return this.isNoItemDisabled;
+    },
+    dBuy() {
+      return this.isBuyDisabled;
+    },
+    dSell() {
+      return this.isSellDisabled;
+    },
+    dDividend() {
+      return this.isDividendDisabled;
+    },
   },
   async created() {
     this.getTrustBalances();
@@ -151,16 +193,15 @@ export default {
         tradeType: "BUY",
         basicPrice: 0,
         noItem: 0,
+        date: new Date(),
 
         buy: 0,
         sell: 0,
         dividend: 0,
 
         trustBalanceId: "",
+        accountId: "",
       },
-      dBuy: true,
-      dSell: true,
-      dDividend: true,
 
       trustbalances: [],
       accounts: [],
@@ -191,28 +232,6 @@ export default {
           console.log(error);
         });
     },
-    disableAll: function () {
-      this.dBuy = true;
-      this.dSell = true;
-      this.dDividend = true;
-    },
-    onChangeTrustTransactionType: function () {
-      this.disableAll();
-
-      if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
-        this.dBasicPrice = false;
-        this.dNoItem = false;
-
-        this.dBuy = false;
-      } else if (this.form.tradeType == Enum.EnumTradeType.SELL.val) {
-        this.dBasicPrice = false;
-        this.dNoItem = false;
-
-        this.dSell = false;
-      } else if (this.form.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
-        this.dDividend = false;
-      }
-    },
     onChangeBasicPriceNoItem: function () {
       if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
         this.form.buy = this.form.basicPrice * this.form.noItem;
@@ -230,20 +249,6 @@ export default {
     },
 
     async submitCreate() {
-      var targetTb = 0;
-      for (const k in this.trustbalances) {
-        //console.log(k);
-        //        console.log("xxxxxxxx1", k, tb);
-
-        if (this.trustBalanceId == this.trustbalances[k].id) {
-          targetTb = this.trustbalances[k];
-          //console.log("------1");
-          console.log(targetTb);
-        }
-      }
-
-      //this.form.trustBalance = targetTb;
-
       console.log(this.form);
       await API.graphql({
         query: createTrustTransaction,

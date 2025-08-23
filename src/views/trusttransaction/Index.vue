@@ -27,11 +27,8 @@
         >
           <td>{{ moment(trusttransaction.date) }}</td>
           <td>{{ trusttransaction.tradeType }}</td>
-          <td>{{ trusttransaction.trustBalance?.name || '-' }}</td>
-          <td>
-            {{ trusttransaction.account?.currency || '-' }}
-            {{ trusttransaction.account?.name || '-' }}
-          </td>
+          <td>{{ trustMap[trusttransaction.trustBalanceId] || '-' }}</td>
+          <td>{{ accountMap[trusttransaction.accountId] || '-' }}</td>
           <td>{{ numberFormat(trusttransaction.basicPrice) }}</td>
           <td>{{ trusttransaction.noItem }}</td>
 
@@ -93,8 +90,9 @@ import { deleteTrustTransaction } from "../../graphql/mutations";
 
 import moment from "moment";
 
-const LIST_TRUST_TX_WITH_RELATIONS = /* GraphQL */ `
-  query ListTrustTransactionsWithRelations {
+// NOTE: Fetch transactions (without nested trustBalance to avoid non-null errors)
+const LIST_TRUST_TX = /* GraphQL */ `
+  query ListTrustTransactions {
     listTrustTransactions {
       items {
         id
@@ -106,16 +104,31 @@ const LIST_TRUST_TX_WITH_RELATIONS = /* GraphQL */ `
         sell
         dividend
         trustBalanceId
-        trustBalance {
-          id
-          name
-        }
         accountId
-        account {
-          id
-          name
-          currency
-        }
+      }
+    }
+  }
+`;
+
+// Fetch all trust balances for id->name mapping
+const LIST_TRUST_BALANCES = /* GraphQL */ `
+  query ListTrustBalancesForMapping {
+    listTrustBalances {
+      items {
+        id
+        name
+      }
+    }
+  }
+`;
+
+// Fetch all accounts for id->name mapping
+const LIST_ACCOUNTS = /* GraphQL */ `
+  query ListAccountsForMapping {
+    listAccounts {
+      items {
+        id
+        name
       }
     }
   }
@@ -130,6 +143,8 @@ export default {
   data() {
     return {
       trusttransactions: [],
+      trustMap: {},
+      accountMap: {},
       sort_key: "date",
       sort_asc: true,
     };
@@ -167,18 +182,40 @@ export default {
       }
     },
     async getTrustTransactions() {
-      await API.graphql({
-        query: LIST_TRUST_TX_WITH_RELATIONS,
-      })
-        .then((result) => {
-          console.log(result);
-          this.trusttransactions = result.data.listTrustTransactions.items;
-          //this.TrustTransactions = result.data.listTrustTransactions.items;
-          this.sortBy("date");
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      try {
+        const [txRes, tbRes, accRes] = await Promise.all([
+          API.graphql({ query: LIST_TRUST_TX }),
+          API.graphql({ query: LIST_TRUST_BALANCES }),
+          API.graphql({ query: LIST_ACCOUNTS }),
+        ]);
+
+        console.log(txRes);
+        console.log(tbRes);
+
+        // Build id -> name map for trust balances
+        const balances = (tbRes?.data?.listTrustBalances?.items || []).filter(Boolean);
+        const map = {};
+        for (const b of balances) {
+          map[b.id] = b.name;
+        }
+        this.trustMap = map;
+
+        // Build id -> name map for accounts
+        const accounts = (accRes?.data?.listAccounts?.items || []).filter(Boolean);
+        const amap = {};
+        for (const a of accounts) {
+          amap[a.id] = a.name;
+        }
+        this.accountMap = amap;
+
+        // Transactions; filter out any null slots that may appear when GraphQL null-bubbles in a list
+        const items = (txRes?.data?.listTrustTransactions?.items || []).filter(Boolean);
+        this.trusttransactions = items;
+
+        this.sortBy("date");
+      } catch (error) {
+        console.log(error);
+      }
     },
     async deleteTrustTransaction(index, trusttransactionId) {
       if (!confirm("Delete TrustTransaction?")) return;
