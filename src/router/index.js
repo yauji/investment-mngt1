@@ -34,6 +34,7 @@ import Summary2 from "../views/Summary2.vue";
 import Setting from "../views/Setting.vue";
 
 import Inputdata from "../views/Inputdata.vue";
+import Inputdata2 from "../views/Inputdata2.vue";
 
 const routes = [
   {
@@ -194,6 +195,13 @@ const routes = [
     path: "/inputdata",
     name: "Inputdata",
     component: Inputdata,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/inputdata2",
+    name: "Inputdata2",
+    component: Inputdata2,
     props: true,
     meta: { requireAuth: true },
   },
