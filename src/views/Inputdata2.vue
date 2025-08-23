@@ -112,6 +112,20 @@
 </form>
 
 
+<hr />
+<h3>trust transactions (CSV)</h3>
+<p>ヘッダ付きCSVを貼り付けてください（id,accountId,trustBalanceId,tradeType,date,basicPrice,noItem,buy,sell,dividend を取り込みます）。</p>
+<form @submit.prevent="submitCreateTrustTransactionsFromCSV">
+  <div class="mb-3">
+    <label for="" class="form-label">trust transactions CSV</label>
+    <textarea class="form-control" rows="6" v-model="form.dataTrustTransactions" placeholder='"id","__typename","accountId","basicPrice","buy","createdAt","date","dividend","noItem","owner","sell","tradeType","trustBalanceId","updatedAt"
+"6385916f-cdbb-4e68-8c00-80d49e70378d","TrustTransaction","3b0e7f98-e2f0-4dc9-9076-28c2a20019fa","17307","100000","2023-05-02T21:36:51.644Z","2021-12-16T15:00:00.000Z","","5.7781","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","","BUY","0ed32f0f-c36a-42ca-83a2-2be1f6ad8e3b","2023-05-02T21:36:51.644Z"
+"3e008a30-8265-4c2d-a04c-029fd123446d","TrustTransaction","3bfc30e4-5d2f-4447-97f7-70b78290c7e1","14603","40000","2023-05-02T21:08:52.300Z","2022-05-09T15:00:00.000Z","","2.7392","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","","BUY","66393a2c-bee5-4dc7-9b15-8eed808a5ee6","2023-05-02T21:08:52.300Z"' />
+  </div>
+  <input type="submit" value="Import TrustTransactions" />
+</form>
+
+
 
     <hr />
     <h3>trust transaction buy (rakuten)</h3>
@@ -235,6 +249,7 @@ export default {
         dataAccounts: "",
         dataDeposits: "",
         dataTrustBalances: "",
+        dataTrustTransactions: "",
       },
       apiName: "apif8da427c",
 
@@ -304,6 +319,24 @@ export default {
     },
     // trust balances 用CSVパース（ヘッダベース・クォート対応）
 parseTrustBalancesCsv(text) {
+  if (!text) return [];
+  const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+  if (lines.length === 0) return [];
+  const header = this.splitCsvLine(lines[0]).map(h => h.trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = this.splitCsvLine(lines[i]);
+    const row = {};
+    for (let j = 0; j < header.length; j++) {
+      row[header[j]] = cols[j] !== undefined ? cols[j] : '';
+    }
+    rows.push(row);
+  }
+  return rows;
+},
+
+// trust transactions 用CSVパース（ヘッダベース・クォート対応）
+parseTrustTransactionsCsv(text) {
   if (!text) return [];
   const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
   if (lines.length === 0) return [];
@@ -512,6 +545,56 @@ parseTrustBalancesCsv(text) {
   // 取り込み後に一覧を更新
   await this.getTrustBalances();
   alert("TrustBalances CSV import finished.");
+},
+
+
+async submitCreateTrustTransactionsFromCSV() {
+  const rows = this.parseTrustTransactionsCsv(this.form.dataTrustTransactions);
+  for (let idx = 0; idx < rows.length; idx++) {
+    const r = rows[idx];
+    try {
+      // CreateTrustTransactionInput をホワイトリストで構築
+      const input = {};
+      if (r.id && String(r.id).trim() !== '') input.id = String(r.id).trim();
+
+      // 必須想定
+      if (r.accountId) input.accountId = String(r.accountId).trim();
+      if (r.trustBalanceId) input.trustBalanceId = String(r.trustBalanceId).trim();
+      if (r.tradeType) input.tradeType = String(r.tradeType).trim(); // BUY/SELL/DIVIDEND 等
+
+      // 日付は安全に
+      const dateISO = this.toSafeISO(r.date);
+      if (dateISO) input.date = dateISO;
+
+      // 数値項目
+      const basicPrice = Number(r.basicPrice);
+      if (!Number.isNaN(basicPrice)) input.basicPrice = basicPrice;
+      const noItem = Number(r.noItem);
+      if (!Number.isNaN(noItem)) input.noItem = noItem;
+      const buy = Number(r.buy);
+      if (!Number.isNaN(buy)) input.buy = buy;
+      const sell = Number(r.sell);
+      if (!Number.isNaN(sell)) input.sell = sell;
+      const dividend = Number(r.dividend);
+      if (!Number.isNaN(dividend)) input.dividend = dividend;
+
+      // バリデーション
+      if (!input.accountId || !input.trustBalanceId || !input.tradeType) {
+        console.warn(`[trusttx csv] skip row ${idx} (required fields missing):`, r);
+        continue;
+      }
+
+      const res = await API.graphql({
+        query: createTrustTransaction,
+        variables: { input },
+      });
+      console.log("created trust transaction:", res?.data?.createTrustTransaction?.id || input.id);
+    } catch (e) {
+      console.error(`[trusttx csv] row ${idx} failed:`, e, r);
+      continue;
+    }
+  }
+  alert("TrustTransactions CSV import finished.");
 },
 
     // deposit active の取り込み（元の処理をこちらに格納）
