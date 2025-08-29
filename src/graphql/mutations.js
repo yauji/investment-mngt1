@@ -225,6 +225,8 @@ export const createTrustTransaction = /* GraphQL */ `
         noItem
         basicPrice
         averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
@@ -274,6 +276,8 @@ export const updateTrustTransaction = /* GraphQL */ `
         noItem
         basicPrice
         averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
@@ -323,6 +327,8 @@ export const deleteTrustTransaction = /* GraphQL */ `
         noItem
         basicPrice
         averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
@@ -369,6 +375,8 @@ export const createTrustBalance = /* GraphQL */ `
       noItem
       basicPrice
       averagePurchasePrice
+      code
+      type
       trustTransactions {
         nextToken
         __typename
@@ -394,6 +402,8 @@ export const updateTrustBalance = /* GraphQL */ `
       noItem
       basicPrice
       averagePurchasePrice
+      code
+      type
       trustTransactions {
         nextToken
         __typename
@@ -419,6 +429,8 @@ export const deleteTrustBalance = /* GraphQL */ `
       noItem
       basicPrice
       averagePurchasePrice
+      code
+      type
       trustTransactions {
         nextToken
         __typename

@@ -133,6 +133,8 @@ export const getTrustTransaction = /* GraphQL */ `
         noItem
         basicPrice
         averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
@@ -208,6 +210,8 @@ export const getTrustBalance = /* GraphQL */ `
       noItem
       basicPrice
       averagePurchasePrice
+      code
+      type
       trustTransactions {
         nextToken
         __typename
@@ -235,6 +239,8 @@ export const listTrustBalances = /* GraphQL */ `
         noItem
         basicPrice
         averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
