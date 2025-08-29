@@ -92,6 +92,11 @@ type TrustTransaction
   dividend:Float
 }
 
+enum TrustBalanceType {
+  NISA
+  TOKUTEI
+}
+
 type TrustBalance
 @model
 @auth(rules: [{allow: owner}]) {  
@@ -103,6 +108,9 @@ type TrustBalance
   noItem:Float!
   basicPrice:Float!
   averagePurchasePrice:Float
+
+  code:String
+  type:TrustBalanceType
 
   trustTransactions: [TrustTransaction] @connection(keyName: "byTrustBalance", fields: ["id"])
 }
