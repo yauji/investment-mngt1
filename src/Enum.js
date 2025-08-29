@@ -68,5 +68,6 @@ export const EnumTradeType = {
 export const EnumTrustBalanceType = [
     { val: "NISA", text: "NISA" },
     { val: "TOKUTEI", text: "特定" },
+    { val: "BOND", text: "債権" },
   ];
 

@@ -95,6 +95,7 @@ type TrustTransaction
 enum TrustBalanceType {
   NISA
   TOKUTEI
+  BOND
 }
 
 type TrustBalance
