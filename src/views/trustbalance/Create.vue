@@ -74,6 +74,20 @@
         />
       </div>
 
+      <div class="mb-3">
+        <label class="form-label">type</label>
+        <select class="form-select" v-model="form.type">
+          <option v-for="n in refEnum.EnumTrustBalanceType" :key="n" :value="n.val">
+            {{ n.text }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">code</label>
+        <input type="text" class="form-control" v-model="form.code" />
+      </div>
+
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
@@ -118,6 +132,8 @@ export default {
         noItem: 0,
         balance: 0,
         averagePurchasePrice: null,
+        type: "",
+        code: "",
       },
     };
   },
@@ -177,7 +193,7 @@ export default {
         }
 
         // Conservative fallback whitelist if introspection is disabled
-        const fallback = ["currency", "name", "memo", "basicPrice", "noItem", "balance", "averagePurchasePrice"];
+        const fallback = ["currency", "name", "memo", "basicPrice", "noItem", "balance", "averagePurchasePrice", "type", "code"];
         const allowed = fields.length ? new Set(fields) : new Set(fallback);
 
         // 2) Build candidate input from the form
@@ -192,6 +208,8 @@ export default {
             this.form.averagePurchasePrice === null || this.form.averagePurchasePrice === ""
               ? null
               : Number(this.form.averagePurchasePrice),
+          type: this.form.type,
+          code: this.form.code,
         };
 
         // 3) Normalize strings (empty -> null) — numbers are already coerced above
