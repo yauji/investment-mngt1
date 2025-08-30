@@ -190,9 +190,11 @@ export default {
     },
     async updateBalances() {
       this.statusUpdate = "updating...";
+      console.log("[updateBalances] start");
       try {
         // 1) 全取引をページングで取得
         const trusttransactions = await this.fetchAllTrustTransactions();
+        console.log(`[updateBalances] fetched transactions: ${trusttransactions.length}`);
 
         // 2) trustBalanceId ごとにグループ化し、日付昇順でソート
         const byTB = new Map();
@@ -205,6 +207,7 @@ export default {
         for (const arr of byTB.values()) {
           arr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
         }
+        console.log(`[updateBalances] grouped TB count: ${byTB.size}`);
 
         // 3) 各TBについて、口数(noItem)と平均取得価格(averagePurchasePrice)を算出
         /** @type {Record<string, {units:number, avg:number}>} */
@@ -216,6 +219,7 @@ export default {
         }
 
         for (const [tbid, arr] of byTB.entries()) {
+          console.log(`[updateBalances] TB ${tbid}: ${arr.length} transactions`);
           let units = 0;
           let cost  = 0;  // avg * units
           let avg   = 0;
@@ -229,10 +233,16 @@ export default {
             if ((!qty || qty <= 0) && price > 0) {
               const buyAmt = Number(t.buy) || 0;
               const sellAmt = Number(t.sell) || 0;
+              const before = qty;
               if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
                 if (buyAmt > 0) qty = buyAmt / price;
               } else if (kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') {
                 if (sellAmt > 0) qty = sellAmt / price;
+              }
+              if (qty !== before) {
+                console.log(
+                  `[updateBalances] supplemented qty TB ${tbid} tx ${t.id}: ${before} -> ${qty} using ${kind} amt/bp = ${(buyAmt||sellAmt)}/${price}`
+                );
               }
             }
             // 投信の 1/10000 口表記を自動補正（buy/sell 金額と照合してスケール判定）
@@ -240,6 +250,7 @@ export default {
               const buyAmt = Number(t.buy) || Number(t.sell) || 0;
               const ratio = buyAmt > 0 ? (qty * price) / buyAmt : 1;
               if (ratio > 9000 && ratio < 11000) {
+                console.log(`[updateBalances] scale 1/10000 applied TB ${tbid} tx ${t.id}: qty ${qty} -> ${qty/10000}`);
                 qty = qty / 10000;
               }
             }
@@ -249,6 +260,7 @@ export default {
                 cost  += price * qty;
                 units += qty;
                 avg = units > 0 ? cost / units : 0;
+                console.log(`[updateBalances] BUY TB ${tbid} tx ${t.id}: +${qty} @ ${price} => units=${units}, avg=${avg}`);
               }
             } else if (kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') {
               if (qty > 0) {
@@ -259,6 +271,7 @@ export default {
                 } else {
                   cost = avg * units; // 平均は維持
                 }
+                console.log(`[updateBalances] SELL TB ${tbid} tx ${t.id}: -${qty} => units=${units}, avg=${avg}`);
               }
             } else {
               // DIVIDEND 等は平均と口数に影響させない（必要ならここで加味）
@@ -266,6 +279,7 @@ export default {
           }
           agg[tbid] = { units, avg };
           latestPrice[tbid] = lastPrice;
+          console.log(`[updateBalances] TB ${tbid} result: units=${units}, avg=${avg}, lastPrice=${lastPrice}`);
         }
 
         // 4) DB更新（対象: 取引が存在するTBのみ。最小フィールド: id, noItem, balance, averagePurchasePrice）
@@ -283,15 +297,22 @@ export default {
             balance: (Number(units) || 0) * basic,
             averagePurchasePrice: Number(avg) || 0,
           };
-          await API.graphql({
-            query: updateTrustBalance,
-            variables: { input },
-          });
+          console.log(`[updateBalances] updating TB ${tbid} with`, input, `(basicPrice used=${basic})`);
+          try {
+            const res = await API.graphql({
+              query: updateTrustBalance,
+              variables: { input },
+            });
+            console.log(`[updateBalances] updated TB ${tbid}`, res?.data?.updateTrustBalance?.id || "");
+          } catch (e) {
+            console.error(`[updateBalances] update failed TB ${tbid}`, e);
+          }
         }
 
         // 5) DBの最新値でUI更新
         await this.getTrustBalancesAll();
         this.statusUpdate = "done.";
+        console.log("[updateBalances] done");
       } catch (error) {
         console.log(error);
         this.statusUpdate = "error.";
