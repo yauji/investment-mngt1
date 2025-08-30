@@ -113,7 +113,7 @@ import * as Enum from "@/Enum";
 export default {
   name: "TrustBalanceIndex",
   async created() {
-    this.getTrustBalances();
+    await this.getTrustBalancesAll();
   },
   data() {
     return {
@@ -133,16 +133,29 @@ export default {
       }
     },
     async getTrustBalances() {
-      await API.graphql({
-        query: listTrustBalances,
-      })
-        .then((result) => {
-          console.log(result);
-          this.trustbalances = result.data.listTrustBalances.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      // Backward compat; keep name but fetch all pages
+      return this.getTrustBalancesAll();
+    },
+    async getTrustBalancesAll() {
+      const all = [];
+      let nextToken = null;
+      try {
+        do {
+          const res = await API.graphql({
+            query: listTrustBalances,
+            variables: { limit: 100, nextToken },
+          });
+          const data = res.data?.listTrustBalances;
+          if (data?.items?.length) {
+            all.push(...data.items);
+          }
+          nextToken = data?.nextToken || null;
+        } while (nextToken);
+        this.trustbalances = all;
+      } catch (e) {
+        console.log(e);
+      }
+      return all;
     },
     async deleteTrustBalance(index, trustbalanceId) {
       if (!confirm("Delete TrustBalance?")) return;
@@ -196,6 +209,8 @@ export default {
         // 3) 各TBについて、口数(noItem)と平均取得価格(averagePurchasePrice)を算出
         /** @type {Record<string, {units:number, avg:number}>} */
         const agg = {};
+        /** @type {Record<string, number>} */
+        const latestPrice = {}; // 直近取引の basicPrice（>0 の最終値）
         for (const tb of this.trustbalances) {
           agg[tb.id] = { units: 0, avg: 0 };
         }
@@ -204,10 +219,31 @@ export default {
           let units = 0;
           let cost  = 0;  // avg * units
           let avg   = 0;
+          let lastPrice = 0;
           for (const t of arr) {
-            const qty = Number(t.noItem) || 0;
+            let qty = Number(t.noItem) || 0;
             const price = Number(t.basicPrice) || 0;
             const kind = t.tradeType;
+            if (price > 0) lastPrice = price; // 直近の価格を保持
+            // qty が欠損している場合、金額/単価から補完
+            if ((!qty || qty <= 0) && price > 0) {
+              const buyAmt = Number(t.buy) || 0;
+              const sellAmt = Number(t.sell) || 0;
+              if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
+                if (buyAmt > 0) qty = buyAmt / price;
+              } else if (kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') {
+                if (sellAmt > 0) qty = sellAmt / price;
+              }
+            }
+            // 投信の 1/10000 口表記を自動補正（buy/sell 金額と照合してスケール判定）
+            if (qty > 0 && price > 0) {
+              const buyAmt = Number(t.buy) || Number(t.sell) || 0;
+              const ratio = buyAmt > 0 ? (qty * price) / buyAmt : 1;
+              if (ratio > 9000 && ratio < 11000) {
+                qty = qty / 10000;
+              }
+            }
+
             if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
               if (qty > 0 && price > 0) {
                 cost  += price * qty;
@@ -229,18 +265,23 @@ export default {
             }
           }
           agg[tbid] = { units, avg };
+          latestPrice[tbid] = lastPrice;
         }
 
-        // 4) DB更新（最小フィールドのみ送信: id, noItem, balance, averagePurchasePrice）
-        for (const tb of this.trustbalances) {
-          const units = Number(agg[tb.id]?.units ?? 0) || 0;
-          const avg   = Number(agg[tb.id]?.avg ?? 0) || 0;
-          const basic = Number(tb.basicPrice) || 0;
+        // 4) DB更新（対象: 取引が存在するTBのみ。最小フィールド: id, noItem, balance, averagePurchasePrice）
+        const tbById = new Map(this.trustbalances.map(tb => [tb.id, tb]));
+        for (const [tbid, { units, avg }] of Object.entries(agg)) {
+          if (!byTB.has(tbid)) continue; // 取引が無いTBはスキップ（意図せず0リセットしない）
+          const tb = tbById.get(tbid);
+          if (!tb) continue;
+          // TB に価格が無い/0 の場合は直近取引の価格を採用
+          const fallback = Number(latestPrice[tbid]) || 0;
+          const basic = Number(tb.basicPrice) || fallback;
           const input = {
-            id: tb.id,
-            noItem: units,
-            balance: units * basic,
-            averagePurchasePrice: avg,
+            id: tbid,
+            noItem: Number(units) || 0,
+            balance: (Number(units) || 0) * basic,
+            averagePurchasePrice: Number(avg) || 0,
           };
           await API.graphql({
             query: updateTrustBalance,
@@ -249,7 +290,7 @@ export default {
         }
 
         // 5) DBの最新値でUI更新
-        await this.getTrustBalances();
+        await this.getTrustBalancesAll();
         this.statusUpdate = "done.";
       } catch (error) {
         console.log(error);
