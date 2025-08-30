@@ -3,60 +3,7 @@
     <h1>Inputdata - CSV</h1>
 
 
-    <hr />
-    <h3>accounts (CSV)</h3>
-    <p>ヘッダ付きCSVを貼り付けてください（id,name,currency,balance,exchangeRate,memo を取り込みます）。</p>
-    <form @submit.prevent="submitCreateAccountsFromCSV">
-      <div class="mb-3">
-        <label for="" class="form-label">accounts CSV</label>
-        <textarea class="form-control" rows="6" v-model="form.dataAccounts" placeholder='"id","__typename","balance","createdAt","currency","exchangeRate","memo","name","owner","updatedAt"
-"cb792f3a-52b3-41e8-a5bb-5fa249c1f51a","Account","1895.18","2021-06-25T15:51:05.261Z","NZD","79","","rakuten","...","2025-02-23T22:46:14.530Z"' />
-      </div>
-      <input type="submit" value="Import Accounts" />
-    </form>
-
-
-
-    <br />
-
-    <hr />
-    <h3>deposits (CSV)</h3>
-    <p>ヘッダ付きCSVを貼り付けてください（id,date,endDate,duration,interestRate,exchangeRate,principal,value,status,memo,name,principalAccountId,valueAccountId を取り込みます）。</p>
-    <form @submit.prevent="submitCreateDepositsFromCSV">
-      <div class="mb-3">
-        <label for="" class="form-label">deposits CSV</label>
-        <textarea class="form-control" rows="6" v-model="form.dataDeposits" placeholder='"id","__typename","createdAt","date","duration","endDate","exchangeRate","interestRate","memo","name","owner","principal","principalAccountId","status","updatedAt","value","valueAccountId"
-  "414b9b00-c847-4de5-a6e2-6591a2dcacd3","Deposit","2021-06-25T07:54:11.909Z","2020-06-05T15:00:00.000Z","0","2020-07-10T15:00:00.000Z","0","0","金利：0.03%","""２週間満期預金 ""","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","6000000","3b0e7f98-e2f0-4dc9-9076-28c2a20019fa","FINISHED","2021-06-25T07:54:11.909Z","6000113","3b0e7f98-e2f0-4dc9-9076-28c2a20019fa"' />
-      </div>
-      <input type="submit" value="Import Deposits" />
-    </form>
-
-
-    <hr />
-<h3>trust balances (CSV)</h3>
-<p>ヘッダ付きCSVを貼り付けてください（id,name,currency,noItem,basicPrice,balance[,memo] を取り込みます）。</p>
-<form @submit.prevent="submitCreateTrustBalancesFromCSV">
-  <div class="mb-3">
-    <label for="" class="form-label">trust balances CSV</label>
-    <textarea class="form-control" rows="6" v-model="form.dataTrustBalances" placeholder='"id","__typename","balance","basicPrice","createdAt","currency","name","noItem","owner","updatedAt"
-"65d25a84-4b6f-4e1f-9307-97b92fbee4c3","TrustBalance","995.38","314","2021-06-25T13:59:50.693Z","USD","ジャナス・セレクション ジャナス・バランス・ファンドクラスA（米ドル）受益証券（愛称：全天候型）","3.17","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","2025-02-22T22:52:43.575Z"' />
-  </div>
-  <input type="submit" value="Import TrustBalances" />
-</form>
-
-
-<hr />
-<h3>trust transactions (CSV)</h3>
-<p>ヘッダ付きCSVを貼り付けてください（id,accountId,trustBalanceId,tradeType,date,basicPrice,noItem,buy,sell,dividend を取り込みます）。</p>
-<form @submit.prevent="submitCreateTrustTransactionsFromCSV">
-  <div class="mb-3">
-    <label for="" class="form-label">trust transactions CSV</label>
-    <textarea class="form-control" rows="6" v-model="form.dataTrustTransactions" placeholder='"id","__typename","accountId","basicPrice","buy","createdAt","date","dividend","noItem","owner","sell","tradeType","trustBalanceId","updatedAt"
-"6385916f-cdbb-4e68-8c00-80d49e70378d","TrustTransaction","3b0e7f98-e2f0-4dc9-9076-28c2a20019fa","17307","100000","2023-05-02T21:36:51.644Z","2021-12-16T15:00:00.000Z","","5.7781","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","","BUY","0ed32f0f-c36a-42ca-83a2-2be1f6ad8e3b","2023-05-02T21:36:51.644Z"
-"3e008a30-8265-4c2d-a04c-029fd123446d","TrustTransaction","3bfc30e4-5d2f-4447-97f7-70b78290c7e1","14603","40000","2023-05-02T21:08:52.300Z","2022-05-09T15:00:00.000Z","","2.7392","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","","BUY","66393a2c-bee5-4dc7-9b15-8eed808a5ee6","2023-05-02T21:08:52.300Z"' />
-  </div>
-  <input type="submit" value="Import TrustTransactions" />
-</form>
+   
 
 
     <hr />
