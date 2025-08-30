@@ -61,6 +61,20 @@
         />
       </div>
 
+      <div class="mb-3">
+        <label class="form-label">type</label>
+        <select class="form-select" v-model="form.type">
+          <option v-for="n in refEnum.EnumTrustBalanceType" :key="n" :value="n.val">
+            {{ n.text }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">code</label>
+        <input type="text" class="form-control" v-model="form.code" />
+      </div>
+
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
@@ -109,6 +123,8 @@ export default {
             noItem: tb.noItem,
             basicPrice: tb.basicPrice,
             averagePurchasePrice: tb.averagePurchasePrice,
+            type: tb.type,
+            code: tb.code,
           };
         })
         .catch((error) => {
@@ -117,13 +133,21 @@ export default {
     },
     async submitUpdate() {
       // GraphQLに送る入力は "UpdateTrustBalanceInput" に存在するキーのみ（推定）を送る
-      // ここでは id / noItem / balance / basicPrice / averagePurchasePrice のみに限定
+      // ここでは id / noItem / balance / basicPrice / averagePurchasePrice / type / code を送る
       const input = { id: this.form.id };
       const numericKeys = ["noItem", "balance", "basicPrice", "averagePurchasePrice"];
       for (const key of numericKeys) {
         if (this.form[key] !== undefined && this.form[key] !== null && this.form[key] !== "") {
           const n = Number(this.form[key]);
           input[key] = Number.isNaN(n) ? undefined : n;
+        }
+      }
+      // 文字列系（空文字は送らない）
+      const stringKeys = ["type", "code"];
+      for (const key of stringKeys) {
+        const v = this.form[key];
+        if (v !== undefined && v !== null && String(v).trim() !== "") {
+          input[key] = String(v).trim();
         }
       }
       // 未定義は送らない
