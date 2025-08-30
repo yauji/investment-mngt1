@@ -191,19 +191,72 @@ export default {
       }
       this.tbIndexByCode = map;
     },
-    // コード（＋可能なら口座種別）から trustBalanceId を検索（必要に応じてAPI検索）
+    // コード（＋可能なら口座種別=type）から trustBalanceId を検索（必要に応じてAPI検索）
+    // 仕様: 口座種別が与えられる場合は type と code の両方が一致するものに限定して紐づける
     async findTrustBalanceIdByCode(codeRaw, accountTypeRaw) {
       const code = this.normalizeCode(codeRaw);
       if (!code) return null;
       const type = this.mapAccountTypeJP(accountTypeRaw);
       // まずローカルインデックス
       const byCode = (this.tbIndexByCode.get(code) || []).slice();
-      if (!byCode.length) return null;
-      if (type) {
-        const byCodeAndType = byCode.filter((tb) => String(tb.type || '') === type);
-        if (byCodeAndType.length) return byCodeAndType[0].id;
+      if (byCode.length) {
+        if (type) {
+          const byCodeAndType = byCode.filter((tb) => String(tb.type || '') === type);
+          if (byCodeAndType.length) return byCodeAndType[0].id; // type と code の両方一致
+          // type 指定があるのに一致が無い場合は見つからない扱い（フォールバックしない）
+        } else {
+          // type 指定がなければ code 一致の先頭を採用
+          return byCode[0].id;
+        }
       }
-      return byCode[0].id;
+      // --- サーバ検索 ---
+      let found = null;
+      // 優先: code eq (+ type eq)
+      try {
+        let nextToken = null;
+        do {
+          const filter = type
+            ? { and: [{ code: { eq: code } }, { type: { eq: type } }] }
+            : { code: { eq: code } };
+          const res = await API.graphql({
+            query: listTrustBalances,
+            variables: { filter, limit: 100, nextToken },
+          });
+          const items = res?.data?.listTrustBalances?.items || [];
+          nextToken = res?.data?.listTrustBalances?.nextToken || null;
+          const arr = items.filter((i) => this.normalizeCode(i.code) === code && (!type || String(i.type || '') === type));
+          if (arr.length) { found = arr; break; }
+        } while (nextToken);
+      } catch (e) {
+        console.warn('[JP] listTrustBalances eq search failed', e);
+      }
+      // 次: code contains (+ type eq)
+      if (!found) {
+        try {
+          let next = null;
+          do {
+            const filter = type
+              ? { and: [{ code: { contains: code } }, { type: { eq: type } }] }
+              : { code: { contains: code } };
+            const res = await API.graphql({
+              query: listTrustBalances,
+              variables: { filter, limit: 100, nextToken: next },
+            });
+            const items = res?.data?.listTrustBalances?.items || [];
+            next = res?.data?.listTrustBalances?.nextToken || null;
+            const arr = items.filter((i) => this.normalizeCode(i.code) === code && (!type || String(i.type || '') === type));
+            if (arr.length) { found = arr; break; }
+          } while (next);
+        } catch (e) {
+          console.warn('[JP] listTrustBalances contains search failed', e);
+        }
+      }
+      if (found && found.length) {
+        this.trustbalances.push(...found);
+        this.rebuildTbIndex();
+        return found[0].id; // ここまで来た時点で type 条件も満たしている
+      }
+      return null;
     },
     // 文字列→数値（カンマ無視）。非数は null
     toNumberOrNull(s) {
