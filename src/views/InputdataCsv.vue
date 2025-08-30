@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Inputdata2</h1>
+    <h1>Inputdata - CSV</h1>
 
 
     <hr />
@@ -60,13 +60,14 @@
 
 
     <hr />
-    <h3>trust transactions (日本語CSVテキスト)</h3>
-    <p>
-      下の形式（見出しを含む）のテキストを貼り付けてください。<br />
-      取引は E列「取引」から BUY/SELL/DIVIDEND にマッピングします（分配金→DIVIDEND、再投資買付/お買付/かんたん積立→BUY、解約→SELL）。<br />
-      trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。<br />
-      account は下記プルダウンで選択した共通アカウントを使用します。
-    </p>
+    <h3>trust transactions (日本語CSVテキスト) - monex</h3>
+    <ul>
+      <li>下の形式（見出しを含む）のテキストを貼り付けてください。</li>
+      <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金→DIVIDEND、再投資買付/お買付/かんたん積立→BUY、解約→SELL）。</li>
+      <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。</li>
+      <li>account は下記プルダウンで選択した共通アカウントを使用します。</li>
+      <li>口数は、正しく1/10000するように。</li>
+    </ul>
     <form @submit.prevent="submitCreateTrustTransactionsFromJPText">
       <div class="mb-3">
         <label class="form-label">利用アカウント</label>
