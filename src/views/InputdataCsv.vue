@@ -46,7 +46,7 @@
 import { API } from "aws-amplify";
 //import { listAccounts } from "../graphql/queries";
 
-import { listTrustBalances, listAccounts } from "../graphql/queries";
+import { listTrustBalances, listAccounts, listTrustTransactions } from "../graphql/queries";
 //listDeposits,//listTrustTransactions,
 //listTrustBalances,
 
@@ -84,6 +84,7 @@ export default {
       accounts: [],
       trustbalances: [],
       tbIndexByCode: new Map(),
+      txIndexByTB: {}, // { [trustBalanceId]: Set<key> } key = `${noItem}|${basicPrice}`
     };
   },
   methods: {
@@ -103,6 +104,32 @@ export default {
         rows.push(row);
       }
       return rows;
+    },
+    // 指定TBの既存トランザクションの (noItem,basicPrice) インデックスを用意
+    async ensureTxIndexForTB(trustBalanceId) {
+      if (!trustBalanceId) return new Set();
+      if (this.txIndexByTB[trustBalanceId]) return this.txIndexByTB[trustBalanceId];
+      const set = new Set();
+      let nextToken = null;
+      do {
+        const res = await API.graphql({
+          query: listTrustTransactions,
+          variables: { filter: { trustBalanceId: { eq: trustBalanceId } }, limit: 100, nextToken },
+        });
+        const data = res?.data?.listTrustTransactions;
+        const items = data?.items || [];
+        for (const t of items) {
+          const n = Number(t.noItem);
+          const p = Number(t.basicPrice);
+          if (!Number.isNaN(n) && !Number.isNaN(p)) {
+            const key = `${n.toFixed(6)}|${p.toFixed(6)}`;
+            set.add(key);
+          }
+        }
+        nextToken = data?.nextToken || null;
+      } while (nextToken);
+      this.txIndexByTB[trustBalanceId] = set;
+      return set;
     },
     // 取引種別の日本語→アプリ内Enum変換
     mapTradeTypeJP(v) {
@@ -235,7 +262,7 @@ export default {
         await this.getTrustBalancesAll();
       }
       this.rebuildTbIndex();
-      let ok = 0, skip = 0;
+      let ok = 0, skip = 0, skipDup = 0;
       for (let idx = 0; idx < rows.length; idx++) {
         const r = rows[idx];
         try {
@@ -296,8 +323,9 @@ export default {
           const date = this.pickDateISO(r['約定日'], r['受渡日']);
           if (!date) { console.warn(`[JP] date missing`, r); skip++; continue; }
 
-          const basicPrice = this.toNumberOrNull(r['単価/返済約定単価']);
-          const noItem = this.toNumberOrNull(r['数量（株/口）/返済数量']);
+          // 基準価格: 分配金の場合はなし（無視する）
+          let basicPrice = this.toNumberOrNull(r['単価/返済約定単価']);
+          let noItem = this.toNumberOrNull(r['数量（株/口）/返済数量']);
           const amountM = this.toNumberOrNull(r['受渡金額(円)']);
           const amountL = this.toNumberOrNull(r['利金・分配金・償還金']);
 
@@ -307,8 +335,22 @@ export default {
             date,
             tradeType,
           };
+          if (tradeType === Enum.EnumTradeType.DIVIDEND.val) {
+            basicPrice = null; // 分配金時は基準価格を登録しない
+            noItem = null;     // 分配金時は口数も登録しない
+          }
           if (basicPrice !== null) input.basicPrice = basicPrice;
           if (noItem !== null) input.noItem = noItem;
+
+          // 重複チェック: 同一 TB で (noItem, basicPrice) が同じなら登録しない
+          if (input.noItem !== undefined && input.basicPrice !== undefined) {
+            const set = await this.ensureTxIndexForTB(trustBalanceId);
+            const key = `${Number(input.noItem).toFixed(6)}|${Number(input.basicPrice).toFixed(6)}`;
+            if (set.has(key)) {
+              skipDup++;
+              continue;
+            }
+          }
 
           if (tradeType === Enum.EnumTradeType.BUY.val) {
             if (amountM !== null) input.buy = amountM;
@@ -322,6 +364,12 @@ export default {
             query: createTrustTransaction,
             variables: { input },
           });
+          // 追加済みキーをインデックスに反映
+          if (input.noItem !== undefined && input.basicPrice !== undefined) {
+            const set = await this.ensureTxIndexForTB(trustBalanceId);
+            const key = `${Number(input.noItem).toFixed(6)}|${Number(input.basicPrice).toFixed(6)}`;
+            set.add(key);
+          }
           ok++;
         } catch (e) {
           console.error(`[JP] createTrustTransaction failed (row ${idx})`, e, rows[idx]);
@@ -329,7 +377,7 @@ export default {
         }
       }
 
-      alert(`JP TrustTransactions import finished. success=${ok}, skipped=${skip}`);
+      alert(`JP TrustTransactions import finished. success=${ok}, duplicates=${skipDup}, skipped=${skip}`);
     },
     // 全ページの trustBalances を読み込む
     async getTrustBalancesAll() {

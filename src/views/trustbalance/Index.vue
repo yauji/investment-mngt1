@@ -212,8 +212,8 @@ export default {
         // 3) 各TBについて、口数(noItem)と平均取得価格(averagePurchasePrice)を算出
         /** @type {Record<string, {units:number, avg:number}>} */
         const agg = {};
-        /** @type {Record<string, number>} */
-        const latestPrice = {}; // 直近取引の basicPrice（>0 の最終値）
+        // TrustBalance 基準価格の参照（単価欠損時のスケール判定用のみ）
+        const tbBasicById = Object.fromEntries(this.trustbalances.map(tb => [tb.id, Number(tb.basicPrice) || 0]));
         for (const tb of this.trustbalances) {
           agg[tb.id] = { units: 0, avg: 0 };
         }
@@ -223,7 +223,7 @@ export default {
           let units = 0;
           let cost  = 0;  // avg * units
           let avg   = 0;
-          let lastPrice = 0;
+          let lastPrice = 0; // 参照のみ（basicPriceは更新に使わない）
           for (const t of arr) {
             let qty = Number(t.noItem) || 0;
             const price = Number(t.basicPrice) || 0;
@@ -245,6 +245,14 @@ export default {
                 );
               }
             }
+            // SELL で単価が無い場合、平均単価から数量を推定（最後の手段）
+            if ((kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') && (!qty || qty <= 0)) {
+              const sellAmt = Number(t.sell) || 0;
+              if (sellAmt > 0 && avg > 0) {
+                qty = sellAmt / avg;
+                console.log(`[updateBalances] inferred qty from avg TB ${tbid} tx ${t.id}: qty=${qty} using sell=${sellAmt} avg=${avg}`);
+              }
+            }
             // 投信の 1/10000 口表記を自動補正（buy/sell 金額と照合してスケール判定）
             if (qty > 0 && price > 0) {
               const buyAmt = Number(t.buy) || Number(t.sell) || 0;
@@ -252,6 +260,18 @@ export default {
               if (ratio > 9000 && ratio < 11000) {
                 console.log(`[updateBalances] scale 1/10000 applied TB ${tbid} tx ${t.id}: qty ${qty} -> ${qty/10000}`);
                 qty = qty / 10000;
+              }
+            }
+            // 単価が無い場合でも、TB 基準価格と金額から 1/10000 スケールを推定
+            if (qty > 0 && price <= 0) {
+              const refPrice = tbBasicById[tbid] || 0;
+              const amt = Number(t.buy) || Number(t.sell) || 0;
+              if (refPrice > 0 && amt > 0) {
+                const ratio = (qty * refPrice) / amt;
+                if (ratio > 9000 && ratio < 11000) {
+                  console.log(`[updateBalances] scale 1/10000 (ref TB basic) TB ${tbid} tx ${t.id}: qty ${qty} -> ${qty/10000}`);
+                  qty = qty / 10000;
+                }
               }
             }
 
@@ -278,7 +298,7 @@ export default {
             }
           }
           agg[tbid] = { units, avg };
-          latestPrice[tbid] = lastPrice;
+          // latestPrice[tbid] = lastPrice; // 基準価格は更新に使わないため保持のみ
           console.log(`[updateBalances] TB ${tbid} result: units=${units}, avg=${avg}, lastPrice=${lastPrice}`);
         }
 
@@ -288,16 +308,15 @@ export default {
           if (!byTB.has(tbid)) continue; // 取引が無いTBはスキップ（意図せず0リセットしない）
           const tb = tbById.get(tbid);
           if (!tb) continue;
-          // TB に価格が無い/0 の場合は直近取引の価格を採用
-          const fallback = Number(latestPrice[tbid]) || 0;
-          const basic = Number(tb.basicPrice) || fallback;
+          // 基準価格はTBの値をそのまま使用（取引からは更新しない）
+          const basic = Number(tb.basicPrice) || 0;
           const input = {
             id: tbid,
             noItem: Number(units) || 0,
             balance: (Number(units) || 0) * basic,
             averagePurchasePrice: Number(avg) || 0,
           };
-          console.log(`[updateBalances] updating TB ${tbid} with`, input, `(basicPrice used=${basic})`);
+          console.log(`[updateBalances] updating TB ${tbid} with`, input, `(basicPrice kept=${basic})`);
           try {
             const res = await API.graphql({
               query: updateTrustBalance,
