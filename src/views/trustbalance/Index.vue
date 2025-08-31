@@ -6,17 +6,17 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>currency</th>
-          <th>name</th>
-          <th>memo</th>
-          <th>type</th>
-          <th>code</th>
-          <th>noItem</th>
-          <th>basic price</th>
-          <th>平均取得価格</th>
-          <th>PnL</th>
-          <th>balance</th>
-          <th>balance JPY</th>
+          <th class="th-small">currency</th>
+          <th class="th-small">name</th>
+          <th class="th-small">memo</th>
+          <th class="th-small">type</th>
+          <th class="th-small">code</th>
+          <th class="th-small">noItem</th>
+          <th class="th-small">basic price</th>
+          <th class="th-small">平均取得価格</th>
+          <th class="th-pnl">PnL</th>
+          <th class="th-small">balance</th>
+          <th class="th-small">balance JPY</th>
 
           <th></th>
           <th></th>
@@ -28,30 +28,24 @@
           v-for="(trustbalance, index) in trustbalances"
           :key="trustbalance.id"
         >
-          <td>{{ trustbalance.currency }}</td>
-          <td>{{ trustbalance.name }}</td>
-          <td>{{ trustbalance.memo }}</td>
-          <td>{{ trustbalance.type }}</td>
-          <td>{{ trustbalance.code }}</td>
-          <td>{{ numberFormat(trustbalance.noItem) }}</td>
-          <td>{{ trustbalance.basicPrice }}</td>
-          <td>{{ numberFormat(trustbalance.averagePurchasePrice) }}</td>
-          <td>{{ numberFormat(plFor(trustbalance)) }}</td>
-          <td>{{ numberFormat(trustbalance.balance) }}</td>
-          <td>{{ numberFormat((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency)) }}</td>
-
-          <td>
+          <td class="td-small">{{ trustbalance.currency }}</td>
+          <td class="td-small">
             <router-link
-              custom
-              v-slot="{ navigate }"
-              :to="{
-                name: 'TrustBalanceShow',
-                params: { TrustBalanceId: trustbalance.id },
-              }"
+              :to="{ name: 'TrustBalanceShow', params: { TrustBalanceId: trustbalance.id } }"
             >
-              <button class="btn btn-primary" @click="navigate">Show</button>
+              {{ trustbalance.name }}
             </router-link>
           </td>
+          <td class="td-small">{{ trustbalance.memo }}</td>
+          <td class="td-small">{{ trustbalance.type }}</td>
+          <td class="td-small">{{ trustbalance.code }}</td>
+          <td class="td-small">{{ numberFormat(trustbalance.noItem) }}</td>
+          <td class="td-small">{{ trustbalance.basicPrice }}</td>
+          <td class="td-small">{{ numberFormat(trustbalance.averagePurchasePrice) }}</td>
+          <td :class="pnlClass(plFor(trustbalance))">{{ numberFormat(plFor(trustbalance)) }}</td>
+          <td class="td-small">{{ numberFormat(trustbalance.balance) }}</td>
+          <td class="td-small">{{ numberFormat((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency)) }}</td>
+
           <td>
             <router-link
               custom
@@ -61,16 +55,13 @@
                 params: { TrustBalanceId: trustbalance.id },
               }"
             >
-              <button class="btn btn-primary" @click="navigate">Edit</button>
+              <button class="btn btn-outline-primary btn-sm" @click="navigate" title="Edit" aria-label="Edit">
+                ✎
+              </button>
             </router-link>
           </td>
           <td>
-            <button
-              class="btn btn-primary"
-              @click="deleteTrustBalance(index, trustbalance.id)"
-            >
-              Delete
-            </button>
+            <button class="btn btn-outline-danger btn-sm" @click="deleteTrustBalance(index, trustbalance.id)" title="Delete" aria-label="Delete">✕</button>
           </td>
         </tr>
       </tbody>
@@ -142,6 +133,12 @@ export default {
       const avg = Number(tb?.averagePurchasePrice) || 0;
       const units = Number(tb?.noItem) || 0;
       return (bp - avg) * units;
+    },
+    pnlClass(value) {
+      const v = Number(value) || 0;
+      if (v > 0) return 'td-pnl pnl-pos';
+      if (v < 0) return 'td-pnl pnl-neg';
+      return 'td-pnl pnl-zero';
     },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
@@ -361,3 +358,16 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Smaller default cells/headers */
+.th-small { font-size: 0.85rem; color: #666; font-weight: 500; }
+.td-small { font-size: 0.9rem; color: #555; }
+
+/* Highlight PnL */
+.th-pnl { font-size: 0.95rem; font-weight: 700; }
+.td-pnl { font-size: 1.05rem; font-weight: 700; }
+.td-pnl.pnl-pos { color: #0a8; }
+.td-pnl.pnl-neg { color: #d33; }
+.td-pnl.pnl-zero { color: #888; }
+</style>
