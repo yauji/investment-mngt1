@@ -35,6 +35,29 @@
       </tbody>
     </table>
 
+    <!-- 為替レート編集 -->
+    <h3>為替レートを編集</h3>
+    <table class="table table-bordered" style="max-width:480px;">
+      <thead>
+        <tr>
+          <th>通貨</th>
+          <th>現在値</th>
+          <th>新しい値</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(rate, currency) in exchangeRates" :key="'edit-' + currency">
+          <td>{{ currency }}</td>
+          <td>{{ rate }}</td>
+          <td>
+            <input type="number" step="0.0001" class="form-control" style="max-width:160px;"
+                   v-model.number="editRates[currency]" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn btn-primary" @click="saveRatesToStore">ストアへ保存</button>
+
 
 
 
@@ -148,9 +171,25 @@ export default {
       activePrincipalJpy: 0,
       trustPnLJpy: 0,
       dividendsJpy: 0,
+      editRates: {},
     };
   },
+  created() {
+    // 初期値をストアから編集用にコピー
+    const init = {};
+    for (const [ccy, rate] of Object.entries(this.exchangeRates || {})) init[ccy] = rate;
+    this.editRates = init;
+  },
   methods: {
+    saveRatesToStore() {
+      const payload = {};
+      for (const [ccy, val] of Object.entries(this.editRates)) {
+        const v = Number(val);
+        if (!Number.isNaN(v) && v > 0) payload[ccy] = v;
+      }
+      this.$store.commit('setExchangeRates', payload);
+      alert('為替レートを更新しました');
+    },
     async calcTotalReturn() {
       try {
         // 1) Accounts 取得 & マッピング

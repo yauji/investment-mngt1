@@ -442,3 +442,57 @@ export const deleteTrustBalance = /* GraphQL */ `
     }
   }
 `;
+export const createFxRate = /* GraphQL */ `
+  mutation CreateFxRate(
+    $input: CreateFxRateInput!
+    $condition: ModelFxRateConditionInput
+  ) {
+    createFxRate(input: $input, condition: $condition) {
+      id
+      currency
+      date
+      rate
+      source
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const updateFxRate = /* GraphQL */ `
+  mutation UpdateFxRate(
+    $input: UpdateFxRateInput!
+    $condition: ModelFxRateConditionInput
+  ) {
+    updateFxRate(input: $input, condition: $condition) {
+      id
+      currency
+      date
+      rate
+      source
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const deleteFxRate = /* GraphQL */ `
+  mutation DeleteFxRate(
+    $input: DeleteFxRateInput!
+    $condition: ModelFxRateConditionInput
+  ) {
+    deleteFxRate(input: $input, condition: $condition) {
+      id
+      currency
+      date
+      rate
+      source
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
