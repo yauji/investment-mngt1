@@ -88,14 +88,25 @@ export default {
     };
   },
   methods: {
-    // 日本語の列名のCSVをパース（クォート対応）
+    // 日本語の列名のCSVをパース（クォート対応）。ヘッダーなし行にも対応。
     parseJPBrokerCsv(text) {
       if (!text) return [];
       const lines = text.split(/\r\n|\n/).filter((l) => l.trim().length > 0);
       if (!lines.length) return [];
-      const header = this.splitCsvLine(lines[0]).map((h) => h.trim());
+      const defaultHeader = [
+        '約定日','受渡日','口座','商品','取引','銘柄コード','銘柄名',
+        '数量（株/口）/返済数量','単価/返済約定単価','手数料','税金(手数料消費税及び譲渡益税)',
+        '利金・分配金・償還金','受渡金額(円)'
+      ];
+      const firstCols = this.splitCsvLine(lines[0]).map((h) => h.trim());
+      // 先頭が日付(YYYY/MM/DD)っぽければヘッダー無しとみなす
+      const looksLikeDate = /^\d{4}\/\d{2}\/\d{2}$/.test(firstCols[0] || '');
+      // 先頭が既知ヘッダーならそれを使う
+      const isHeader = !looksLikeDate && (firstCols[0] === '約定日' || firstCols.some(h => h.includes('約定日')));
+      const header = isHeader ? firstCols : defaultHeader;
+      const startIndex = isHeader ? 1 : 0;
       const rows = [];
-      for (let i = 1; i < lines.length; i++) {
+      for (let i = startIndex; i < lines.length; i++) {
         const cols = this.splitCsvLine(lines[i]);
         const row = {};
         for (let j = 0; j < header.length; j++) {
@@ -265,6 +276,7 @@ export default {
       let ok = 0, skip = 0, skipDup = 0;
       for (let idx = 0; idx < rows.length; idx++) {
         const r = rows[idx];
+        console.log(r);
         try {
           const tradeType = this.mapTradeTypeJP(r['取引']);
           if (!tradeType) { skip++; continue; }
@@ -408,8 +420,20 @@ export default {
             inQ = !inQ;
           }
         } else if (ch === ',' && !inQ) {
-          out.push(cur);
-          cur = '';
+          // クォート外でも、3桁区切りのカンマは値の一部として扱う
+          // 例: 307,162 は一つの値。直後に3桁の数字が続く場合のみ桁区切りと判断。
+          const prev = cur.length ? cur[cur.length - 1] : '';
+          let j = i + 1;
+          let digitsAhead = 0;
+          while (j < line.length && /[0-9]/.test(line[j]) && digitsAhead < 4) { digitsAhead++; j++; }
+          const nextChar = line[j] || '';
+          const isThousandsComma = /[0-9]/.test(prev) && digitsAhead === 3 && !/[0-9]/.test(nextChar);
+          if (isThousandsComma) {
+            cur += ch; // 数値の桁区切り
+          } else {
+            out.push(cur);
+            cur = '';
+          }
         } else {
           cur += ch;
         }
