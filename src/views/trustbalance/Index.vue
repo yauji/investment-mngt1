@@ -14,6 +14,7 @@
           <th>noItem</th>
           <th>basic price</th>
           <th>平均取得価格</th>
+          <th>PnL</th>
           <th>balance</th>
           <th>balance JPY</th>
 
@@ -35,6 +36,7 @@
           <td>{{ numberFormat(trustbalance.noItem) }}</td>
           <td>{{ trustbalance.basicPrice }}</td>
           <td>{{ numberFormat(trustbalance.averagePurchasePrice) }}</td>
+          <td>{{ numberFormat(plFor(trustbalance)) }}</td>
           <td>{{ numberFormat(trustbalance.balance) }}</td>
           <td>{{ numberFormat((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency)) }}</td>
 
@@ -134,6 +136,12 @@ export default {
       const rates = (this.$store && this.$store.state && this.$store.state.exchangeRates) ? this.$store.state.exchangeRates : {};
       const v = Number(rates[c]);
       return Number.isFinite(v) && v > 0 ? v : 0;
+    },
+    plFor(tb) {
+      const bp = Number(tb?.basicPrice) || 0;
+      const avg = Number(tb?.averagePurchasePrice) || 0;
+      const units = Number(tb?.noItem) || 0;
+      return (bp - avg) * units;
     },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
