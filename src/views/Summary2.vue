@@ -19,21 +19,30 @@
     <hr/>
 
     <!-- 為替レート一覧表示 -->
-    <h2>為替レート一覧</h2>
-    <table class="table table-bordered" style="max-width:400px;">
+    <h2 class="d-flex align-items-center" style="gap: 12px;">
+      為替レート一覧
+      <button class="btn btn-outline-primary btn-sm" @click="fetchFx">最新為替を取得</button>
+    </h2>
+    <table class="table table-bordered" style="max-width:520px;">
       <thead>
         <tr>
           <th>通貨</th>
           <th>レート (1通貨あたりの円)</th>
+          <th>編集</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(rate, currency) in exchangeRates" :key="currency">
           <td>{{ currency }}</td>
           <td>{{ rate }}</td>
+          <td>
+            <input type="number" step="0.0001" class="form-control" style="max-width:160px;"
+                   v-model.number="editRates[currency]" />
+          </td>
         </tr>
       </tbody>
     </table>
+    <button class="btn btn-primary btn-sm" @click="saveRatesToStore">ストアへ保存</button>
 
     <!-- 為替レート編集 -->
     <h3>為替レートを編集</h3>
@@ -181,6 +190,19 @@ export default {
     this.editRates = init;
   },
   methods: {
+    async fetchFx() {
+      try {
+        await this.$store.dispatch('fetchExchangeRates');
+        // 最新のストア値で編集欄を更新
+        const init = {};
+        for (const [ccy, rate] of Object.entries(this.exchangeRates || {})) init[ccy] = rate;
+        this.editRates = init;
+        alert('最新の為替レートを取得しました');
+      } catch (e) {
+        console.error('fetchExchangeRates failed', e);
+        alert('為替レートの取得に失敗しました');
+      }
+    },
     saveRatesToStore() {
       const payload = {};
       for (const [ccy, val] of Object.entries(this.editRates)) {

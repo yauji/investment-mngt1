@@ -337,7 +337,10 @@ export default {
           // balance は口座通貨建て。為替はストアの値を反映（JPYは1固定）
           payload.balance = toNum(newBalance);
           const ccy = String(a.currency || '').toUpperCase();
-          const rateFromStore = ccy === 'JPY' ? 1 : Number(storeRates[ccy]) || 0;
+          const storeRate = ccy === 'JPY' ? 1 : Number(storeRates[ccy]);
+          const currentRate = Number(a.exchangeRate) || 0;
+          // 優先: ストアの為替（数値>0）。未設定なら既存口座のレートを維持。
+          const rateFromStore = Number.isFinite(storeRate) && storeRate > 0 ? storeRate : currentRate;
           payload.exchangeRate = rateFromStore;
 
           // Remove graphql/meta/computed fields if present

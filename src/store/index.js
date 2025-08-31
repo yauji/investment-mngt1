@@ -6,10 +6,10 @@ export default createStore({
     user: null,
     // 為替レートを共通パラメータとして追加
     exchangeRates: {
-      USD: 155.0,
+      USD: 146.0,
       EUR: 170.0,
-      AUD: 102.0, // 豪ドル
-      NZD: 95.0,  // ニュージーランドドル
+      AUD: 96.0, // 豪ドル
+      NZD: 87.0,  // ニュージーランドドル
       // 必要に応じて他通貨も追加
     },
   },
