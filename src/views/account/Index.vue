@@ -321,6 +321,7 @@ export default {
         //console.log("-----4", dicAccountIdBalance);
 
         //update account balances---
+        const storeRates = (this.$store && this.$store.state && this.$store.state.exchangeRates) ? this.$store.state.exchangeRates : {};
         for (const ka in this.accounts) {
           const a = this.accounts[ka];
           const newBalance = dicAccountIdBalance[a.id] ?? 0;
@@ -333,7 +334,11 @@ export default {
           };
 
           const payload = { ...a };
+          // balance は口座通貨建て。為替はストアの値を反映（JPYは1固定）
           payload.balance = toNum(newBalance);
+          const ccy = String(a.currency || '').toUpperCase();
+          const rateFromStore = ccy === 'JPY' ? 1 : Number(storeRates[ccy]) || 0;
+          payload.exchangeRate = rateFromStore;
 
           // Remove graphql/meta/computed fields if present
           delete payload.createdAt;
