@@ -2,6 +2,22 @@
   <div>
     <h1>Trust Transactions</h1>
 
+    <div class="d-flex align-items-center mb-2" style="gap: 12px;">
+      <div>
+        <label>Rows:</label>
+        <select class="form-select d-inline-block" style="width: auto;" v-model.number="pageSize" @change="changePageSize">
+          <option :value="10">10</option>
+          <option :value="25">25</option>
+          <option :value="50">50</option>
+          <option :value="100">100</option>
+        </select>
+      </div>
+      <div class="btn-group" role="group">
+        <button class="btn btn-outline-primary" @click="prevPage" :disabled="prevTokens.length === 0">Prev</button>
+        <button class="btn btn-outline-primary" @click="nextPage" :disabled="!nextToken">Next</button>
+      </div>
+    </div>
+
     <table class="table table-striped">
       <thead>
         <tr>
@@ -92,8 +108,8 @@ import moment from "moment";
 
 // NOTE: Fetch transactions (without nested trustBalance to avoid non-null errors)
 const LIST_TRUST_TX = /* GraphQL */ `
-  query ListTrustTransactions {
-    listTrustTransactions {
+  query ListTrustTransactions($limit: Int, $nextToken: String) {
+    listTrustTransactions(limit: $limit, nextToken: $nextToken) {
       items {
         id
         date
@@ -106,6 +122,7 @@ const LIST_TRUST_TX = /* GraphQL */ `
         trustBalanceId
         accountId
       }
+      nextToken
     }
   }
 `;
@@ -147,9 +164,31 @@ export default {
       accountMap: {},
       sort_key: "date",
       sort_asc: true,
+      pageSize: 25,
+      nextToken: null,     // token for next page
+      currentToken: null,  // token used to fetch current page (null for first page)
+      prevTokens: [],      // stack of tokens for previous pages (sequence of currentToken values)
     };
   },
   methods: {
+    async changePageSize() {
+      // reset pagination to first page
+      this.prevTokens = [];
+      this.currentToken = null;
+      this.nextToken = null;
+      await this.getTrustTransactions(null);
+    },
+    async nextPage() {
+      if (!this.nextToken) return;
+      // push current start token to history and advance
+      this.prevTokens.push(this.currentToken);
+      await this.getTrustTransactions(this.nextToken);
+    },
+    async prevPage() {
+      if (this.prevTokens.length === 0) return;
+      const prevStart = this.prevTokens.pop();
+      await this.getTrustTransactions(prevStart || null);
+    },
     sortBy(key) {
       this.sort_key === key
         ? (this.sort_asc = !this.sort_asc)
@@ -181,10 +220,10 @@ export default {
         return value.toLocaleString();
       }
     },
-    async getTrustTransactions() {
+    async getTrustTransactions(token = null) {
       try {
         const [txRes, tbRes, accRes] = await Promise.all([
-          API.graphql({ query: LIST_TRUST_TX }),
+          API.graphql({ query: LIST_TRUST_TX, variables: { limit: this.pageSize, nextToken: token } }),
           API.graphql({ query: LIST_TRUST_BALANCES }),
           API.graphql({ query: LIST_ACCOUNTS }),
         ]);
@@ -209,8 +248,11 @@ export default {
         this.accountMap = amap;
 
         // Transactions; filter out any null slots that may appear when GraphQL null-bubbles in a list
-        const items = (txRes?.data?.listTrustTransactions?.items || []).filter(Boolean);
+        this.currentToken = token || null;
+        const list = txRes?.data?.listTrustTransactions;
+        const items = (list?.items || []).filter(Boolean);
         this.trusttransactions = items;
+        this.nextToken = list?.nextToken || null;
 
         this.sortBy("date");
       } catch (error) {
