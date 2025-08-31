@@ -5,27 +5,37 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>name</th>
-          <th>currency</th>
-          <th>balance</th>
-          <th>balance JPY</th>
-          <th>exchangeRate</th>
-          <th>memo</th>
-          <th>active deposit</th>
-          <th>trust (not implemented)</th>
+          <th class="th-small">name</th>
+          <th class="th-small">currency</th>
+          <th class="th-pnl th-num">balance</th>
+          <th class="th-small th-num">balance JPY</th>
+          <th class="th-small th-num">exchangeRate</th>
+          <th class="th-small">memo</th>
+          <th class="th-small th-num">active deposit</th>
+          <th class="th-small th-num">trust (not implemented)</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(account, index) in accounts" :key="account.id">
-          <td>{{ account.name }}</td>
-          <td>{{ account.currency }}</td>
-          <td>{{ numberFormat(account.balance) }}</td>
-          <td>{{ numberFormat(account.balance * account.exchangeRate) }}</td>
-          <td>{{ account.exchangeRate }}</td>
-          <td>{{ account.memo }}</td>
-          <td>{{ numberFormat(account.activedeposit) }}</td>
-          <td>{{ numberFormat(account.trust) }}</td>
+          <td class="td-small">{{ account.name }}</td>
+          <td class="td-small">{{ account.currency }}</td>
+          <td class="td-num td-pnl">
+            <span class="num-int">{{ formatParts(account.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.balance, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.balance * account.exchangeRate, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.balance * account.exchangeRate, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.exchangeRate, 4).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.exchangeRate, 4).frac }}</span>
+          </td>
+          <td class="td-small">{{ account.memo }}</td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.activedeposit, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.activedeposit, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.trust, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.trust, 2).frac }}</span>
+          </td>
           <td>
             <div class="container text-center">
               <div class="row row-cols-auto">
@@ -121,6 +131,15 @@ export default {
       } else {
         return value.toLocaleString();
       }
+    },
+    formatParts(value, decimals = 2) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return { int: '---', frac: ''.padEnd(decimals, '0') };
+      const fixed = n.toFixed(decimals);
+      const [i, f = ''] = fixed.split('.');
+      const intNum = Number(i);
+      const intStr = Number.isFinite(intNum) ? intNum.toLocaleString() : i;
+      return { int: intStr, frac: f };
     },
     async getAccounts() {
       await API.graphql({
@@ -392,3 +411,14 @@ export default {
   },
 };
 </script>
+<style scoped>
+.th-small { font-size: 0.85rem; color: #666; font-weight: 500; }
+.td-small { font-size: 0.9rem; color: #555; }
+.th-num { text-align: right; }
+.td-num { text-align: right; font-variant-numeric: tabular-nums; }
+.th-pnl { font-size: 0.95rem; font-weight: 700; }
+.td-pnl { font-size: 1.05rem; font-weight: 700; }
+.num-int { font-variant-numeric: tabular-nums; }
+.num-frac { font-size: 0.8em; font-variant-numeric: tabular-nums; }
+.num-dot { padding: 0 0.05em; opacity: 0.7; }
+</style>
