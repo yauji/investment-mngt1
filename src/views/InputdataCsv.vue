@@ -14,6 +14,8 @@
       <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。</li>
       <li>account は下記プルダウンで選択した共通アカウントを使用します。</li>
       <li>口数は、正しく1/10000するように。</li>
+      <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートなし。</li>
+      <li>header行も必要</li>
     </ul>
     <form @submit.prevent="submitCreateTrustTransactionsFromJPText">
       <div class="mb-3">
@@ -30,7 +32,7 @@
           class="form-control"
           rows="8"
           v-model="form.dataTrustTransactionsJP"
-          placeholder='"約定日","受渡日","口座","商品","取引","銘柄コード","銘柄名","数量（株/口）/返済数量","単価/返済約定単価","手数料","税金(手数料消費税及び譲渡益税)","利金・分配金・償還金","受渡金額(円)"\n"2024/06/25","2024/07/01","NISA","","分配金","8361     ","Ｖギフォード インパクト投資","307,712","10","0","0","308","0"'
+
         />
       </div>
       <input type="submit" value="Import JP TrustTransactions" />
