@@ -45,15 +45,15 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th @click="sortBy('date')">date</th>
-          <th>trade Type</th>
-          <th @click="sortBy('trustBalanceId')">trust</th>
-          <th>account</th>
-          <th>basic Price</th>
-          <th>no Item</th>
-          <th>buy</th>
-          <th>sell</th>
-          <th>dividend</th>
+          <th class="th-small" @click="sortBy('date')">date</th>
+          <th class="th-small">trade Type</th>
+          <th class="th-small" @click="sortBy('trustBalanceId')">trust</th>
+          <th class="th-small">account</th>
+          <th class="th-small th-num">basic Price</th>
+          <th class="th-small th-num">no Item</th>
+          <th class="th-small th-num">buy</th>
+          <th class="th-small th-num">sell</th>
+          <th class="th-small th-num">dividend</th>
 
           <th></th>
           <th></th>
@@ -65,16 +65,26 @@
           v-for="(trusttransaction, index) in trusttransactions"
           :key="trusttransaction.id"
         >
-          <td>{{ moment(trusttransaction.date) }}</td>
-          <td>{{ trusttransaction.tradeType }}</td>
-          <td>{{ trustMap[trusttransaction.trustBalanceId] || '-' }}</td>
-          <td>{{ accountMap[trusttransaction.accountId] || '-' }}</td>
-          <td>{{ numberFormat(trusttransaction.basicPrice) }}</td>
-          <td>{{ trusttransaction.noItem }}</td>
+          <td class="td-small">{{ moment(trusttransaction.date) }}</td>
+          <td class="td-small">{{ trusttransaction.tradeType }}</td>
+          <td class="td-small">{{ trustMap[trusttransaction.trustBalanceId] || '-' }}</td>
+          <td class="td-small">{{ accountMap[trusttransaction.accountId] || '-' }}</td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trusttransaction.basicPrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trusttransaction.basicPrice, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trusttransaction.noItem, 4).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trusttransaction.noItem, 4).frac }}</span>
+          </td>
 
-          <td>{{ numberFormat(trusttransaction.buy) }}</td>
-          <td>{{ numberFormat(trusttransaction.sell) }}</td>
-          <td>{{ numberFormat(trusttransaction.dividend) }}</td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trusttransaction.buy, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trusttransaction.buy, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trusttransaction.sell, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trusttransaction.sell, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trusttransaction.dividend, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trusttransaction.dividend, 2).frac }}</span>
+          </td>
           <td>
             <router-link
               custom
@@ -201,6 +211,15 @@ export default {
     };
   },
   methods: {
+    formatParts(value, decimals = 2) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return { int: '---', frac: ''.padEnd(decimals, '0') };
+      const fixed = n.toFixed(decimals);
+      const [i, f = ''] = fixed.split('.');
+      const intNum = Number(i);
+      const intStr = Number.isFinite(intNum) ? intNum.toLocaleString() : i;
+      return { int: intStr, frac: f };
+    },
     buildFilter() {
       const and = [];
       if (this.filterType) {
@@ -337,3 +356,12 @@ export default {
   },
 };
 </script>
+<style scoped>
+.th-small { font-size: 0.85rem; color: #666; font-weight: 500; }
+.td-small { font-size: 0.9rem; color: #555; }
+.th-num { text-align: right; }
+.td-num { text-align: right; font-variant-numeric: tabular-nums; }
+.num-int { font-variant-numeric: tabular-nums; }
+.num-frac { font-size: 0.8em; font-variant-numeric: tabular-nums; }
+.num-dot { padding: 0 0.05em; opacity: 0.7; }
+</style>
