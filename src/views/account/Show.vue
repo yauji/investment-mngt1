@@ -33,8 +33,10 @@
       <thead>
         <tr>
           <th>date</th>
+          <th>type</th>
           <th>buy (expense)</th>
           <th>sell (income)</th>
+          <th>dividend (income)</th>
           <th>trust</th>
           <th></th>
         </tr>
@@ -45,9 +47,11 @@
           :key="trusttransaction.id"
         >
           <td>{{ moment(trusttransaction.date) }}</td>
+          <td>{{ trusttransaction.tradeType }}</td>
           <td>{{ numberFormat(trusttransaction.buy) }}</td>
           <td>{{ numberFormat(trusttransaction.sell) }}</td>
-          <td>{{ trusttransaction.trustBalance.name }}</td>
+          <td>{{ numberFormat(trusttransaction.dividend) }}</td>
+          <td>{{ trustMap[trusttransaction.trustBalanceId] || '-' }}</td>
         </tr>
       </tbody>
     </table>
@@ -61,6 +65,7 @@ import {
   listAccounts,
   listDeposits,
   listTrustTransactions,
+  listTrustBalances,
 } from "../../graphql/queries";
 
 //import { updateAccount } from "../../graphql/mutations";
@@ -90,6 +95,7 @@ export default {
       //for display other account name
       accounts: [],
       trusttransactions: [],
+      trustMap: {}, // trustBalanceId -> name
     };
   },
 
@@ -103,6 +109,17 @@ export default {
     },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
+    },
+    async buildTrustMap() {
+      try {
+        const res = await API.graphql({ query: listTrustBalances });
+        const items = res?.data?.listTrustBalances?.items || [];
+        const m = {};
+        for (const tb of items) m[tb.id] = tb.name;
+        this.trustMap = m;
+      } catch (e) {
+        console.log(e);
+      }
     },
     /*
     async getAccountById (id) {
@@ -158,6 +175,10 @@ export default {
         });
     },
     async getTrans() {
+      // trust name mapping (non-blocking)
+      if (!this.trustMap || Object.keys(this.trustMap).length === 0) {
+        this.buildTrustMap();
+      }
       //get deposits-----
       var deposits;
       await API.graphql({
