@@ -11,12 +11,12 @@
           <th class="th-small">memo</th>
           <th class="th-small">type</th>
           <th class="th-small">code</th>
-          <th class="th-small">noItem</th>
-          <th class="th-small">basic price</th>
-          <th class="th-small">平均取得価格</th>
-          <th class="th-pnl">PnL</th>
-          <th class="th-small">balance</th>
-          <th class="th-small">balance JPY</th>
+          <th class="th-small th-num">noItem</th>
+          <th class="th-small th-num">basic price</th>
+          <th class="th-small th-num">平均取得価格</th>
+          <th class="th-pnl th-num">PnL</th>
+          <th class="th-small th-num">balance</th>
+          <th class="th-small th-num">balance JPY</th>
 
           <th></th>
           <th></th>
@@ -39,12 +39,24 @@
           <td class="td-small">{{ trustbalance.memo }}</td>
           <td class="td-small">{{ trustbalance.type }}</td>
           <td class="td-small">{{ trustbalance.code }}</td>
-          <td class="td-small">{{ numberFormat(trustbalance.noItem) }}</td>
-          <td class="td-small">{{ trustbalance.basicPrice }}</td>
-          <td class="td-small">{{ numberFormat(trustbalance.averagePurchasePrice) }}</td>
-          <td :class="pnlClass(plFor(trustbalance))">{{ numberFormat(plFor(trustbalance)) }}</td>
-          <td class="td-small">{{ numberFormat(trustbalance.balance) }}</td>
-          <td class="td-small">{{ numberFormat((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency)) }}</td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trustbalance.noItem, 4).int }}</span><span v-if="4 > 0" class="num-dot">.</span><span v-if="4 > 0" class="num-frac">{{ formatParts(trustbalance.noItem, 4).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trustbalance.basicPrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.basicPrice, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trustbalance.averagePurchasePrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.averagePurchasePrice, 2).frac }}</span>
+          </td>
+          <td :class="pnlClass(plFor(trustbalance)) + ' td-num'">
+            <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(trustbalance.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.balance, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).frac }}</span>
+          </td>
 
           <td>
             <router-link
@@ -149,6 +161,16 @@ export default {
       } else {
         return value.toLocaleString();
       }
+    },
+    formatParts(value, decimals = 2) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return { int: '---', frac: ''.padEnd(decimals, '0') };
+      const fixed = n.toFixed(decimals);
+      const [i, f = ''] = fixed.split('.');
+      const intNum = Number(i);
+      // Preserve sign and thousand separators
+      const intStr = Number.isFinite(intNum) ? intNum.toLocaleString() : i;
+      return { int: intStr, frac: f };
     },
     async getTrustBalances() {
       // Backward compat; keep name but fetch all pages
@@ -370,4 +392,14 @@ export default {
 .td-pnl.pnl-pos { color: #0a8; }
 .td-pnl.pnl-neg { color: #d33; }
 .td-pnl.pnl-zero { color: #888; }
+
+/* Right align numeric columns with tabular figures */
+.th-num { text-align: right; }
+.td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.num-int { font-variant-numeric: tabular-nums; }
+.num-frac { font-size: 0.8em; font-variant-numeric: tabular-nums; }
+.num-dot { padding: 0 0.05em; opacity: 0.7; }
 </style>
