@@ -39,6 +39,35 @@
 
 
 
+    <hr />
+    <h3>trust transactions (日本語テキスト) - 利金/分配金 簡易</h3>
+    <ul>
+      <li>下の形式（見出しを含む）のテキストを貼り付けてください。</li>
+      <li>すべて DIVIDEND として登録し、基準価格・口数は登録しません。</li>
+      <li>trustBalance は F列「銘柄コード」と一致するものを検索（exact一致→API exact→フォールバック検索）。</li>
+      <li>account は下記プルダウンで選択したアカウントを使用します。</li>
+    </ul>
+    <form @submit.prevent="submitCreateTrustTransactionsSimple">
+      <div class="mb-3">
+        <label class="form-label">利用アカウント（簡易）</label>
+        <select class="form-select" v-model="form.simpleAccountId" required>
+          <option v-for="a in accounts" :key="a.id" :value="a.id">
+            {{ a.currency }} - {{ a.name }}
+          </option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">日本語テキスト（列: 日付,種別,決済・受取,銘柄名,通貨,銘柄コード,受渡金額,為替レート(円)）</label>
+        <textarea
+          class="form-control"
+          rows="6"
+          v-model="form.simpleDataDividendsJP"
+          placeholder="日付,種別,決済・受取,銘柄名,通貨,銘柄コード,受渡金額,為替レート(円)\n2025/08/22,利金,外貨建MMF,アップル 2060/8/20満期 米ドル建債券,USD,MG919A001,508.69,"
+        />
+      </div>
+      <input type="submit" value="Import Simple DIVIDEND" />
+    </form>
+
   </div>
 </template>
 
@@ -77,6 +106,8 @@ export default {
         dataTrustTransactions: "",
         dataTrustTransactionsJP: "",
         commonAccountId: "",
+        simpleDataDividendsJP: "",
+        simpleAccountId: "",
       },
       apiName: "apif8da427c",
 
@@ -391,6 +422,82 @@ export default {
 
       alert(`JP TrustTransactions import finished. success=${ok}, duplicates=${skipDup}, skipped=${skip}`);
     },
+    async submitCreateTrustTransactionsSimple() {
+      const text = this.form.simpleDataDividendsJP;
+      if (!text) { alert('テキストを入力してください'); return; }
+      if (!this.form.simpleAccountId) { alert('アカウントを選択してください'); return; }
+      // trustBalances が未ロードならロード
+      if (!this.trustbalances || this.trustbalances.length === 0) {
+        await this.getTrustBalancesAll();
+      }
+      // パース（先頭行をヘッダとして使用）
+      const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+      if (!lines.length) { alert('有効な行がありません'); return; }
+      const header = this.splitCsvLine(lines[0]).map(h => h.trim());
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = this.splitCsvLine(lines[i]);
+        const r = {};
+        for (let j = 0; j < header.length; j++) r[header[j]] = cols[j] !== undefined ? cols[j] : '';
+        rows.push(r);
+      }
+      let ok = 0, skip = 0;
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        try {
+          const codeRaw = String(r['銘柄コード'] || '').trim();
+          if (!codeRaw) { skip++; continue; }
+          // exact match (local)
+          let trustBalanceId = null;
+          const local = (this.trustbalances || []).find(tb => String(tb.code || '').trim() === codeRaw);
+          if (local) trustBalanceId = local.id;
+          // API exact
+          if (!trustBalanceId) {
+            try {
+              let nextToken = null; let found = null;
+              do {
+                const res = await API.graphql({ query: listTrustBalances, variables: { filter: { code: { eq: codeRaw } }, limit: 100, nextToken } });
+                const data = res?.data?.listTrustBalances;
+                const items = data?.items || [];
+                if (items.length) { found = items; break; }
+                nextToken = data?.nextToken || null;
+              } while (nextToken);
+              if (found && found.length) {
+                this.trustbalances.push(...found);
+                this.rebuildTbIndex();
+                trustBalanceId = found[0].id;
+              }
+            } catch (e) {
+              console.warn('[Simple] listTrustBalances exact failed', e);
+            }
+          }
+          // fallback normalized
+          if (!trustBalanceId) trustBalanceId = await this.findTrustBalanceIdByCode(codeRaw, null);
+          if (!trustBalanceId) { console.warn('[Simple] trustBalance not found', codeRaw, r); skip++; continue; }
+
+          const date = this.toSafeISO(r['日付']);
+          if (!date) { console.warn('[Simple] date missing', r); skip++; continue; }
+
+          const amtRaw = r['受渡金額'] !== undefined ? r['受渡金額'] : r['受渡金額(円)'];
+          const dividend = this.toNumberOrNull(amtRaw);
+          if (dividend === null) { console.warn('[Simple] dividend missing', r); skip++; continue; }
+
+          const input = {
+            accountId: this.form.simpleAccountId,
+            trustBalanceId,
+            date,
+            tradeType: Enum.EnumTradeType.DIVIDEND.val,
+            dividend,
+          };
+          await API.graphql({ query: createTrustTransaction, variables: { input } });
+          ok++;
+        } catch (e) {
+          console.error('[Simple] createTrustTransaction failed', e, r);
+          skip++;
+        }
+      }
+      alert(`Simple DIVIDEND import finished. success=${ok}, skipped=${skip}`);
+    },
     // 全ページの trustBalances を読み込む
     async getTrustBalancesAll() {
       const all = [];
@@ -420,14 +527,15 @@ export default {
             inQ = !inQ;
           }
         } else if (ch === ',' && !inQ) {
-          // クォート外でも、3桁区切りのカンマは値の一部として扱う
-          // 例: 307,162 は一つの値。直後に3桁の数字が続く場合のみ桁区切りと判断。
+          // クォート外でも、3桁区切りのカンマは値の一部として扱うが、
+          // 左側に英字が含まれる（例: コード MK256A001,645.23）の場合は区切りとみなす。
           const prev = cur.length ? cur[cur.length - 1] : '';
+          const leftHasAlpha = /[A-Za-zＡ-Ｚａ-ｚ]/.test(cur);
           let j = i + 1;
           let digitsAhead = 0;
           while (j < line.length && /[0-9]/.test(line[j]) && digitsAhead < 4) { digitsAhead++; j++; }
           const nextChar = line[j] || '';
-          const isThousandsComma = /[0-9]/.test(prev) && digitsAhead === 3 && !/[0-9]/.test(nextChar);
+          const isThousandsComma = !leftHasAlpha && /[0-9]/.test(prev) && digitsAhead === 3 && !/[0-9]/.test(nextChar);
           if (isThousandsComma) {
             cur += ch; // 数値の桁区切り
           } else {
