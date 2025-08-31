@@ -305,7 +305,7 @@ export default {
         // 4) DB更新（対象: 取引が存在するTBのみ。最小フィールド: id, noItem, balance, averagePurchasePrice）
         const tbById = new Map(this.trustbalances.map(tb => [tb.id, tb]));
         for (const [tbid, { units, avg }] of Object.entries(agg)) {
-          if (!byTB.has(tbid)) continue; // 取引が無いTBはスキップ（意図せず0リセットしない）
+          // 取引が0件の場合も noItem/averagePurchasePrice は 0 に更新する
           const tb = tbById.get(tbid);
           if (!tb) continue;
           // 基準価格はTBの値をそのまま使用（取引からは更新しない）
