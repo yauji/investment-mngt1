@@ -15,6 +15,7 @@
           <th>basic price</th>
           <th>平均取得価格</th>
           <th>balance</th>
+          <th>balance JPY</th>
 
           <th></th>
           <th></th>
@@ -35,6 +36,7 @@
           <td>{{ trustbalance.basicPrice }}</td>
           <td>{{ numberFormat(trustbalance.averagePurchasePrice) }}</td>
           <td>{{ numberFormat(trustbalance.balance) }}</td>
+          <td>{{ numberFormat((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency)) }}</td>
 
           <td>
             <router-link
@@ -109,6 +111,7 @@ import {
 
 import moment from "moment";
 import * as Enum from "@/Enum";
+import { mapState } from 'vuex';
 
 export default {
   name: "TrustBalanceIndex",
@@ -121,7 +124,17 @@ export default {
       statusUpdate: "",
     };
   },
+  computed: {
+    ...mapState(['exchangeRates']),
+  },
   methods: {
+    rateFor(ccy) {
+      const c = String(ccy || '').toUpperCase();
+      if (c === 'JPY') return 1;
+      const rates = (this.$store && this.$store.state && this.$store.state.exchangeRates) ? this.$store.state.exchangeRates : {};
+      const v = Number(rates[c]);
+      return Number.isFinite(v) && v > 0 ? v : 0;
+    },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
     },
