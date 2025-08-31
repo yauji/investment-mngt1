@@ -2,7 +2,7 @@
   <div>
     <h1>Trust Transactions</h1>
 
-    <div class="d-flex align-items-center mb-2" style="gap: 12px;">
+    <div class="d-flex align-items-center mb-2" style="gap: 12px; flex-wrap: wrap;">
       <div>
         <label>Rows:</label>
         <select class="form-select d-inline-block" style="width: auto;" v-model.number="pageSize" @change="changePageSize">
@@ -10,6 +10,30 @@
           <option :value="25">25</option>
           <option :value="50">50</option>
           <option :value="100">100</option>
+        </select>
+      </div>
+      <div>
+        <label class="me-1">Date From:</label>
+        <input type="date" class="form-control d-inline-block" style="width:auto;" v-model="filterDateFrom" @change="applyFilters" />
+      </div>
+      <div>
+        <label class="me-1">Date To:</label>
+        <input type="date" class="form-control d-inline-block" style="width:auto;" v-model="filterDateTo" @change="applyFilters" />
+      </div>
+      <div>
+        <label class="me-1">Type:</label>
+        <select class="form-select d-inline-block" style="width:auto;" v-model="filterType" @change="applyFilters">
+          <option value="">All</option>
+          <option value="BUY">BUY</option>
+          <option value="SELL">SELL</option>
+          <option value="DIVIDEND">DIVIDEND</option>
+        </select>
+      </div>
+      <div>
+        <label class="me-1">Account:</label>
+        <select class="form-select d-inline-block" style="width:auto;" v-model="filterAccountId" @change="applyFilters">
+          <option value="">All</option>
+          <option v-for="a in accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
         </select>
       </div>
       <div class="btn-group" role="group">
@@ -108,8 +132,8 @@ import moment from "moment";
 
 // NOTE: Fetch transactions (without nested trustBalance to avoid non-null errors)
 const LIST_TRUST_TX = /* GraphQL */ `
-  query ListTrustTransactions($limit: Int, $nextToken: String) {
-    listTrustTransactions(limit: $limit, nextToken: $nextToken) {
+  query ListTrustTransactions($limit: Int, $nextToken: String, $filter: ModelTrustTransactionFilterInput) {
+    listTrustTransactions(limit: $limit, nextToken: $nextToken, filter: $filter) {
       items {
         id
         date
@@ -162,15 +186,49 @@ export default {
       trusttransactions: [],
       trustMap: {},
       accountMap: {},
+      accounts: [],
       sort_key: "date",
       sort_asc: true,
       pageSize: 25,
       nextToken: null,     // token for next page
       currentToken: null,  // token used to fetch current page (null for first page)
       prevTokens: [],      // stack of tokens for previous pages (sequence of currentToken values)
+      // Filters
+      filterDateFrom: "",
+      filterDateTo: "",
+      filterType: "",
+      filterAccountId: "",
     };
   },
   methods: {
+    buildFilter() {
+      const and = [];
+      if (this.filterType) {
+        and.push({ tradeType: { eq: this.filterType } });
+      }
+      if (this.filterAccountId) {
+        and.push({ accountId: { eq: this.filterAccountId } });
+      }
+      // Date is stored as ISO string; Amplify supports ge/le on strings
+      if (this.filterDateFrom) {
+        // convert to ISO start of day
+        const fromISO = new Date(this.filterDateFrom + 'T00:00:00').toISOString();
+        and.push({ date: { ge: fromISO } });
+      }
+      if (this.filterDateTo) {
+        const toISO = new Date(this.filterDateTo + 'T23:59:59').toISOString();
+        and.push({ date: { le: toISO } });
+      }
+      if (!and.length) return null;
+      return { and };
+    },
+    async applyFilters() {
+      // reset to first page when filters change
+      this.prevTokens = [];
+      this.currentToken = null;
+      this.nextToken = null;
+      await this.getTrustTransactions(null);
+    },
     async changePageSize() {
       // reset pagination to first page
       this.prevTokens = [];
@@ -223,7 +281,7 @@ export default {
     async getTrustTransactions(token = null) {
       try {
         const [txRes, tbRes, accRes] = await Promise.all([
-          API.graphql({ query: LIST_TRUST_TX, variables: { limit: this.pageSize, nextToken: token } }),
+          API.graphql({ query: LIST_TRUST_TX, variables: { limit: this.pageSize, nextToken: token, filter: this.buildFilter() } }),
           API.graphql({ query: LIST_TRUST_BALANCES }),
           API.graphql({ query: LIST_ACCOUNTS }),
         ]);
@@ -246,6 +304,7 @@ export default {
           amap[a.id] = a.name;
         }
         this.accountMap = amap;
+        this.accounts = accounts;
 
         // Transactions; filter out any null slots that may appear when GraphQL null-bubbles in a list
         this.currentToken = token || null;
