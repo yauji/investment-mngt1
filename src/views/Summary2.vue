@@ -309,7 +309,8 @@ export default {
         console.log("dividendsJpy", dividendsJpy);
 
         // 5) トータルリターン
-        this.totalReturn =  accountsJpy + activePrincipalJpy + trustPnLJpy + dividendsJpy;
+        //this.totalReturn =  accountsJpy + activePrincipalJpy + trustPnLJpy + dividendsJpy;
+        this.totalReturn =  accountsJpy + activePrincipalJpy + trustPnLJpy ;
       } catch (e) {
         console.error(e);
         this.totalReturn = 0;
