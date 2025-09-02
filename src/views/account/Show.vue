@@ -2,7 +2,7 @@
   <div>
     <h1>Account detail - {{ form.name }} - {{ form.currency }}</h1>
 
-    <h3>Deposites</h3>
+    <h3>Deposites <small class="text-muted">(表示件数: {{ deposits.length }})</small></h3>
     <table class="table table-striped">
       <thead>
         <tr>
@@ -28,7 +28,7 @@
       </tbody>
     </table>
 
-    <h3>Trust transactions</h3>
+    <h3>Trust transactions <small class="text-muted">(表示件数: {{ trusttransactions.length }})</small></h3>
     <table class="table table-striped">
       <thead>
         <tr>

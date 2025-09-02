@@ -3,6 +3,7 @@
     <h1>Trust Transactions</h1>
 
     <div class="d-flex align-items-center mb-2" style="gap: 12px; flex-wrap: wrap;">
+      <div class="text-muted ms-2">表示件数: {{ trusttransactions.length }}</div>
       <div>
         <label>Rows:</label>
         <select class="form-select d-inline-block" style="width: auto;" v-model.number="pageSize" @change="changePageSize">
