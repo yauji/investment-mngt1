@@ -2,11 +2,17 @@
   <div>
     <h1>Summary2</h1>
 
+
+    <ul>
+      <li>accountsとtrust balanceのupdateをしたあとに実行すること。</li>
+      <li></li>
+    </ul>
+
+    
     <button class="btn btn-success" style="margin-left:8px" @click="calcTotalReturn()">calc total return</button>
     <br/>
 
     <br/>
-
     total return: {{ this.totalReturn.toLocaleString() }}
     <br/>
     accounts total (JPY): {{ this.accountsJpy.toLocaleString() }}
