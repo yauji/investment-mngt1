@@ -233,6 +233,16 @@ export default {
       // Remove nulls to avoid sending undefined fields
       Object.keys(input).forEach((k) => input[k] === null && delete input[k]);
 
+      // Normalize quantity sign: SELL saves negative, others non-negative
+      if (input.noItem !== undefined) {
+        const qty = Math.abs(Number(input.noItem) || 0);
+        if (input.tradeType === Enum.EnumTradeType.SELL.val) {
+          input.noItem = -qty;
+        } else {
+          input.noItem = qty;
+        }
+      }
+
       await API.graphql({
         query: updateTrustTransaction,
         variables: { input },

@@ -233,16 +233,18 @@ export default {
         });
     },
     onChangeBasicPriceNoItem: function () {
+      const qty = Math.abs(Number(this.form.noItem) || 0);
+      const price = Number(this.form.basicPrice) || 0;
       if (this.form.tradeType == Enum.EnumTradeType.BUY.val) {
-        this.form.buy = this.form.basicPrice * this.form.noItem;
+        this.form.buy = price * qty;
         this.form.sell = 0;
         this.form.dividend = 0;
       } else if (this.form.tradeType == Enum.EnumTradeType.SELL.val) {
-        this.form.sell = this.form.basicPrice * this.form.noItem;
+        this.form.sell = price * qty;
         this.form.buy = 0;
         this.form.dividend = 0;
       } else if (this.form.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
-        this.form.dividend = this.form.basicPrice * this.form.noItem;
+        this.form.dividend = price * qty;
         this.form.buy = 0;
         this.form.sell = 0;
       }
@@ -250,9 +252,17 @@ export default {
 
     async submitCreate() {
       console.log(this.form);
+      // Ensure SELL noItem is saved as negative, BUY/DIVIDEND as non-negative
+      const payload = { ...this.form };
+      const qty = Math.abs(Number(payload.noItem) || 0);
+      if (payload.tradeType === Enum.EnumTradeType.SELL.val) {
+        payload.noItem = -qty;
+      } else {
+        payload.noItem = qty;
+      }
       await API.graphql({
         query: createTrustTransaction,
-        variables: { input: this.form },
+        variables: { input: payload },
       })
         .then((result) => {
           console.log(result);

@@ -37,6 +37,16 @@
       </div>
       <input type="submit" value="Import JP TrustTransactions" />
     </form>
+    <div v-if="jpSkipped.length" class="mt-2">
+      <div><b>スキップされたエントリ:</b> {{ jpSkipped.length }} 件</div>
+      <ul>
+        <li v-for="(s, i) in jpSkipped" :key="i">
+          <span class="text-muted">[{{ i + 1 }}]</span>
+          <span>{{ s.reason }}</span>
+          <span> — {{ summarizeRow(s.row) }}</span>
+        </li>
+      </ul>
+    </div>
 
 
 
@@ -118,9 +128,19 @@ export default {
       trustbalances: [],
       tbIndexByCode: new Map(),
       txIndexByTB: {}, // { [trustBalanceId]: Set<key> } key = `${noItem}|${basicPrice}`
+      jpSkipped: [],
     };
   },
   methods: {
+    summarizeRow(row) {
+      if (!row || typeof row !== 'object') return '';
+      const d = row['約定日'] || row['受渡日'] || row['日付'] || '';
+      const t = row['取引'] || row['種別'] || '';
+      const name = row['銘柄名'] || '';
+      const code = row['銘柄コード'] || '';
+      const amt = row['受渡金額(円)'] || row['受渡金額'] || row['利金・分配金・償還金'] || '';
+      return `${d} ${t} ${name} ${code} ${amt}`.trim();
+    },
     // 日本語の列名のCSVをパース（クォート対応）。ヘッダーなし行にも対応。
     parseJPBrokerCsv(text) {
       if (!text) return [];
@@ -292,6 +312,7 @@ export default {
       return this.toSafeISO(b);
     },
     async submitCreateTrustTransactionsFromJPText() {
+      this.jpSkipped = [];
       const rows = this.parseJPBrokerCsv(this.form.dataTrustTransactionsJP);
       if (!rows.length) {
         alert('入力テキストに有効な行がありません');
@@ -312,7 +333,7 @@ export default {
         console.log(r);
         try {
           const tradeType = this.mapTradeTypeJP(r['取引']);
-          if (!tradeType) { skip++; continue; }
+          if (!tradeType) { this.jpSkipped.push({ reason: '未対応の取引種別', row: r }); skip++; continue; }
 
           let trustBalanceId = await this.findTrustBalanceIdByCode(r['銘柄コード'], r['口座']);
           if (!trustBalanceId) {
@@ -363,10 +384,10 @@ export default {
               }
             }
           }
-          if (!trustBalanceId) { console.warn(`[JP] trustBalance not found by code:`, r['銘柄コード'], r); skip++; continue; }
+          if (!trustBalanceId) { console.warn(`[JP] trustBalance not found by code:`, r['銘柄コード'], r); this.jpSkipped.push({ reason: '該当するTrustBalanceが見つからない', row: r }); skip++; continue; }
 
           const date = this.pickDateISO(r['約定日'], r['受渡日']);
-          if (!date) { console.warn(`[JP] date missing`, r); skip++; continue; }
+          if (!date) { console.warn(`[JP] date missing`, r); this.jpSkipped.push({ reason: '日付が不正または欠損', row: r }); skip++; continue; }
 
           // 基準価格: 分配金の場合はなし（無視する）
           let basicPrice = this.toNumberOrNull(r['単価/返済約定単価']);
@@ -393,6 +414,7 @@ export default {
             const key = `${Number(input.noItem).toFixed(6)}|${Number(input.basicPrice).toFixed(6)}`;
             if (set.has(key)) {
               skipDup++;
+              this.jpSkipped.push({ reason: '重複と判断', row: r });
               continue;
             }
           }
@@ -418,6 +440,7 @@ export default {
           ok++;
         } catch (e) {
           console.error(`[JP] createTrustTransaction failed (row ${idx})`, e, rows[idx]);
+          this.jpSkipped.push({ reason: '登録時エラー', row: r });
           skip++;
         }
       }

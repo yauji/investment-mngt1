@@ -269,6 +269,8 @@ export default {
             const price = Number(t.basicPrice) || 0;
             const kind = t.tradeType;
             if (price > 0) lastPrice = price; // 直近の価格を保持
+            // SELL で負の数量保存に対応: 計算では絶対値で扱う
+            qty = Math.abs(qty);
             // qty が欠損している場合、金額/単価から補完
             if ((!qty || qty <= 0) && price > 0) {
               const buyAmt = Number(t.buy) || 0;
