@@ -52,6 +52,9 @@
               <li>
                 <router-link class="dropdown-item" to="/inputdataMMF">inputdatammf</router-link>
               </li>
+              <li>
+                <router-link class="dropdown-item" to="/inputdataCsvRakuten">inputdataCsvRakuten</router-link>
+              </li>
             </ul>
           </li>
           <li class="nav-item">
