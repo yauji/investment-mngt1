@@ -243,18 +243,20 @@ export default {
     async updateBalances() {
       this.isUpdating = true;
       try {
-        //get deposits-----
-        var deposits;
-        await API.graphql({
-          query: listDeposits,
-        })
-          .then((result) => {
-            //console.log(result);
-            deposits = result.data.listDeposits.items;
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+        // get deposits with pagination
+        var deposits = [];
+        try {
+          let nextToken = null;
+          do {
+            const res = await API.graphql({ query: listDeposits, variables: { limit: 100, nextToken } });
+            const data = res?.data?.listDeposits;
+            const items = data?.items || [];
+            deposits.push(...items);
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
+        } catch (error) {
+          console.log(error);
+        }
 
         //console.log(deposits);
 
@@ -298,18 +300,20 @@ export default {
         //console.log("------12");
         //console.log(dicAccountIdBalance);
 
-        //trust transaction----
-        var trusttransactions = {};
-        await API.graphql({
-          query: listTrustTransactions,
-        })
-          .then((result) => {
-            //console.log(result);
-            trusttransactions = result.data.listTrustTransactions.items;
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+        // trust transactions with pagination
+        var trusttransactions = [];
+        try {
+          let nextToken = null;
+          do {
+            const res = await API.graphql({ query: listTrustTransactions, variables: { limit: 100, nextToken } });
+            const data = res?.data?.listTrustTransactions;
+            const items = data?.items || [];
+            trusttransactions.push(...items);
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
+        } catch (error) {
+          console.log(error);
+        }
         //console.log(trusttransactions);
 
         for (const ktt in trusttransactions) {
