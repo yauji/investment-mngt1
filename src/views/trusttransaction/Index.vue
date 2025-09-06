@@ -46,15 +46,33 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th class="th-small" @click="sortBy('date')">date</th>
-          <th class="th-small">trade Type</th>
-          <th class="th-small" @click="sortBy('trustBalanceId')">trust</th>
-          <th class="th-small">account</th>
-          <th class="th-small th-num">basic Price</th>
-          <th class="th-small th-num">no Item</th>
-          <th class="th-small th-num">buy</th>
-          <th class="th-small th-num">sell</th>
-          <th class="th-small th-num">dividend</th>
+          <th class="th-small th-sort" @click="sortBy('date')">
+            date <span class="sort-icon" v-if="sort_key==='date'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-sort" @click="sortBy('tradeType')">
+            trade Type <span class="sort-icon" v-if="sort_key==='tradeType'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-sort" @click="sortBy('trustName')">
+            trust <span class="sort-icon" v-if="sort_key==='trustName'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-sort" @click="sortBy('accountName')">
+            account <span class="sort-icon" v-if="sort_key==='accountName'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="sortBy('basicPrice')">
+            basic Price <span class="sort-icon" v-if="sort_key==='basicPrice'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="sortBy('noItem')">
+            no Item <span class="sort-icon" v-if="sort_key==='noItem'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="sortBy('buy')">
+            buy <span class="sort-icon" v-if="sort_key==='buy'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="sortBy('sell')">
+            sell <span class="sort-icon" v-if="sort_key==='sell'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="sortBy('dividend')">
+            dividend <span class="sort-icon" v-if="sort_key==='dividend'">{{ sort_asc ? '▲' : '▼' }}</span>
+          </th>
 
           <th></th>
           <th></th>
@@ -272,20 +290,30 @@ export default {
         ? (this.sort_asc = !this.sort_asc)
         : (this.sort_asc = true);
       this.sort_key = key;
-
-      let set = 1;
-      this.sort_asc ? (set = 1) : (set = -1);
-
+      const dir = this.sort_asc ? 1 : -1;
       this.trusttransactions.sort((a, b) => {
-        const av = a[this.sort_key];
-        const bv = b[this.sort_key];
+        const av = this.valueForSort(a, this.sort_key);
+        const bv = this.valueForSort(b, this.sort_key);
         if (av == null && bv == null) return 0;
-        if (av == null) return 1 * set;
-        if (bv == null) return -1 * set;
-        if (av < bv) return -1 * set;
-        if (av > bv) return 1 * set;
+        if (av == null) return 1 * dir;
+        if (bv == null) return -1 * dir;
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
         return 0;
       });
+    },
+    valueForSort(item, key) {
+      if (key === 'date') return item?.date ? new Date(item.date).getTime() : null;
+      if (key === 'trustName') return this.trustMap[item?.trustBalanceId] || '';
+      if (key === 'accountName') return this.accountMap[item?.accountId] || '';
+      if (key === 'tradeType') return item?.tradeType || '';
+      // numeric fields
+      if (['basicPrice','noItem','buy','sell','dividend'].includes(key)) {
+        const n = Number(item?.[key]);
+        return Number.isFinite(n) ? n : null;
+      }
+      // fallback by raw key
+      return item?.[key] ?? null;
     },
     moment: function (date) {
       return moment(date).format("YYYY/MM/DD");
@@ -365,4 +393,7 @@ export default {
 .num-int { font-variant-numeric: tabular-nums; }
 .num-frac { font-size: 0.8em; font-variant-numeric: tabular-nums; }
 .num-dot { padding: 0 0.05em; opacity: 0.7; }
+/* sortable headers */
+.th-sort { cursor: pointer; user-select: none; }
+.sort-icon { font-size: 0.8em; margin-left: 4px; opacity: 0.7; }
 </style>
