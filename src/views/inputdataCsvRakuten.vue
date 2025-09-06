@@ -149,11 +149,13 @@ export default {
       const byName = (this.tbIndexByName.get(name) || []).slice();
       if (byName.length) {
         if (type) {
-          const x = byName.find(tb => String(tb.type || '') === type);
+          // 優先: type一致。次点: type未設定のものを許容。
+          const x = byName.find(tb => String(tb.type || '') === type) || byName.find(tb => !tb.type);
           if (x) return x.id;
-          return null;
+          // type不一致の場合はAPI検索/作成へフォールバック（returnしない）
+        } else {
+          return byName[0].id;
         }
-        return byName[0].id;
       }
       // API search eq → contains
       let found = null;
