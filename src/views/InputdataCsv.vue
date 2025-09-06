@@ -141,6 +141,36 @@ export default {
       const amt = row['受渡金額(円)'] || row['受渡金額'] || row['利金・分配金・償還金'] || '';
       return `${d} ${t} ${name} ${code} ${amt}`.trim();
     },
+    // 重複判定用のユーティリティ
+    roundN(v, d = 6) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '';
+      return n.toFixed(d);
+    },
+    dateKeyISO(date) {
+      if (!date) return '';
+      try {
+        const d = new Date(date);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toISOString().slice(0, 10);
+      } catch (_) { return ''; }
+    },
+    buildTxSignatureBase({ date, tradeType, basicPrice, noItem, buy, sell, dividend }) {
+      const tt = String(tradeType || '').toUpperCase();
+      const dkey = this.dateKeyISO(date);
+      const priceKey = this.roundN(basicPrice, 6);
+      let qty = '';
+      if (noItem !== undefined && noItem !== null && tt !== 'DIVIDEND') {
+        const q = Math.abs(Number(noItem) || 0);
+        const qsigned = tt === 'SELL' ? -q : q;
+        qty = this.roundN(qsigned, 6);
+      }
+      let amt = '';
+      if (tt === 'BUY' && buy != null) amt = this.roundN(buy, 2);
+      if (tt === 'SELL' && sell != null) amt = this.roundN(sell, 2);
+      if (tt === 'DIVIDEND' && dividend != null) amt = this.roundN(dividend, 2);
+      return `${dkey}|${tt}|${qty}|${priceKey}|${amt}`;
+    },
     // 日本語の列名のCSVをパース（クォート対応）。ヘッダーなし行にも対応。
     parseJPBrokerCsv(text) {
       if (!text) return [];
@@ -169,7 +199,7 @@ export default {
       }
       return rows;
     },
-    // 指定TBの既存トランザクションの (noItem,basicPrice) インデックスを用意
+    // 指定TBの既存トランザクションの重複判定インデックスを用意
     async ensureTxIndexForTB(trustBalanceId) {
       if (!trustBalanceId) return new Set();
       if (this.txIndexByTB[trustBalanceId]) return this.txIndexByTB[trustBalanceId];
@@ -183,12 +213,16 @@ export default {
         const data = res?.data?.listTrustTransactions;
         const items = data?.items || [];
         for (const t of items) {
-          const n = Number(t.noItem);
-          const p = Number(t.basicPrice);
-          if (!Number.isNaN(n) && !Number.isNaN(p)) {
-            const key = `${n.toFixed(6)}|${p.toFixed(6)}`;
-            set.add(key);
-          }
+          const key = this.buildTxSignatureBase({
+            date: t.date,
+            tradeType: t.tradeType,
+            basicPrice: t.basicPrice,
+            noItem: t.noItem,
+            buy: t.buy,
+            sell: t.sell,
+            dividend: t.dividend,
+          });
+          set.add(key);
         }
         nextToken = data?.nextToken || null;
       } while (nextToken);
@@ -408,15 +442,21 @@ export default {
           if (basicPrice !== null) input.basicPrice = basicPrice;
           if (noItem !== null) input.noItem = noItem;
 
-          // 重複チェック: 同一 TB で (noItem, basicPrice) が同じなら登録しない
-          if (input.noItem !== undefined && input.basicPrice !== undefined) {
-            const set = await this.ensureTxIndexForTB(trustBalanceId);
-            const key = `${Number(input.noItem).toFixed(6)}|${Number(input.basicPrice).toFixed(6)}`;
-            if (set.has(key)) {
-              skipDup++;
-              this.jpSkipped.push({ reason: '重複と判断', row: r });
-              continue;
-            }
+          // 重複チェック: 日付/種別/数量(符号正規化)/単価/金額 で一致を判定
+          const set = await this.ensureTxIndexForTB(trustBalanceId);
+          const key = this.buildTxSignatureBase({
+            date,
+            tradeType,
+            basicPrice: input.basicPrice,
+            noItem: input.noItem,
+            buy: tradeType === Enum.EnumTradeType.BUY.val ? amountM : undefined,
+            sell: tradeType === Enum.EnumTradeType.SELL.val ? amountM : undefined,
+            dividend: tradeType === Enum.EnumTradeType.DIVIDEND.val ? amountL : undefined,
+          });
+          if (set.has(key)) {
+            skipDup++;
+            this.jpSkipped.push({ reason: '重複と判断', row: r });
+            continue;
           }
 
           if (tradeType === Enum.EnumTradeType.BUY.val) {
@@ -432,11 +472,7 @@ export default {
             variables: { input },
           });
           // 追加済みキーをインデックスに反映
-          if (input.noItem !== undefined && input.basicPrice !== undefined) {
-            const set = await this.ensureTxIndexForTB(trustBalanceId);
-            const key = `${Number(input.noItem).toFixed(6)}|${Number(input.basicPrice).toFixed(6)}`;
-            set.add(key);
-          }
+          set.add(key);
           ok++;
         } catch (e) {
           console.error(`[JP] createTrustTransaction failed (row ${idx})`, e, rows[idx]);
