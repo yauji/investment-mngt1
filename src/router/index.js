@@ -30,9 +30,12 @@ import TrustBalanceShow from "../views/trustbalance/Show.vue";
 import TrustBalanceEdit from "../views/trustbalance/Edit.vue";
 
 import Summary from "../views/Summary.vue";
+import Summary2 from "../views/Summary2.vue";
 import Setting from "../views/Setting.vue";
 
 import Inputdata from "../views/Inputdata.vue";
+import Inputdata2 from "../views/Inputdata2.vue";
+import InputdataCsv from "../views/InputdataCsv.vue";
 
 const routes = [
   {
@@ -175,6 +178,14 @@ const routes = [
     meta: { requireAuth: true },
   },
   {
+    path: "/summary2",
+    name: "Summary2",
+    component: Summary2,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  
+  {
     path: "/setting",
     name: "Setting",
     component: Setting,
@@ -185,6 +196,20 @@ const routes = [
     path: "/inputdata",
     name: "Inputdata",
     component: Inputdata,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/inputdata2",
+    name: "Inputdata2",
+    component: Inputdata2,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/inputdatacsv",
+    name: "InputdataCsv",
+    component: InputdataCsv,
     props: true,
     meta: { requireAuth: true },
   },

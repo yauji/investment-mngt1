@@ -20,6 +20,7 @@ export const onCreateDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       principal
       exchangeRate
@@ -37,11 +38,13 @@ export const onCreateDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       value
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -64,6 +67,7 @@ export const onUpdateDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       principal
       exchangeRate
@@ -81,11 +85,13 @@ export const onUpdateDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       value
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -108,6 +114,7 @@ export const onDeleteDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       principal
       exchangeRate
@@ -125,11 +132,13 @@ export const onDeleteDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       value
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -145,6 +154,7 @@ export const onCreateAccount = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -160,6 +170,7 @@ export const onUpdateAccount = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -175,6 +186,7 @@ export const onDeleteAccount = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -191,12 +203,13 @@ export const onCreateTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       accountId
       account {
@@ -209,6 +222,7 @@ export const onCreateTrustTransaction = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       date
       tradeType
@@ -220,6 +234,7 @@ export const onCreateTrustTransaction = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -236,12 +251,13 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       accountId
       account {
@@ -254,6 +270,7 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       date
       tradeType
@@ -265,6 +282,7 @@ export const onUpdateTrustTransaction = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -281,12 +299,13 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       accountId
       account {
@@ -299,6 +318,7 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       date
       tradeType
@@ -310,6 +330,7 @@ export const onDeleteTrustTransaction = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -323,27 +344,17 @@ export const onCreateTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      averagePurchasePrice
+      code
+      type
       trustTransactions {
-        items {
-          id
-          trustBalanceId
-          accountId
-          date
-          tradeType
-          basicPrice
-          noItem
-          buy
-          sell
-          dividend
-          createdAt
-          updatedAt
-          owner
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -357,27 +368,17 @@ export const onUpdateTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      averagePurchasePrice
+      code
+      type
       trustTransactions {
-        items {
-          id
-          trustBalanceId
-          accountId
-          date
-          tradeType
-          basicPrice
-          noItem
-          buy
-          sell
-          dividend
-          createdAt
-          updatedAt
-          owner
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -391,27 +392,62 @@ export const onDeleteTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      averagePurchasePrice
+      code
+      type
       trustTransactions {
-        items {
-          id
-          trustBalanceId
-          accountId
-          date
-          tradeType
-          basicPrice
-          noItem
-          buy
-          sell
-          dividend
-          createdAt
-          updatedAt
-          owner
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
       owner
+      __typename
+    }
+  }
+`;
+export const onCreateFxRate = /* GraphQL */ `
+  subscription OnCreateFxRate($owner: String!) {
+    onCreateFxRate(owner: $owner) {
+      id
+      currency
+      date
+      rate
+      source
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const onUpdateFxRate = /* GraphQL */ `
+  subscription OnUpdateFxRate($owner: String!) {
+    onUpdateFxRate(owner: $owner) {
+      id
+      currency
+      date
+      rate
+      source
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const onDeleteFxRate = /* GraphQL */ `
+  subscription OnDeleteFxRate($owner: String!) {
+    onDeleteFxRate(owner: $owner) {
+      id
+      currency
+      date
+      rate
+      source
+      createdAt
+      updatedAt
+      owner
+      __typename
     }
   }
 `;

@@ -3,20 +3,38 @@
 
 const awsmobile = {
     "aws_project_region": "ap-northeast-1",
-    "aws_cognito_identity_pool_id": "ap-northeast-1:51da04b0-a2fb-4cc5-b292-d502c63e55cd",
-    "aws_cognito_region": "ap-northeast-1",
-    "aws_user_pools_id": "ap-northeast-1_QMnssRr5O",
-    "aws_user_pools_web_client_id": "1br6sguhmg6kk4j7ojgdd2frhc",
-    "oauth": {},
-    "aws_appsync_graphqlEndpoint": "https://k5nzwcst4jcjxer3uewsienv4u.appsync-api.ap-northeast-1.amazonaws.com/graphql",
-    "aws_appsync_region": "ap-northeast-1",
-    "aws_appsync_authenticationType": "AMAZON_COGNITO_USER_POOLS",
     "aws_cloud_logic_custom": [
         {
             "name": "apif8da427c",
             "endpoint": "https://pstzaydvn3.execute-api.ap-northeast-1.amazonaws.com/dev",
             "region": "ap-northeast-1"
         }
+    ],
+    "aws_appsync_graphqlEndpoint": "https://k5nzwcst4jcjxer3uewsienv4u.appsync-api.ap-northeast-1.amazonaws.com/graphql",
+    "aws_appsync_region": "ap-northeast-1",
+    "aws_appsync_authenticationType": "AMAZON_COGNITO_USER_POOLS",
+    "aws_cognito_identity_pool_id": "ap-northeast-1:51da04b0-a2fb-4cc5-b292-d502c63e55cd",
+    "aws_cognito_region": "ap-northeast-1",
+    "aws_user_pools_id": "ap-northeast-1_QMnssRr5O",
+    "aws_user_pools_web_client_id": "1br6sguhmg6kk4j7ojgdd2frhc",
+    "oauth": {},
+    "aws_cognito_username_attributes": [
+        "EMAIL"
+    ],
+    "aws_cognito_social_providers": [],
+    "aws_cognito_signup_attributes": [
+        "EMAIL"
+    ],
+    "aws_cognito_mfa_configuration": "OFF",
+    "aws_cognito_mfa_types": [
+        "SMS"
+    ],
+    "aws_cognito_password_protection_settings": {
+        "passwordPolicyMinLength": 8,
+        "passwordPolicyCharacters": []
+    },
+    "aws_cognito_verification_mechanisms": [
+        "EMAIL"
     ]
 };
 

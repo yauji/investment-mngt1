@@ -149,8 +149,21 @@ export default {
   },
   data() {
     return {
-      form: {},
+      form: {
+        name: "",
+        memo: "",
+        date: null,
+        endDate: null,
+        principalAccountId: null,
+        valueAccountId: null,
+        principal: null,
+        exchangeRate: null,
+        interestRate: null,
+        duration: "",
+        value: null,
+      },
       accounts: [],
+      dValue: false,
     };
   },
   methods: {
@@ -165,9 +178,11 @@ export default {
         variables: { id: this.depositId },
       })
         .then((result) => {
-          this.form = result.data.getDeposit;
-          const d = new Date(result.data.getDeposit.date);
-          this.form.date = d;
+          const dep = result.data.getDeposit;
+          // merge while preserving defaults for missing fields
+          this.form = { ...this.form, ...dep };
+          this.form.date = dep && dep.date ? new Date(dep.date) : null;
+          this.form.endDate = dep && dep.endDate ? new Date(dep.endDate) : null;
         })
         .catch((error) => {
           console.log(error);
@@ -185,28 +200,90 @@ export default {
           console.log(error);
         });
     },
+    onChangePrincipalCurrency() {
+      // no-op for now; keep method to avoid runtime warnings
+      // You can add currency-based validation here later if needed.
+    },
     async submitUpdate() {
-      delete this.form.createdAt;
-      delete this.form.updatedAt;
-      delete this.form.owner;
+      const toDateStr = (v) => (v instanceof Date && !isNaN(v) ? moment(v).format("YYYY-MM-DD") : null);
+      const toNum = (v) => {
+        if (v === null || v === undefined || v === "") return null;
+        const n = typeof v === "number" ? v : parseFloat(v);
+        return Number.isFinite(n) ? n : null;
+      };
 
-      delete this.form.principalAccount;
-      delete this.form.valueAccount;
+      // Start from current form state
+      const payload = { ...this.form };
 
-      this.form.status = Enum.EnumDepositStatus.FINISHED.val;
+      console.log('[Finish] raw form -> payload(before normalize):', payload);
 
-      //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
-      await API.graphql({
-        query: updateDeposit,
-        variables: { input: this.form },
-      })
-        .then((result) => {
-          console.log(result);
-          this.$router.push({ name: "DepositIndex" });
-        })
-        .catch((error) => {
-          console.log(error);
+      // Ensure id is present for update
+      if (!payload.id && this.depositId) payload.id = this.depositId;
+
+      // Remove read-only / relation objects if present
+      delete payload.createdAt;
+      delete payload.updatedAt;
+      delete payload.owner;
+      delete payload.principalAccount;
+      delete payload.valueAccount;
+
+      // Normalize types
+      payload.principal = toNum(payload.principal);
+      payload.exchangeRate = toNum(payload.exchangeRate);
+      payload.interestRate = toNum(payload.interestRate);
+      payload.value = toNum(payload.value);
+
+      // Dates -> string (GraphQL scalar)
+      payload.date = toDateStr(this.form.date);
+      payload.endDate = toDateStr(this.form.endDate);
+
+      // Deposit status -> enum (fallback to string literal if your Enum helper differs)
+      payload.status = (Enum?.EnumDepositStatus?.FINISHED?.val) ?? (Enum?.EnumDepositStatus?.FINISHED) ?? "FINISHED";
+
+      delete payload.__typename;
+      delete payload._lastChangedAt;
+      delete payload.createdBy;
+
+      // Build a strict whitelist for UpdateDepositInput
+      const allowedKeys = [
+        'id',
+        'name',
+        'memo',
+        'date',
+        'endDate',
+        'principalAccountId',
+        'valueAccountId',
+        'principal',
+        'exchangeRate',
+        'interestRate',
+        'duration',
+        'value',
+        'status',
+        '_version', // keep for AppSync conflict detection when present
+      ];
+      const input = {};
+      for (const k of allowedKeys) {
+        const v = payload[k];
+        if (v !== undefined && v !== '') input[k] = v; // allow null for nullable scalars; skip empty strings
+      }
+
+      console.log('[Finish] updateDeposit input:', input);
+
+      try {
+        const result = await API.graphql({
+          query: updateDeposit,
+          variables: { input },
         });
+        console.log(result);
+        this.$router.push({ name: "DepositIndex" });
+      } catch (error) {
+        console.error('[Finish] update failed:', error);
+        if (error && error.errors) {
+          for (const e of error.errors) {
+            console.error('[Finish] graphql error:', e.message, e);
+          }
+        }
+      }
     },
   },
 };

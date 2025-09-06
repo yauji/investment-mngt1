@@ -184,15 +184,20 @@ export default {
         variables: { id: this.trustTransactionId },
       })
         .then((result) => {
-          //console.log(result);
-          //this.form.id = result.data.getTrustTransaction.id;
-          //this.form.name = result.data.getTrustTransaction.name;
-          this.form = result.data.getTrustTransaction;
-          const d = new Date(result.data.getTrustTransaction.date);
-          //console.log(moment(d).format("YYYY/MM/DD"));
-          //this.form.date = moment(d).format("YYYY/MM/DD");
-          this.form.date = d;
-          //this.form.date = "2021/01/01";
+          const tt = result.data.getTrustTransaction;
+          // build sanitized form (avoid GraphQL metadata like __typename and nested objects)
+          this.form = {
+            id: tt.id,
+            date: new Date(tt.date),
+            tradeType: tt.tradeType,
+            basicPrice: tt.basicPrice,
+            noItem: tt.noItem,
+            buy: tt.buy,
+            sell: tt.sell,
+            dividend: tt.dividend,
+            trustBalanceId: tt.trustBalanceId,
+            accountId: tt.accountId,
+          };
         })
         .catch((error) => {
           console.log(error);
@@ -211,17 +216,36 @@ export default {
         });
     },
     async submitUpdate() {
-      delete this.form.createdAt;
-      delete this.form.updatedAt;
-      delete this.form.owner;
+      // Build strict input payload for UpdateTrustTransactionInput
+      const input = {
+        id: this.form.id,
+        date: this.form.date ? new Date(this.form.date).toISOString() : null,
+        tradeType: this.form.tradeType,
+        basicPrice: this.form.basicPrice != null ? Number(this.form.basicPrice) : null,
+        noItem: this.form.noItem != null ? Number(this.form.noItem) : null,
+        buy: this.form.buy != null ? Number(this.form.buy) : null,
+        sell: this.form.sell != null ? Number(this.form.sell) : null,
+        dividend: this.form.dividend != null ? Number(this.form.dividend) : null,
+        trustBalanceId: this.form.trustBalanceId,
+        accountId: this.form.accountId,
+      };
 
-      delete this.form.trustBalance;
-      delete this.form.account;
+      // Remove nulls to avoid sending undefined fields
+      Object.keys(input).forEach((k) => input[k] === null && delete input[k]);
 
-      //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
+      // Normalize quantity sign: SELL saves negative, others non-negative
+      if (input.noItem !== undefined) {
+        const qty = Math.abs(Number(input.noItem) || 0);
+        if (input.tradeType === Enum.EnumTradeType.SELL.val) {
+          input.noItem = -qty;
+        } else {
+          input.noItem = qty;
+        }
+      }
+
       await API.graphql({
         query: updateTrustTransaction,
-        variables: { input: this.form },
+        variables: { input },
       })
         .then((result) => {
           console.log(result);

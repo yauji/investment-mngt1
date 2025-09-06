@@ -61,6 +61,20 @@
         />
       </div>
 
+      <div class="mb-3">
+        <label class="form-label">type</label>
+        <select class="form-select" v-model="form.type">
+          <option v-for="n in refEnum.EnumTrustBalanceType" :key="n" :value="n.val">
+            {{ n.text }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">code</label>
+        <input type="text" class="form-control" v-model="form.code" />
+      </div>
+
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
@@ -98,22 +112,50 @@ export default {
         variables: { id: this.TrustBalanceId },
       })
         .then((result) => {
-          this.form = result.data.getTrustBalance;
+          const tb = result.data.getTrustBalance || {};
+          // 取得結果はそのままフォームに展開（送信時にホワイトリスト適用）
+          this.form = {
+            id: tb.id,
+            currency: tb.currency,
+            name: tb.name,
+            memo: tb.memo,
+            balance: tb.balance,
+            noItem: tb.noItem,
+            basicPrice: tb.basicPrice,
+            averagePurchasePrice: tb.averagePurchasePrice,
+            type: tb.type,
+            code: tb.code,
+          };
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async submitUpdate() {
-      delete this.form.createdAt;
-      delete this.form.updatedAt;
-      delete this.form.owner;
-      delete this.form.trustTransactions;
-
-
+      // GraphQLに送る入力は "UpdateTrustBalanceInput" に存在するキーのみ（推定）を送る
+      // ここでは id / noItem / balance / basicPrice / averagePurchasePrice / type / code を送る
+      const input = { id: this.form.id };
+      const numericKeys = ["noItem", "balance", "basicPrice", "averagePurchasePrice"];
+      for (const key of numericKeys) {
+        if (this.form[key] !== undefined && this.form[key] !== null && this.form[key] !== "") {
+          const n = Number(this.form[key]);
+          input[key] = Number.isNaN(n) ? undefined : n;
+        }
+      }
+      // 文字列系（空文字は送らない）
+      const stringKeys = ["type", "code"];
+      for (const key of stringKeys) {
+        const v = this.form[key];
+        if (v !== undefined && v !== null && String(v).trim() !== "") {
+          input[key] = String(v).trim();
+        }
+      }
+      // 未定義は送らない
+      Object.keys(input).forEach((k) => input[k] === undefined && delete input[k]);
+    
       await API.graphql({
         query: updateTrustBalance,
-        variables: { input: this.form },
+        variables: { input },
       })
         .then((result) => {
           console.log(result);

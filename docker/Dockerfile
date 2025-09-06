@@ -18,6 +18,8 @@ WORKDIR /app
 # Webpackエラー回避用
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
+RUN npm install -g @aws-amplify/cli
+
 # デフォルトのコンテナ起動時のコマンド
 #CMD ["npm", "run", "serve"]
 # 最後の行を次のように変更
