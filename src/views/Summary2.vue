@@ -5,7 +5,7 @@
 
     <ul>
       <li>accountsとtrust balanceのupdateをしたあとに実行すること。</li>
-      <li></li>
+      <li>4はaccountに反映されるので、参考。</li>
     </ul>
 
     
@@ -13,15 +13,15 @@
     <br/>
 
     <br/>
-    total return: {{ this.totalReturn.toLocaleString() }}
+    total return(2+3 -1 ): {{ this.totalReturn.toLocaleString() }}
     <br/>
-    accounts total (JPY): {{ this.accountsJpy.toLocaleString() }}
+    1. accounts total (JPY): {{ this.accountsJpy.toLocaleString() }}
     <br/>
-    active deposit principal (JPY): {{ this.activePrincipalJpy.toLocaleString() }}
+    2. active deposit principal (JPY): {{ this.activePrincipalJpy.toLocaleString() }}
     <br/>
-    trust evaulated value (JPY): {{ this.trustPnLJpy.toLocaleString() }}
+    3. trust evaulated value (JPY): {{ this.trustPnLJpy.toLocaleString() }}
     <br/>
-    dividends total (JPY): {{ this.dividendsJpy.toLocaleString() }}
+    4. dividends total (JPY): {{ this.dividendsJpy.toLocaleString() }}
     <hr/>
 
     <!-- 為替レート一覧表示 -->
