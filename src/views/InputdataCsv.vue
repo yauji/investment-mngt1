@@ -16,6 +16,7 @@
       <li>口数は、正しく1/10000するように。</li>
       <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートなし。</li>
       <li>header行も必要</li>
+      <li>取引列が空欄のことがあるので、記載。おそらく、「かんたん積立」</li>
     </ul>
     <form @submit.prevent="submitCreateTrustTransactionsFromJPText">
       <div class="mb-3">
