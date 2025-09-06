@@ -134,83 +134,12 @@
 
 
 
-    <hr />
-    <h3>Check profit and loss</h3>
-    <br />
-    deposit Diff: {{ this.depositDiff.toLocaleString() }}
-    （参考）
-    <br />
-    <br />
-    deposit active: {{ this.depositActive.toLocaleString() }}
-    <br />
-    value Account: {{ this.valueAccount.toLocaleString() }}
-    <br />
-    value tb: {{ this.valueTB.toLocaleString() }}
-    <br />
-    <br />
-    total profit and loss(deposit active + value account + value tb):
-    {{ this.pl2.toLocaleString() }}
-    <br />
-    total return: {{ this.totalReturn.toLocaleString() }}
-    <br />
-    <ul>
-      <li>事前にすべき処理</li>
-      <ul>
-        <li>accountをupdateすること</li>
-        <li>trans balanceをupdateすること</li>
-      </ul>
-    </ul>
-
-    <br />
-    <button class="btn btn-primary" @click="calc2()">calc</button>
 
 
 
 
 
-    <hr />
-    <button class="btn btn-primary" @click="calc4()">calc4</button>
-    <button class="btn btn-secondary" style="margin-left:8px" @click="calcAvgTrustPurchasePrice()">calc trust avg price</button>
-
-
-    <input type="checkbox" id="jpy" value="jpy" v-model="checkedCurrencys" />
-    <label for="jpy">jpy</label>
-    <input type="checkbox" id="fc" value="fc" v-model="checkedCurrencys" />
-    <label for="fc">fc</label>
-    <br />
-    <span>Checked names: {{ checkedCurrencys }}</span>
-
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th></th>
-          <th>year</th>
-          <th>deposit active</th>
-          <th>value account</th>
-          <th>total</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(e, index) in evals4" :key="e.year">
-          <td>{{ index }}</td>
-          <td>{{ e.year }}</td>
-          <td>{{ e.dactive.toLocaleString() }}</td>
-          <td>{{ e.vaccount.toLocaleString() }}</td>
-          <td>{{ e.total.toLocaleString() }}</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>total</td>
-          <td>{{ dactive4.toLocaleString() }}</td>
-          <td>{{ vaccount4.toLocaleString() }}</td>
-          <td>{{ total4.toLocaleString() }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-
-    <hr/>
-  
+   
   </div>
 </template>
 
@@ -722,6 +651,7 @@ export default {
     },
   },
   computed: {
+    ...mapState(['exchangeRates']),
     baseY() {
       const plotH = this.chartH - 2 * this.m;
       return this.m + plotH / 2;
