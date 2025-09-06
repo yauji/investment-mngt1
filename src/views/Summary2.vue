@@ -108,33 +108,6 @@
     </table>
     <button class="btn btn-primary btn-sm" @click="saveRatesToStore">ストアへ保存</button>
 
-    <!-- 為替レート編集 -->
-    <h3>為替レートを編集</h3>
-    <table class="table table-bordered" style="max-width:480px;">
-      <thead>
-        <tr>
-          <th>通貨</th>
-          <th>現在値</th>
-          <th>新しい値</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(rate, currency) in exchangeRates" :key="'edit-' + currency">
-          <td>{{ currency }}</td>
-          <td>{{ rate }}</td>
-          <td>
-            <input type="number" step="0.0001" class="form-control" style="max-width:160px;"
-                   v-model.number="editRates[currency]" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <button class="btn btn-primary" @click="saveRatesToStore">ストアへ保存</button>
-
-
-
-
-
 
 
 
