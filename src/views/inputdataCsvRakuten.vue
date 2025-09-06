@@ -240,7 +240,9 @@ export default {
           const date = this.pickDateISO(r['約定日'], r['受渡日']);
           if (!date) { this.skipped.push({ reason: '日付が不正または欠損', row: r }); skip++; continue; }
 
-          const qty = this.toNumberOrNull(r['数量［口］']);
+          // 口数は 1/10000 にスケール
+          const qtyRaw = this.toNumberOrNull(r['数量［口］']);
+          const qty = qtyRaw !== null ? (qtyRaw / 10000) : null;
           const price = this.toNumberOrNull(r['単価']);
 
           const input = {
