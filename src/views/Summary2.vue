@@ -10,18 +10,32 @@
 
     
     <button class="btn btn-success" style="margin-left:8px" @click="calcTotalReturn()">calc total return</button>
-    <br/>
 
-    <br/>
-    total return(2+3 -1 ): {{ this.totalReturn.toLocaleString() }}
-    <br/>
-    1. accounts total (JPY): {{ this.accountsJpy.toLocaleString() }}
-    <br/>
-    2. active deposit principal (JPY): {{ this.activePrincipalJpy.toLocaleString() }}
-    <br/>
-    3. trust evaulated value (JPY): {{ this.trustPnLJpy.toLocaleString() }}
-    <br/>
-    4. dividends total (JPY): {{ this.dividendsJpy.toLocaleString() }}
+    <div class="totals-wrap">
+      <div class="total-card highlight">
+        <div class="label">Total Return (JPY)</div>
+        <div class="value">{{ totalReturn.toLocaleString() }}</div>
+        <div class="formula">= (2 + 3) - 1</div>
+      </div>
+      <div class="cards">
+        <div class="total-card">
+          <div class="label">1. Accounts Total (JPY)</div>
+          <div class="value small">{{ accountsJpy.toLocaleString() }}</div>
+        </div>
+        <div class="total-card">
+          <div class="label">2. Active Deposit Principal (JPY)</div>
+          <div class="value small">{{ activePrincipalJpy.toLocaleString() }}</div>
+        </div>
+        <div class="total-card">
+          <div class="label">3. Trust Evaluated Value (JPY)</div>
+          <div class="value small">{{ trustPnLJpy.toLocaleString() }}</div>
+        </div>
+        <div class="total-card">
+          <div class="label">4. Dividends Total (JPY)</div>
+          <div class="value small">{{ dividendsJpy.toLocaleString() }}</div>
+        </div>
+      </div>
+    </div>
     <hr/>
 
     <!-- 為替レート一覧表示 -->
@@ -622,3 +636,46 @@ export default {
   },
 };
 </script>
+<style scoped>
+.totals-wrap {
+  margin: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.total-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.total-card .label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+.total-card .value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.total-card .value.small { font-size: 1.2rem; }
+.total-card.highlight {
+  background: linear-gradient(180deg, #f0fbff, #ffffff);
+  border-color: #cce8f6;
+}
+.total-card.highlight .value {
+  color: #0a7;
+  font-size: 2.2rem;
+}
+.total-card .formula {
+  font-size: 0.8rem;
+  color: #999;
+}
+</style>
