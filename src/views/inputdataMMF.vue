@@ -62,11 +62,11 @@ export default {
   methods: {
     summarizeRow(row) {
       if (!row || typeof row !== 'object') return '';
-      const d = row['約定日'] || row['国内受渡日'] || '';
+      const d = row['国内約定日'] || row['約定日'] || row['国内受渡日'] || '';
       const t = row['取引'] || '';
       const name = row['銘柄名'] || '';
       const code = row['銘柄コード'] || '';
-      const amt = row['受渡金額(円)'] || '';
+      const amt = row['受渡金額'] || row['受渡金額(円)'] || '';
       return `${d} ${t} ${name} ${code} ${amt}`.trim();
     },
     // ヘッダー前提のシンプルCSVパース（クォート対応）
@@ -229,23 +229,51 @@ export default {
           if (!tradeType) { this.skipped.push({ reason: '未対応の取引種別', row: r }); skip++; continue; }
           const trustBalanceId = await this.findTrustBalanceIdByCode(r['銘柄コード'], r['預り区分']);
           if (!trustBalanceId) { this.skipped.push({ reason: '該当するTrustBalanceが見つからない', row: r }); skip++; continue; }
-          const date = this.pickDateISO(r['約定日'], r['国内受渡日']);
+          const date = this.pickDateISO(r['国内約定日'], r['約定日'], r['国内受渡日']);
           if (!date) { this.skipped.push({ reason: '日付が不正または欠損', row: r }); skip++; continue; }
-          let basicPrice = this.toNumberOrNull(r['単価/返済約定単価']);
-          let noItem = this.toNumberOrNull(r['数量（株/口）/返済数量']);
-          const amount = this.toNumberOrNull(r['受渡金額(円)']);
-          const input = {
-            accountId: this.form.accountId,
-            trustBalanceId,
-            date,
-            tradeType,
-          };
-          if (basicPrice !== null) input.basicPrice = basicPrice;
-          if (noItem !== null) input.noItem = noItem;
-          if (tradeType === Enum.EnumTradeType.BUY.val && amount !== null) input.buy = amount;
-          if (tradeType === Enum.EnumTradeType.SELL.val && amount !== null) input.sell = amount;
-          await API.graphql({ query: createTrustTransaction, variables: { input } });
-          ok++;
+          let basicPrice = this.toNumberOrNull(r['約定単価'] !== undefined ? r['約定単価'] : r['単価/返済約定単価']);
+          let noItem = this.toNumberOrNull(r['約定数量'] !== undefined ? r['約定数量'] : r['数量（株/口）/返済数量']);
+          const amount = this.toNumberOrNull(r['受渡金額'] !== undefined ? r['受渡金額'] : r['受渡金額(円)']);
+          const rawType = String(r['取引'] || '').trim();
+          if (rawType === '再投資') {
+            // 1) 分配金として登録（数量・単価は登録しない）
+            if (amount === null) { this.skipped.push({ reason: '再投資の金額が不明', row: r }); continue; }
+            const divTx = {
+              accountId: this.form.accountId,
+              trustBalanceId,
+              date,
+              tradeType: Enum.EnumTradeType.DIVIDEND.val,
+              dividend: amount,
+            };
+            await API.graphql({ query: createTrustTransaction, variables: { input: divTx } });
+            ok++;
+            // 2) 同額で銘柄をBUY
+            const buyTx = {
+              accountId: this.form.accountId,
+              trustBalanceId,
+              date,
+              tradeType: Enum.EnumTradeType.BUY.val,
+              buy: amount,
+            };
+            if (basicPrice !== null) buyTx.basicPrice = basicPrice;
+            if (noItem !== null) buyTx.noItem = noItem;
+            await API.graphql({ query: createTrustTransaction, variables: { input: buyTx } });
+            ok++;
+          } else {
+            // 通常処理（自動買付→BUY、売却→SELL）
+            const input = {
+              accountId: this.form.accountId,
+              trustBalanceId,
+              date,
+              tradeType,
+            };
+            if (basicPrice !== null) input.basicPrice = basicPrice;
+            if (noItem !== null) input.noItem = noItem;
+            if (tradeType === Enum.EnumTradeType.BUY.val && amount !== null) input.buy = amount;
+            if (tradeType === Enum.EnumTradeType.SELL.val && amount !== null) input.sell = amount;
+            await API.graphql({ query: createTrustTransaction, variables: { input } });
+            ok++;
+          }
         } catch (e) {
           console.error('[MonexAlt] createTrustTransaction failed', e, r);
           this.skipped.push({ reason: '登録時エラー', row: r });
