@@ -667,7 +667,7 @@ export default {
 }
 .total-card .value.small { font-size: 1.2rem; }
 .total-card.highlight {
-  background: linear-gradient(180deg, #f0fbff, #ffffff);
+  background: #ffffff; /* remove gradient */
   border-color: #cce8f6;
 }
 .total-card.highlight .value {
