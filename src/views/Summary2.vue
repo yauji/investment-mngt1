@@ -38,6 +38,50 @@
     </div>
     <hr/>
 
+    <!-- Charts -->
+    <h3>Charts</h3>
+    <div class="chart-wrap">
+      <svg :width="chartW" :height="chartH">
+        <!-- axes -->
+        <line :x1="m" :y1="chartH - m" :x2="chartW - m" :y2="chartH - m" stroke="#ccc" />
+        <line :x1="m" :y1="m" :x2="m" :y2="chartH - m" stroke="#ccc" />
+
+        <!-- stacked bar for components (1,2,3) -->
+        <g :transform="`translate(${m + 60},0)`">
+          <text :x="-30" :y="chartH - m + 16" font-size="12" text-anchor="middle">1+2+3</text>
+          <template v-for="(seg, idx) in stackedSegments" :key="'seg-'+idx">
+            <rect
+              :x="0"
+              :y="seg.y"
+              :width="barW"
+              :height="seg.h"
+              :fill="seg.color"
+              :opacity="0.9"
+            />
+            <text v-if="seg.h >= 14" :x="barW/2" :y="seg.y + 12" font-size="11" text-anchor="middle" fill="#fff">{{ seg.label }}</text>
+          </template>
+        </g>
+
+        <!-- total return bar -->
+        <g :transform="`translate(${m + 160},0)`">
+          <text :x="barW/2" :y="chartH - m + 16" font-size="12" text-anchor="middle">Total</text>
+          <rect :x="0" :y="totalBar.y" :width="barW" :height="totalBar.h" fill="#0a7" opacity="0.9" />
+          <text v-if="totalBar.h >= 14" :x="barW/2" :y="totalBar.y + 12" font-size="11" text-anchor="middle" fill="#fff">{{ totalReturn.toLocaleString() }}</text>
+        </g>
+
+        <!-- y-axis max label -->
+        <text :x="m" :y="m - 4" font-size="11" fill="#666">{{ chartMax.toLocaleString() }}</text>
+      </svg>
+
+      <!-- Legend -->
+      <div class="legend">
+        <span class="legend-item"><i class="swatch" style="background:#888;"></i>1. Accounts (−)</span>
+        <span class="legend-item"><i class="swatch" style="background:#4aa3df;"></i>2. Active Principal</span>
+        <span class="legend-item"><i class="swatch" style="background:#f6b26b;"></i>3. Trust Evaluated</span>
+        <span class="legend-item"><i class="swatch" style="background:#0a7;"></i>Total Return</span>
+      </div>
+    </div>
+
     <!-- 為替レート一覧表示 -->
     <h2 class="d-flex align-items-center" style="gap: 12px;">
       為替レート一覧
@@ -180,8 +224,36 @@ import * as Enum from "@/Enum";
 
 export default {
   name: "DepositIndex",
-  computed: {
-    ...mapState(['exchangeRates'])
+  computed___REMOVE: {
+    ...mapState(['exchangeRates']),
+    chartMax() {
+      const sumStack = this.clampPos(this.accountsJpy) + this.clampPos(this.activePrincipalJpy) + this.clampPos(this.trustPnLJpy);
+      const totalAbs = Math.abs(Number(this.totalReturn) || 0);
+      const base = Math.max(sumStack, totalAbs, 1);
+      const pow = Math.pow(10, Math.max(0, Math.floor(Math.log10(base)) - 1));
+      return Math.ceil(base / pow) * pow;
+    },
+    stackedSegments() {
+      const max = this.chartMax;
+      const segs = [];
+      let acc = 0;
+      const addSeg = (value, color, label) => {
+        const h = this.scaleY(Math.abs(value), max);
+        const y = this.chartH - this.m - (acc + h);
+        segs.push({ h, y, color, label });
+        acc += h;
+      };
+      addSeg(this.accountsJpy, '#888', this.accountsJpy.toLocaleString());
+      addSeg(this.activePrincipalJpy, '#4aa3df', this.activePrincipalJpy.toLocaleString());
+      addSeg(this.trustPnLJpy, '#f6b26b', this.trustPnLJpy.toLocaleString());
+      return segs;
+    },
+    totalBar() {
+      const max = this.chartMax;
+      const h = this.scaleY(Math.abs(this.totalReturn), max);
+      const y = this.chartH - this.m - h;
+      return { h, y };
+    },
   },
   data() {
     return {
@@ -201,6 +273,11 @@ export default {
       trustPnLJpy: 0,
       dividendsJpy: 0,
       editRates: {},
+      // chart config
+      chartW: 520,
+      chartH: 260,
+      m: 28,
+      barW: 48,
     };
   },
   created() {
@@ -210,6 +287,14 @@ export default {
     this.editRates = init;
   },
   methods: {
+    // Chart helpers
+    clampPos(v) { return Math.max(0, Number(v) || 0); },
+    scaleY(v, max) {
+      const h = this.chartH - 2 * this.m;
+      const val = this.clampPos(v);
+      const mm = max > 0 ? max : 1;
+      return (val / mm) * h;
+    },
     rateForCurrency(ccy, rateByCcyMap) {
       //console.log("xxx11 rateForCurrency", ccy, rateByCcyMap);
       const c = String(ccy || '').toUpperCase();
@@ -634,6 +719,36 @@ export default {
       this.evals4 = evals4;
     },
   },
+  computed: {
+    chartMax() {
+      const sumStack = this.clampPos(this.accountsJpy) + this.clampPos(this.activePrincipalJpy) + this.clampPos(this.trustPnLJpy);
+      const totalAbs = Math.abs(Number(this.totalReturn) || 0);
+      const base = Math.max(sumStack, totalAbs, 1);
+      const pow = Math.pow(10, Math.max(0, Math.floor(Math.log10(base)) - 1));
+      return Math.ceil(base / pow) * pow;
+    },
+    stackedSegments() {
+      const max = this.chartMax;
+      const segs = [];
+      let acc = 0;
+      const addSeg = (value, color, label) => {
+        const h = this.scaleY(Math.abs(value), max);
+        const y = this.chartH - this.m - (acc + h);
+        segs.push({ h, y, color, label });
+        acc += h;
+      };
+      addSeg(this.accountsJpy, '#888', this.accountsJpy.toLocaleString());
+      addSeg(this.activePrincipalJpy, '#4aa3df', this.activePrincipalJpy.toLocaleString());
+      addSeg(this.trustPnLJpy, '#f6b26b', this.trustPnLJpy.toLocaleString());
+      return segs;
+    },
+    totalBar() {
+      const max = this.chartMax;
+      const h = this.scaleY(Math.abs(this.totalReturn), max);
+      const y = this.chartH - this.m - h;
+      return { h, y };
+    },
+  },
 };
 </script>
 <style scoped>
@@ -678,4 +793,7 @@ export default {
   font-size: 0.8rem;
   color: #999;
 }
+.chart-wrap { margin: 10px 0 18px; }
+.legend { margin-top: 8px; color: #666; font-size: 0.9rem; display: flex; gap: 16px; flex-wrap: wrap; }
+.legend .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 </style>
