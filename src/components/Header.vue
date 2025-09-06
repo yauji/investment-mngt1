@@ -38,6 +38,22 @@
           <li class="nav-item">
             <router-link class="nav-link active" to="/summary2">Summary2</router-link>
           </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="inputdataDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              input data
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="inputdataDropdown">
+              <li>
+                <router-link class="dropdown-item" to="/inputdata2">inputdata2</router-link>
+              </li>
+              <li>
+                <router-link class="dropdown-item" to="/inputdatacsv">inputdatacsv</router-link>
+              </li>
+              <li>
+                <router-link class="dropdown-item" to="/inputdataMMF">inputdatammf</router-link>
+              </li>
+            </ul>
+          </li>
           <li class="nav-item">
             <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
           </li>
