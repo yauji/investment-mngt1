@@ -36,6 +36,7 @@ import Setting from "../views/Setting.vue";
 import Inputdata from "../views/Inputdata.vue";
 import Inputdata2 from "../views/Inputdata2.vue";
 import InputdataCsv from "../views/InputdataCsv.vue";
+import InputdataMMF from "../views/inputdataMMF.vue";
 
 const routes = [
   {
@@ -210,6 +211,13 @@ const routes = [
     path: "/inputdatacsv",
     name: "InputdataCsv",
     component: InputdataCsv,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/inputdataMMF",
+    name: "InputdataMMF",
+    component: InputdataMMF,
     props: true,
     meta: { requireAuth: true },
   },

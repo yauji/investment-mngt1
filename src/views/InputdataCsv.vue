@@ -10,7 +10,7 @@
     <h3>trust transactions (日本語CSVテキスト) - monex</h3>
     <ul>
       <li>下の形式（見出しを含む）のテキストを貼り付けてください。</li>
-      <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金→DIVIDEND、再投資買付/お買付/かんたん積立→BUY、解約→SELL）。</li>
+      <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金→DIVIDEND、再投資/再投資買付/お買付/自動買付/かんたん積立→BUY、解約/売却→SELL）。</li>
       <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。</li>
       <li>account は下記プルダウンで選択した共通アカウントを使用します。</li>
       <li>口数は、正しく1/10000するように。</li>
@@ -236,9 +236,12 @@ export default {
       if (!t) return null;
       if (t === '分配金') return Enum.EnumTradeType.DIVIDEND.val;
       if (t === '再投資買付') return Enum.EnumTradeType.BUY.val;
+      if (t === '再投資') return Enum.EnumTradeType.BUY.val;
       if (t === 'お買付') return Enum.EnumTradeType.BUY.val;
+      if (t === '自動買付') return Enum.EnumTradeType.BUY.val;
       if (t === 'かんたん積立') return Enum.EnumTradeType.BUY.val;
       if (t === '解約') return Enum.EnumTradeType.SELL.val;
+      if (t === '売却') return Enum.EnumTradeType.SELL.val;
       return null; // 未対応はスキップ
     },
     // コード文字列を正規化（数字のみ抽出）
