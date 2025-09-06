@@ -32,18 +32,18 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>date</th>
-          <th>type</th>
-          <th>buy (expense)</th>
-          <th>sell (income)</th>
-          <th>dividend (income)</th>
-          <th>trust</th>
+          <th @click="setSort('date')" style="cursor:pointer">date<span v-if="sortKey==='date'"> {{ sortAsc ? '▲' : '▼' }}</span></th>
+          <th @click="setSort('tradeType')" style="cursor:pointer">type<span v-if="sortKey==='tradeType'"> {{ sortAsc ? '▲' : '▼' }}</span></th>
+          <th @click="setSort('buy')" style="cursor:pointer">buy (expense)<span v-if="sortKey==='buy'"> {{ sortAsc ? '▲' : '▼' }}</span></th>
+          <th @click="setSort('sell')" style="cursor:pointer">sell (income)<span v-if="sortKey==='sell'"> {{ sortAsc ? '▲' : '▼' }}</span></th>
+          <th @click="setSort('dividend')" style="cursor:pointer">dividend (income)<span v-if="sortKey==='dividend'"> {{ sortAsc ? '▲' : '▼' }}</span></th>
+          <th @click="setSort('trust')" style="cursor:pointer">trust<span v-if="sortKey==='trust'"> {{ sortAsc ? '▲' : '▼' }}</span></th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="trusttransaction in trusttransactions"
+          v-for="trusttransaction in sortedTrustTransactions"
           :key="trusttransaction.id"
         >
           <td>{{ moment(trusttransaction.date) }}</td>
@@ -96,6 +96,8 @@ export default {
       accounts: [],
       trusttransactions: [],
       trustMap: {}, // trustBalanceId -> name
+      sortKey: 'date',
+      sortAsc: false,
     };
   },
 
@@ -280,6 +282,50 @@ export default {
         }
         */
       }
+    },
+    setSort(k) {
+      if (this.sortKey === k) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortKey = k;
+        this.sortAsc = k === 'date' ? false : true;
+      }
+    },
+  },
+  computed: {
+    sortedTrustTransactions() {
+      const key = this.sortKey;
+      const asc = this.sortAsc ? 1 : -1;
+      const arr = (this.trusttransactions || []).slice();
+      const getTrustName = (tt) => this.trustMap[tt.trustBalanceId] || '';
+      arr.sort((a, b) => {
+        let va, vb;
+        if (key === 'date') {
+          va = new Date(a.date).getTime() || 0;
+          vb = new Date(b.date).getTime() || 0;
+        } else if (key === 'tradeType') {
+          va = String(a.tradeType || '');
+          vb = String(b.tradeType || '');
+        } else if (key === 'buy') {
+          va = Number(a.buy || 0);
+          vb = Number(b.buy || 0);
+        } else if (key === 'sell') {
+          va = Number(a.sell || 0);
+          vb = Number(b.sell || 0);
+        } else if (key === 'dividend') {
+          va = Number(a.dividend || 0);
+          vb = Number(b.dividend || 0);
+        } else if (key === 'trust') {
+          va = getTrustName(a);
+          vb = getTrustName(b);
+        } else {
+          va = 0; vb = 0;
+        }
+        if (va < vb) return -1 * asc;
+        if (va > vb) return 1 * asc;
+        return 0;
+      });
+      return arr;
     },
   },
 };
