@@ -196,6 +196,19 @@ export default {
     this.editRates = init;
   },
   methods: {
+    rateForCurrency(ccy, rateByCcyMap) {
+      //console.log("xxx11 rateForCurrency", ccy, rateByCcyMap);
+      const c = String(ccy || '').toUpperCase();
+      if (!c || c === 'JPY') return 1;
+      // Prefer Vuex exchangeRates if available
+      const storeRates = (this.$store && this.$store.state && this.$store.state.exchangeRates) ? this.$store.state.exchangeRates : {};
+      const v1 = Number(storeRates[c]);
+      if (Number.isFinite(v1) && v1 > 0) return v1;
+      // Fallback to account-derived map
+      const v2 = Number(rateByCcyMap.get ? rateByCcyMap.get(c) : rateByCcyMap[c]);
+      if (Number.isFinite(v2) && v2 > 0) return v2;
+      return 0;
+    },
     async fetchFx() {
       try {
         await this.$store.dispatch('fetchExchangeRates');
@@ -238,17 +251,13 @@ export default {
         }
 
         // 2) accountの評価額合計（JPY）
-        //    JPY口座はそのまま加算、外貨口座のみ円換算（balance * exchangeRate）
+        //    JPY口座はそのまま、外貨口座は「Vuexレート→口座レート」の優先順で円換算
         let accountsJpy = 0;
         for (const a of accounts) {
           const bal  = Number(a.balance) || 0;
           const ccy  = String(a.currency || '').toUpperCase();
-          if (ccy === 'JPY') {
-            accountsJpy += bal;
-          } else {
-            const rate = Number(a.exchangeRate) || 0;
-            accountsJpy += bal * rate;
-          }
+          const rate = this.rateForCurrency(ccy, rateByCcy);
+          accountsJpy += bal * (rate || 0);
         }
         this.accountsJpy = accountsJpy;
         console.log("accountsJpy", accountsJpy);
@@ -293,12 +302,9 @@ export default {
         for (const tb of trustbalances) {
           const units = Number(tb.noItem) || 0;
           const price = Number(tb.basicPrice) || 0;
-          //const avg = Number(tb.averagePurchasePrice) || 0;
-          //const diff = price - avg;
-          //平均取得価格を引く必要なし。accountがマイナスになっているので。
-          const diff = price;
-          const rate = rateByCcy.get(tb.currency) || 0;
-          trustPnLJpy += units * diff * rate;
+          const diff = price; // 平均取得価格は引かない方針
+          const rate = this.rateForCurrency(tb.currency, rateByCcy);
+          trustPnLJpy += units * diff * (rate || 0);
         }
         this.trustPnLJpy = trustPnLJpy;
         console.log("trustPnLJpy", trustPnLJpy);
@@ -319,13 +325,16 @@ export default {
               if (kind === 'DIVIDEND' || kind === Enum.EnumTradeType?.DIVIDEND?.val) {
                 const amt = Number(tx?.dividend) || 0;
                 // 優先: トランザクションの入出金先アカウントの為替レート
-                let rate = 0;
+                // 優先: Vuexレート→口座レート。JPYは常に1。
+                let ccy = 'JPY';
                 if (tx?.accountId && accById.has(tx.accountId)) {
-                  rate = Number(accById.get(tx.accountId)?.exchangeRate) || 0;
-                } else if (tx?.account?.currency && rateByCcy.has(tx.account.currency)) {
-                  rate = Number(rateByCcy.get(tx.account.currency)) || 0;
+                  ccy = accById.get(tx.accountId)?.currency || 'JPY';
+                } else if (tx?.account?.currency) {
+                  ccy = tx.account.currency;
                 }
-                dividendsJpy += amt * rate;
+                const rate = this.rateForCurrency(ccy, rateByCcy);
+                dividendsJpy += amt * (rate || 0);
+                console.log("xxx21 dividendsJpy", dividendsJpy, amt, rate);
               }
             }
             nextToken = data?.nextToken || null;
