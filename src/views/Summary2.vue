@@ -43,7 +43,7 @@
     <div class="chart-wrap">
       <svg :width="chartW" :height="chartH">
         <!-- axes -->
-        <line :x1="m" :y1="chartH - m" :x2="chartW - m" :y2="chartH - m" stroke="#ccc" />
+        <line :x1="m" :y1="baseY" :x2="chartW - m" :y2="baseY" stroke="#ccc" />
         <line :x1="m" :y1="m" :x2="m" :y2="chartH - m" stroke="#ccc" />
 
         <!-- stacked bar for components (1,2,3) -->
@@ -64,7 +64,7 @@
 
         <!-- total return bar -->
         <g :transform="`translate(${m + 160},0)`">
-          <text :x="barW/2" :y="chartH - m + 16" font-size="12" text-anchor="middle">Total</text>
+          <text :x="barW/2" :y="baseY + 16" font-size="12" text-anchor="middle">Total</text>
           <rect :x="0" :y="totalBar.y" :width="barW" :height="totalBar.h" fill="#0a7" opacity="0.9" />
           <text v-if="totalBar.h >= 14" :x="barW/2" :y="totalBar.y + 12" font-size="11" text-anchor="middle" fill="#fff">{{ totalReturn.toLocaleString() }}</text>
         </g>
@@ -289,11 +289,13 @@ export default {
   methods: {
     // Chart helpers
     clampPos(v) { return Math.max(0, Number(v) || 0); },
-    scaleY(v, max) {
-      const h = this.chartH - 2 * this.m;
-      const val = this.clampPos(v);
+    scaleYHalf(v, max) {
+      // map abs(v) to half plotting area (above or below baseline)
+      const plotH = this.chartH - 2 * this.m;
+      const half = plotH / 2;
+      const val = Math.abs(Number(v) || 0);
       const mm = max > 0 ? max : 1;
-      return (val / mm) * h;
+      return (val / mm) * half;
     },
     rateForCurrency(ccy, rateByCcyMap) {
       //console.log("xxx11 rateForCurrency", ccy, rateByCcyMap);
@@ -720,32 +722,51 @@ export default {
     },
   },
   computed: {
+    baseY() {
+      const plotH = this.chartH - 2 * this.m;
+      return this.m + plotH / 2;
+    },
     chartMax() {
-      const sumStack = this.clampPos(this.accountsJpy) + this.clampPos(this.activePrincipalJpy) + this.clampPos(this.trustPnLJpy);
+      const v1 = -(Number(this.accountsJpy) || 0);
+      const v2 = Number(this.activePrincipalJpy) || 0;
+      const v3 = Number(this.trustPnLJpy) || 0;
+      const posSum = [v1, v2, v3].filter(v => v > 0).reduce((a,b)=>a+b,0);
+      const negSum = [v1, v2, v3].filter(v => v < 0).reduce((a,b)=>a+Math.abs(b),0);
       const totalAbs = Math.abs(Number(this.totalReturn) || 0);
-      const base = Math.max(sumStack, totalAbs, 1);
+      const base = Math.max(posSum, negSum, totalAbs, 1);
       const pow = Math.pow(10, Math.max(0, Math.floor(Math.log10(base)) - 1));
       return Math.ceil(base / pow) * pow;
     },
     stackedSegments() {
-      const max = this.chartMax;
+      const v1 = -(Number(this.accountsJpy) || 0);
+      const v2 = Number(this.activePrincipalJpy) || 0;
+      const v3 = Number(this.trustPnLJpy) || 0;
+      const parts = [
+        { val: v1, color: '#888', label: (Number(this.accountsJpy)||0).toLocaleString() },
+        { val: v2, color: '#4aa3df', label: (Number(this.activePrincipalJpy)||0).toLocaleString() },
+        { val: v3, color: '#f6b26b', label: (Number(this.trustPnLJpy)||0).toLocaleString() },
+      ];
       const segs = [];
-      let acc = 0;
-      const addSeg = (value, color, label) => {
-        const h = this.scaleY(Math.abs(value), max);
-        const y = this.chartH - this.m - (acc + h);
-        segs.push({ h, y, color, label });
-        acc += h;
-      };
-      addSeg(this.accountsJpy, '#888', this.accountsJpy.toLocaleString());
-      addSeg(this.activePrincipalJpy, '#4aa3df', this.activePrincipalJpy.toLocaleString());
-      addSeg(this.trustPnLJpy, '#f6b26b', this.trustPnLJpy.toLocaleString());
+      let accPos = 0, accNeg = 0;
+      const max = this.chartMax;
+      for (const p of parts) {
+        const h = this.scaleYHalf(p.val, max);
+        if (p.val >= 0) {
+          const y = this.baseY - (accPos + h);
+          segs.push({ h, y, color: p.color, label: p.label });
+          accPos += h;
+        } else {
+          const y = this.baseY + accNeg;
+          segs.push({ h, y, color: p.color, label: p.label });
+          accNeg += h;
+        }
+      }
       return segs;
     },
     totalBar() {
-      const max = this.chartMax;
-      const h = this.scaleY(Math.abs(this.totalReturn), max);
-      const y = this.chartH - this.m - h;
+      const val = Number(this.totalReturn) || 0;
+      const h = this.scaleYHalf(val, this.chartMax);
+      const y = val >= 0 ? this.baseY - h : this.baseY;
       return { h, y };
     },
   },
