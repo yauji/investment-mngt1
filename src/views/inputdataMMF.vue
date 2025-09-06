@@ -138,7 +138,7 @@ export default {
     },
     mapTradeType(v) {
       const t = String(v || '').trim();
-      if (t === '再投資' || t === '自動買付') return Enum.EnumTradeType.BUY.val;
+      if (t === '再投資' || t === '自動買付' || t === '買付') return Enum.EnumTradeType.BUY.val;
       if (t === '売却') return Enum.EnumTradeType.SELL.val;
       return null;
     },
