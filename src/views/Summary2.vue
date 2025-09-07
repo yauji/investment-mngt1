@@ -267,10 +267,16 @@ export default {
 
         // 3) active deposit の principal 合計（JPY）
         let activePrincipalJpy = 0;
+        // deposits: fetch all pages (over 100) to ensure complete active sum
         let deposits = [];
         try {
-          const res = await API.graphql({ query: listDeposits });
-          deposits = res.data.listDeposits.items || [];
+          let nextToken = null;
+          do {
+            const res = await API.graphql({ query: listDeposits, variables: { limit: 100, nextToken } });
+            const data = res.data?.listDeposits;
+            deposits.push(...(data?.items || []));
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
         } catch (e) {
           console.error('listDeposits failed', e);
           deposits = [];

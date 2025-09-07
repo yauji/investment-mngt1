@@ -158,32 +158,25 @@ export default {
         var a = this.accounts[ka];
         //a.activedeposit = 1;
 
-        //calc active deposit----
-        let filter = {
-          principalAccountId: {
-            eq: a.id,
-          },
-        };
-
-        var tad = 0;
-        await API.graphql({
-          query: listDeposits,
-          variables: { filter: filter },
-        })
-          .then((result) => {
-            //console.log(result);
-            var tdeposits = result.data.listDeposits.items;
-
-            for (const kd in tdeposits) {
-              const d = tdeposits[kd];
-              if (d.status == Enum.EnumDepositStatus.ACTIVE.val) {
-                tad += d.principal;
+        // calc active deposit (paginate >100)
+        const filter = { principalAccountId: { eq: a.id } };
+        let tad = 0;
+        try {
+          let nextToken = null;
+          do {
+            const res = await API.graphql({ query: listDeposits, variables: { filter, limit: 100, nextToken } });
+            const data = res?.data?.listDeposits;
+            const tdeposits = data?.items || [];
+            for (const d of tdeposits) {
+              if (d.status == Enum.EnumDepositStatus.ACTIVE.val || d.status === 'ACTIVE') {
+                tad += Number(d.principal) || 0;
               }
             }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
+        } catch (error) {
+          console.log(error);
+        }
         a.activedeposit = tad;
 
         //calc active trust----

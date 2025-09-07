@@ -179,8 +179,8 @@ import moment from "moment";
 import * as Enum from "@/Enum";
 
 const LIST_DEPOSITS_WITH_RELATIONS = /* GraphQL */ `
-  query ListDepositsWithRelations {
-    listDeposits {
+  query ListDepositsWithRelations($limit: Int, $nextToken: String) {
+    listDeposits(limit: $limit, nextToken: $nextToken) {
       items {
         id
         name
@@ -208,6 +208,7 @@ const LIST_DEPOSITS_WITH_RELATIONS = /* GraphQL */ `
         }
         value
       }
+      nextToken
     }
   }
 `;
@@ -268,42 +269,46 @@ export default {
       }
     },
     async getDeposits() {
-      await API.graphql({
-        query: LIST_DEPOSITS_WITH_RELATIONS,
-      })
-        .then((result) => {
-          console.log(result);
-          this.deposits = result.data.listDeposits.items;
+      try {
+        const all = [];
+        let nextToken = null;
+        do {
+          const res = await API.graphql({ query: LIST_DEPOSITS_WITH_RELATIONS, variables: { limit: 100, nextToken } });
+          const data = res?.data?.listDeposits;
+          const items = data?.items || [];
+          all.push(...items);
+          nextToken = data?.nextToken || null;
+        } while (nextToken);
+        this.deposits = all;
 
-          //calc profit and loss, expected profit----
-          for (const kd in this.deposits) {
-            const d = this.deposits[kd];
+        //calc profit and loss, expected profit----
+        for (const kd in this.deposits) {
+          const d = this.deposits[kd];
 
-            // profit and loss (only when finished & both accounts exist)
-            if (
-              d.status == Enum.EnumDepositStatus.FINISHED.val &&
-              d.principalAccount?.exchangeRate != null &&
-              d.valueAccount?.exchangeRate != null
-            ) {
-              const pri = (d.principal || 0) * (d.principalAccount.exchangeRate || 0);
-              const val = (d.value || 0) * (d.valueAccount.exchangeRate || 0);
-              d.pl = val - pri;
-            } else {
-              d.pl = null;
-            }
-
-            // expected profit (tax-considered), guard nulls
-            const principal = Number(d.principal) || 0;
-            const ir = Number(d.interestRate) || 0;
-            const dur = Number(d.duration) || 0;
-            d.expected = (((principal * ir) / 100) * dur) / 12 * 0.8;
+          // profit and loss (only when finished & both accounts exist)
+          if (
+            d.status == Enum.EnumDepositStatus.FINISHED.val &&
+            d.principalAccount?.exchangeRate != null &&
+            d.valueAccount?.exchangeRate != null
+          ) {
+            const pri = (d.principal || 0) * (d.principalAccount.exchangeRate || 0);
+            const val = (d.value || 0) * (d.valueAccount.exchangeRate || 0);
+            d.pl = val - pri;
+          } else {
+            d.pl = null;
           }
 
-          this.sortBy("date");
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+          // expected profit (tax-considered), guard nulls
+          const principal = Number(d.principal) || 0;
+          const ir = Number(d.interestRate) || 0;
+          const dur = Number(d.duration) || 0;
+          d.expected = (((principal * ir) / 100) * dur) / 12 * 0.8;
+        }
+
+        this.sortBy("date");
+      } catch (error) {
+        console.log(error);
+      }
     },
     async deleteDeposit(index, depositId) {
       if (!confirm("Delete Deposit?")) return;
