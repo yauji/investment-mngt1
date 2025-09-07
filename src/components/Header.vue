@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">InvMng xxx<BIconBank/></a>
+      <a class="navbar-brand" href="#">InvMng  <BIconBank/></a>
       <button
         class="navbar-toggler"
         type="button"
@@ -16,21 +16,22 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
+            <router-link  class="nav-link active" to="/accounts">Accounts</router-link>
+          </li>
+
+          <li class="nav-item">
             <!--
           <a class="nav-link active" aria-current="page" href="#">Home</a>
           -->
             <router-link class="nav-link active" to="/deposits">Deposits</router-link>
           </li>
           <li class="nav-item">
-            <router-link  class="nav-link active" to="/accounts">Accounts</router-link>
+            <router-link class="nav-link active" to="/trustbalances">Trust balances</router-link>
           </li>
           <li class="nav-item">
             <router-link class="nav-link active" to="/trusttransactions"
               >Trust transactions</router-link
             >
-          </li>
-          <li class="nav-item">
-            <router-link class="nav-link active" to="/trustbalances">Trust balances</router-link>
           </li>
           <li class="nav-item">
             <router-link class="nav-link active" to="/summary">Summary</router-link>
