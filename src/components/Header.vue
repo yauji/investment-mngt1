@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">InvMng  <BIconBank/></a>
+      <a class="navbar-brand" href="#">InvMng  x<BIconBank/></a>
       <button
         class="navbar-toggler"
         type="button"
@@ -60,6 +60,9 @@
           </li>
           <li class="nav-item">
             <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/debug">Debug</router-link>
           </li>
         </ul>
 
