@@ -23,6 +23,7 @@ export const createDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       principal
       exchangeRate
@@ -40,11 +41,13 @@ export const createDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       value
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -70,6 +73,7 @@ export const updateDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       principal
       exchangeRate
@@ -87,11 +91,13 @@ export const updateDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       value
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -117,6 +123,7 @@ export const deleteDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       principal
       exchangeRate
@@ -134,11 +141,13 @@ export const deleteDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       value
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -157,6 +166,7 @@ export const createAccount = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -175,6 +185,7 @@ export const updateAccount = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -193,6 +204,7 @@ export const deleteAccount = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -212,12 +224,13 @@ export const createTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       accountId
       account {
@@ -230,6 +243,7 @@ export const createTrustTransaction = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       date
       tradeType
@@ -241,6 +255,7 @@ export const createTrustTransaction = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -260,12 +275,13 @@ export const updateTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       accountId
       account {
@@ -278,6 +294,7 @@ export const updateTrustTransaction = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       date
       tradeType
@@ -289,6 +306,7 @@ export const updateTrustTransaction = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -308,12 +326,13 @@ export const deleteTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       accountId
       account {
@@ -326,6 +345,7 @@ export const deleteTrustTransaction = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       date
       tradeType
@@ -337,6 +357,7 @@ export const deleteTrustTransaction = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -353,27 +374,17 @@ export const createTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      averagePurchasePrice
+      code
+      type
       trustTransactions {
-        items {
-          id
-          trustBalanceId
-          accountId
-          date
-          tradeType
-          basicPrice
-          noItem
-          buy
-          sell
-          dividend
-          createdAt
-          updatedAt
-          owner
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -390,27 +401,17 @@ export const updateTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      averagePurchasePrice
+      code
+      type
       trustTransactions {
-        items {
-          id
-          trustBalanceId
-          accountId
-          date
-          tradeType
-          basicPrice
-          noItem
-          buy
-          sell
-          dividend
-          createdAt
-          updatedAt
-          owner
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -427,27 +428,17 @@ export const deleteTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      averagePurchasePrice
+      code
+      type
       trustTransactions {
-        items {
-          id
-          trustBalanceId
-          accountId
-          date
-          tradeType
-          basicPrice
-          noItem
-          buy
-          sell
-          dividend
-          createdAt
-          updatedAt
-          owner
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;

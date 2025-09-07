@@ -20,6 +20,7 @@ export const getDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       principal
       exchangeRate
@@ -37,11 +38,13 @@ export const getDeposit = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       value
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -59,40 +62,20 @@ export const listDeposits = /* GraphQL */ `
         status
         date
         principalAccountId
-        principalAccount {
-          id
-          name
-          currency
-          balance
-          exchangeRate
-          memo
-          createdAt
-          updatedAt
-          owner
-        }
         principal
         exchangeRate
         interestRate
         duration
         endDate
         valueAccountId
-        valueAccount {
-          id
-          name
-          currency
-          balance
-          exchangeRate
-          memo
-          createdAt
-          updatedAt
-          owner
-        }
         value
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -108,6 +91,7 @@ export const getAccount = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -128,8 +112,10 @@ export const listAccounts = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -146,12 +132,13 @@ export const getTrustTransaction = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       accountId
       account {
@@ -164,6 +151,7 @@ export const getTrustTransaction = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       date
       tradeType
@@ -175,6 +163,7 @@ export const getTrustTransaction = /* GraphQL */ `
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -192,30 +181,7 @@ export const listTrustTransactions = /* GraphQL */ `
       items {
         id
         trustBalanceId
-        trustBalance {
-          id
-          currency
-          name
-          memo
-          balance
-          noItem
-          basicPrice
-          createdAt
-          updatedAt
-          owner
-        }
         accountId
-        account {
-          id
-          name
-          currency
-          balance
-          exchangeRate
-          memo
-          createdAt
-          updatedAt
-          owner
-        }
         date
         tradeType
         basicPrice
@@ -226,8 +192,10 @@ export const listTrustTransactions = /* GraphQL */ `
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -241,27 +209,17 @@ export const getTrustBalance = /* GraphQL */ `
       balance
       noItem
       basicPrice
+      averagePurchasePrice
+      code
+      type
       trustTransactions {
-        items {
-          id
-          trustBalanceId
-          accountId
-          date
-          tradeType
-          basicPrice
-          noItem
-          buy
-          sell
-          dividend
-          createdAt
-          updatedAt
-          owner
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
       owner
+      __typename
     }
   }
 `;
@@ -280,14 +238,16 @@ export const listTrustBalances = /* GraphQL */ `
         balance
         noItem
         basicPrice
-        trustTransactions {
-          nextToken
-        }
+        averagePurchasePrice
+        code
+        type
         createdAt
         updatedAt
         owner
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;

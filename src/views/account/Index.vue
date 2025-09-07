@@ -5,27 +5,37 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>name</th>
-          <th>currency</th>
-          <th>balance</th>
-          <th>balance JPY</th>
-          <th>exchangeRate</th>
-          <th>memo</th>
-          <th>active deposit</th>
-          <th>trust (not implemented)</th>
+          <th class="th-small">name</th>
+          <th class="th-small">currency</th>
+          <th class="th-pnl th-num">balance</th>
+          <th class="th-small th-num">balance JPY</th>
+          <th class="th-small th-num">exchangeRate</th>
+          <th class="th-small">memo</th>
+          <th class="th-small th-num">active deposit</th>
+          <th class="th-small th-num">trust (not implemented)</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(account, index) in accounts" :key="account.id">
-          <td>{{ account.name }}</td>
-          <td>{{ account.currency }}</td>
-          <td>{{ numberFormat(account.balance) }}</td>
-          <td>{{ numberFormat(account.balance * account.exchangeRate) }}</td>
-          <td>{{ account.exchangeRate }}</td>
-          <td>{{ account.memo }}</td>
-          <td>{{ numberFormat(account.activedeposit) }}</td>
-          <td>{{ numberFormat(account.trust) }}</td>
+          <td class="td-small">{{ account.name }}</td>
+          <td class="td-small">{{ account.currency }}</td>
+          <td class="td-num td-pnl">
+            <span class="num-int">{{ formatParts(account.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.balance, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.balance * account.exchangeRate, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.balance * account.exchangeRate, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.exchangeRate, 4).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.exchangeRate, 4).frac }}</span>
+          </td>
+          <td class="td-small">{{ account.memo }}</td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.activedeposit, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.activedeposit, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(account.trust, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(account.trust, 2).frac }}</span>
+          </td>
           <td>
             <div class="container text-center">
               <div class="row row-cols-auto">
@@ -72,8 +82,8 @@
       </tbody>
     </table>
 
-    <button class="btn btn-primary" @click="updateBalances()">
-      Update balance
+    <button class="btn btn-primary" @click="updateBalances()" :disabled="isUpdating">
+      {{ isUpdating ? 'Updating…' : 'Update balance' }}
     </button>
 
     <br />
@@ -107,6 +117,7 @@ export default {
   data() {
     return {
       accounts: [],
+      isUpdating: false,
     };
   },
   methods: {
@@ -120,6 +131,15 @@ export default {
       } else {
         return value.toLocaleString();
       }
+    },
+    formatParts(value, decimals = 2) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return { int: '---', frac: ''.padEnd(decimals, '0') };
+      const fixed = n.toFixed(decimals);
+      const [i, f = ''] = fixed.split('.');
+      const intNum = Number(i);
+      const intStr = Number.isFinite(intNum) ? intNum.toLocaleString() : i;
+      return { int: intStr, frac: f };
     },
     async getAccounts() {
       await API.graphql({
@@ -221,126 +241,188 @@ export default {
         });
     },
     async updateBalances() {
-      //get deposits-----
-      var deposits;
-      await API.graphql({
-        query: listDeposits,
-      })
-        .then((result) => {
-          //console.log(result);
-          deposits = result.data.listDeposits.items;
-        })
-        .catch((error) => {
+      this.isUpdating = true;
+      try {
+        // get deposits with pagination
+        var deposits = [];
+        try {
+          let nextToken = null;
+          do {
+            const res = await API.graphql({ query: listDeposits, variables: { limit: 100, nextToken } });
+            const data = res?.data?.listDeposits;
+            const items = data?.items || [];
+            deposits.push(...items);
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
+        } catch (error) {
           console.log(error);
-        });
-
-      //console.log(deposits);
-
-      //get accounts---
-      /*
-      var accounts;
-      await API.graphql({
-        query: listAccounts,
-      })
-        .then((result) => {
-          //console.log(result);
-          accounts = result.data.listAccounts.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-*/
-      //console.log("-----1", this.accounts);
-      //var accounts = this.accounts;
-
-      // create dic----
-      var dicAccountIdBalance = [];
-
-      for (const a in this.accounts) {
-        dicAccountIdBalance[this.accounts[a].id] = 0;
-      }
-
-      for (const kd in deposits) {
-        //console.log(deposits[kd]);
-        const d = deposits[kd];
-
-        //console.log("-------11", d.principal, d.value);
-        dicAccountIdBalance[d.principalAccountId] -= d.principal;
-
-        if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
-          //console.log("-----3", d.status);
-          dicAccountIdBalance[d.valueAccountId] += d.value;
-        }
-      }
-
-      //console.log("------12");
-      //console.log(dicAccountIdBalance);
-
-      //trust transaction----
-      var trusttransactions = {};
-      await API.graphql({
-        query: listTrustTransactions,
-      })
-        .then((result) => {
-          //console.log(result);
-          trusttransactions = result.data.listTrustTransactions.items;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      //console.log(trusttransactions);
-
-      for (const ktt in trusttransactions) {
-        const tt = trusttransactions[ktt];
-
-        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          dicAccountIdBalance[tt.accountId] -= tt.buy;
-          //console.log("------31", tt.buy);
-        } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
-          dicAccountIdBalance[tt.accountId] += tt.sell;
-          //console.log("------32", tt.sell);
-        } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
-          dicAccountIdBalance[tt.accountId] += tt.dividend;
-          //console.log("------33", tt);
         }
 
+        //console.log(deposits);
+
+        //get accounts---
         /*
-        if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
-          console.log("------3",tt.trustBalance.currency);
-          if(tt.trustBalance.currency != Enum.EnumCurrency.JPY.val){
-            dicAccountIdBalance[tt.trustBalance.currency] -= tt.buyForeign;
-          }
-
-        }
-        */
-      }
-
-      //console.log("-----4", dicAccountIdBalance);
-
-      //update account balances---
-      for (const ka in this.accounts) {
-        var a = this.accounts[ka];
-        a.balance = dicAccountIdBalance[a.id];
-        //console.log("-----41", a);
-
-        delete a.createdAt;
-        delete a.updatedAt;
-        delete a.owner;
-        delete a.activedeposit;
-
+        var accounts;
         await API.graphql({
-          query: updateAccount,
-          variables: { input: a },
+          query: listAccounts,
         })
           .then((result) => {
-            console.log(result);
-            //this.$router.push({ name: "AccountIndex" });
+            //console.log(result);
+            accounts = result.data.listAccounts.items;
           })
           .catch((error) => {
             console.log(error);
           });
+*/
+        //console.log("-----1", this.accounts);
+        //var accounts = this.accounts;
+
+        // create dic----
+        var dicAccountIdBalance = [];
+
+        for (const a in this.accounts) {
+          dicAccountIdBalance[this.accounts[a].id] = 0;
+        }
+
+        for (const kd in deposits) {
+          //console.log(deposits[kd]);
+          const d = deposits[kd];
+
+          //console.log("-------11", d.principal, d.value);
+          dicAccountIdBalance[d.principalAccountId] -= d.principal;
+
+          if (d.status == Enum.EnumDepositStatus.FINISHED.val) {
+            //console.log("-----3", d.status);
+            dicAccountIdBalance[d.valueAccountId] += d.value;
+          }
+        }
+
+        //console.log("------12");
+        //console.log(dicAccountIdBalance);
+
+        // trust transactions with pagination
+        var trusttransactions = [];
+        try {
+          let nextToken = null;
+          do {
+            const res = await API.graphql({ query: listTrustTransactions, variables: { limit: 100, nextToken } });
+            const data = res?.data?.listTrustTransactions;
+            const items = data?.items || [];
+            trusttransactions.push(...items);
+            nextToken = data?.nextToken || null;
+          } while (nextToken);
+        } catch (error) {
+          console.log(error);
+        }
+        //console.log(trusttransactions);
+
+        for (const ktt in trusttransactions) {
+          const tt = trusttransactions[ktt];
+
+          if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+            dicAccountIdBalance[tt.accountId] -= tt.buy;
+            //console.log("------31", tt.buy);
+          } else if (tt.tradeType == Enum.EnumTradeType.SELL.val) {
+            dicAccountIdBalance[tt.accountId] += tt.sell;
+            //console.log("------32", tt.sell);
+          } else if (tt.tradeType == Enum.EnumTradeType.DIVIDEND.val) {
+            dicAccountIdBalance[tt.accountId] += tt.dividend;
+            //console.log("------33", tt);
+          }
+
+          /*
+          if (tt.tradeType == Enum.EnumTradeType.BUY.val) {
+            console.log("------3",tt.trustBalance.currency);
+            if(tt.trustBalance.currency != Enum.EnumCurrency.JPY.val){
+              dicAccountIdBalance[tt.trustBalance.currency] -= tt.buyForeign;
+            }
+
+          }
+          */
+        }
+
+        //console.log("-----4", dicAccountIdBalance);
+
+        //update account balances---
+        const storeRates = (this.$store && this.$store.state && this.$store.state.exchangeRates) ? this.$store.state.exchangeRates : {};
+        for (const ka in this.accounts) {
+          const a = this.accounts[ka];
+          const newBalance = dicAccountIdBalance[a.id] ?? 0;
+
+          // Build strict input for update
+          const toNum = (v) => {
+            if (v === null || v === undefined || v === "") return null;
+            const n = typeof v === "number" ? v : parseFloat(v);
+            return Number.isFinite(n) ? n : 0;
+          };
+
+          const payload = { ...a };
+          // balance は口座通貨建て。為替はストアの値を反映（JPYは1固定）
+          payload.balance = toNum(newBalance);
+          const ccy = String(a.currency || '').toUpperCase();
+          const storeRate = ccy === 'JPY' ? 1 : Number(storeRates[ccy]);
+          const currentRate = Number(a.exchangeRate) || 0;
+          // 優先: ストアの為替（数値>0）。未設定なら既存口座のレートを維持。
+          const rateFromStore = Number.isFinite(storeRate) && storeRate > 0 ? storeRate : currentRate;
+          payload.exchangeRate = rateFromStore;
+
+          // Remove graphql/meta/computed fields if present
+          delete payload.createdAt;
+          delete payload.updatedAt;
+          delete payload.owner;
+          delete payload.__typename;
+          delete payload._lastChangedAt;
+          delete payload.activedeposit; // computed in UI
+
+          // Whitelist for UpdateAccountInput (adjust to your schema)
+          const allowed = [
+            'id',
+            'name',
+            'currency',
+            'memo',
+            'exchangeRate',
+            'balance',
+            '_version', // Amplify/AppSync conflict detection
+          ];
+          const input = {};
+          for (const k of allowed) {
+            if (payload[k] !== undefined) input[k] = payload[k];
+          }
+
+          console.log('[AccountIndex] updateAccount input:', input);
+
+          try {
+            const result = await API.graphql({
+              query: updateAccount,
+              variables: { input },
+            });
+            console.log('[AccountIndex] updateAccount ok:', result);
+          } catch (error) {
+            console.error('[AccountIndex] updateAccount failed:', error);
+            if (error && error.errors) {
+              for (const e of error.errors) {
+                console.error('[AccountIndex] graphql error:', e.message, e);
+              }
+            }
+          }
+        }
+      } finally {
+        // refresh accounts list after updates and reset flag
+        await this.getAccounts();
+        this.isUpdating = false;
       }
     },
   },
 };
 </script>
+<style scoped>
+.th-small { font-size: 0.85rem; color: #666; font-weight: 500; }
+.td-small { font-size: 0.9rem; color: #555; }
+.th-num { text-align: right; }
+.td-num { text-align: right; font-variant-numeric: tabular-nums; }
+.th-pnl { font-size: 0.95rem; font-weight: 700; }
+.td-pnl { font-size: 1.05rem; font-weight: 700; }
+.num-int { font-variant-numeric: tabular-nums; }
+.num-frac { font-size: 0.8em; font-variant-numeric: tabular-nums; }
+.num-dot { padding: 0 0.05em; opacity: 0.7; }
+</style>

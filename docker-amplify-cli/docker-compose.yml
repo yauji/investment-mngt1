@@ -1,0 +1,32 @@
+# ./docker-compose.yml
+version: "3.8"
+services:
+  amplify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: amplify-dev
+    working_dir: /workspace
+    # プロジェクトをマウント
+    volumes:
+      - ../:/workspace:cached
+      # ホストの AWS 資格情報を読み取り（SSO/プロファイル含む）
+      - ../.aws:/root/.aws:rw
+      # （任意）npm キャッシュを共有してビルドを高速化
+      - npm-cache:/root/.npm
+    environment:
+      # 使いたい AWS プロファイル名（必要に応じて変更）
+      - AWS_PROFILE=default
+      # タイムゾーン（任意）
+      - TZ=Asia/Tokyo
+      # Amplify のテレメトリや Node のローカル設定を抑制したい場合
+      - CI=true
+    # Amplify Mock を使う場合にポートを開ける（必要に応じてコメント解除）
+    # ports:
+    #   - "20002:20002"  # amplify mock api の GraphQL などで使われることがある
+    #   - "20005:20005"  # その他モックで使われることがある
+    tty: true
+    stdin_open: true
+
+volumes:
+  npm-cache:

@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">InvMng <BIconBank/></a>
+      <a class="navbar-brand" href="#">InvMng  <BIconBank/></a>
       <button
         class="navbar-toggler"
         type="button"
@@ -16,13 +16,17 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
+            <router-link  class="nav-link active" to="/accounts">Accounts</router-link>
+          </li>
+
+          <li class="nav-item">
             <!--
           <a class="nav-link active" aria-current="page" href="#">Home</a>
           -->
             <router-link class="nav-link active" to="/deposits">Deposits</router-link>
           </li>
           <li class="nav-item">
-            <router-link  class="nav-link active" to="/accounts">Accounts</router-link>
+            <router-link class="nav-link active" to="/trustbalances">Trust balances</router-link>
           </li>
           <li class="nav-item">
             <router-link class="nav-link active" to="/trusttransactions"
@@ -30,10 +34,29 @@
             >
           </li>
           <li class="nav-item">
-            <router-link class="nav-link active" to="/trustbalances">Trust balances</router-link>
+            <router-link class="nav-link active" to="/summary">Summary</router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link active" to="/summary">Summary</router-link>
+            <router-link class="nav-link active" to="/summary2">Summary2</router-link>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="inputdataDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              input data
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="inputdataDropdown">
+              <li>
+                <router-link class="dropdown-item" to="/inputdata2">inputdata2</router-link>
+              </li>
+              <li>
+                <router-link class="dropdown-item" to="/inputdatacsv">inputdatacsv</router-link>
+              </li>
+              <li>
+                <router-link class="dropdown-item" to="/inputdataMMF">inputdatammf</router-link>
+              </li>
+              <li>
+                <router-link class="dropdown-item" to="/inputdataCsvRakuten">inputdataCsvRakuten</router-link>
+              </li>
+            </ul>
           </li>
           <li class="nav-item">
             <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
