@@ -45,7 +45,7 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="inputdataDropdown">
               <li>
-                <router-link class="dropdown-item" to="/inputdata2">inputdata2</router-link>
+                <router-link class="dropdown-item" to="/inputdata2">inputdata2 - restore from db</router-link>
               </li>
               <li>
                 <router-link class="dropdown-item" to="/inputdatacsv">inputdatacsv</router-link>

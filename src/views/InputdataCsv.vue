@@ -498,19 +498,24 @@ export default {
       // パース（先頭行をヘッダとして使用）
       const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
       if (!lines.length) { alert('有効な行がありません'); return; }
-      const header = this.splitCsvLine(lines[0]).map(h => h.trim());
+      const header = this.splitCsvLine(lines[0]).map((h) => this.cleanCsvValue(h));
       const rows = [];
       for (let i = 1; i < lines.length; i++) {
         const cols = this.splitCsvLine(lines[i]);
         const r = {};
-        for (let j = 0; j < header.length; j++) r[header[j]] = cols[j] !== undefined ? cols[j] : '';
+        for (let j = 0; j < header.length; j++) {
+          const key = header[j];
+          if (!key) continue;
+          const value = cols[j] !== undefined ? this.cleanCsvValue(cols[j]) : '';
+          r[key] = value;
+        }
         rows.push(r);
       }
-      let ok = 0, skip = 0;
+      let ok = 0, skip = 0, skipDup = 0;
       for (let i = 0; i < rows.length; i++) {
         const r = rows[i];
         try {
-          const codeRaw = String(r['銘柄コード'] || '').trim();
+          const codeRaw = this.cleanCsvValue(r['銘柄コード']);
           if (!codeRaw) { skip++; continue; }
           // exact match (local)
           let trustBalanceId = null;
@@ -540,11 +545,11 @@ export default {
           if (!trustBalanceId) trustBalanceId = await this.findTrustBalanceIdByCode(codeRaw, null);
           if (!trustBalanceId) { console.warn('[Simple] trustBalance not found', codeRaw, r); skip++; continue; }
 
-          const date = this.toSafeISO(r['日付']);
+          const date = this.toSafeISO(this.cleanCsvValue(r['日付']));
           if (!date) { console.warn('[Simple] date missing', r); skip++; continue; }
 
           const amtRaw = r['受渡金額'] !== undefined ? r['受渡金額'] : r['受渡金額(円)'];
-          const dividend = this.toNumberOrNull(amtRaw);
+          const dividend = this.toNumberOrNull(this.cleanCsvValue(amtRaw));
           if (dividend === null) { console.warn('[Simple] dividend missing', r); skip++; continue; }
 
           const input = {
@@ -554,14 +559,25 @@ export default {
             tradeType: Enum.EnumTradeType.DIVIDEND.val,
             dividend,
           };
+          const dupSet = await this.ensureTxIndexForTB(trustBalanceId);
+          const dupKey = this.buildTxSignatureBase({
+            date,
+            tradeType: Enum.EnumTradeType.DIVIDEND.val,
+            dividend,
+          });
+          if (dupSet.has(dupKey)) {
+            skipDup++;
+            continue;
+          }
           await API.graphql({ query: createTrustTransaction, variables: { input } });
+          dupSet.add(dupKey);
           ok++;
         } catch (e) {
           console.error('[Simple] createTrustTransaction failed', e, r);
           skip++;
         }
       }
-      alert(`Simple DIVIDEND import finished. success=${ok}, skipped=${skip}`);
+      alert(`Simple DIVIDEND import finished. success=${ok}, duplicates=${skipDup}, skipped=${skip}`);
     },
     // 全ページの trustBalances を読み込む
     async getTrustBalancesAll() {
@@ -578,6 +594,19 @@ export default {
       return all;
     },
     // CSVの1行をクォート考慮で分割
+    cleanCsvValue(value) {
+      if (value === undefined || value === null) return '';
+      let s = String(value);
+      s = s.trim();
+      if (!s) return '';
+      let prev = null;
+      while (s.length >= 2 && s.startsWith('"') && s.endsWith('"') && s !== prev) {
+        prev = s;
+        s = s.slice(1, -1).trim();
+      }
+      if (s.includes('""')) s = s.replace(/""/g, '"');
+      return s;
+    },
     splitCsvLine(line) {
       const out = [];
       let cur = '';
@@ -612,7 +641,7 @@ export default {
         }
       }
       out.push(cur);
-      return out.map(s => s.replace(/^"(.*)"$/, '$1')); // 外側の引用符を除去
+      return out.map((s) => this.cleanCsvValue(s));
     },
     // CSV全文を配列オブジェクトに変換
     // (removed) parseAccountsCsv, parseDepositsCsv — not used by current UI

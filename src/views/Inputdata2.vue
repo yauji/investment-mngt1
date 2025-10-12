@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Inputdata2</h1>
+    <h1>Inputdata2 - DBからの復旧用</h1>
 
 
     <hr />
