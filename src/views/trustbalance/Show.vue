@@ -26,37 +26,49 @@
             <th>basicPrice</th>
             <th>noItem</th>
             <th>buy</th>
-            <th>sell</th>
-            <th>dividend</th>
-            <th>account</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(t, idx) in transactions" :key="t.id">
-            <td>{{ moment(t.date) }}</td>
-            <td>{{ t.tradeType }}</td>
-            <td>{{ t.basicPrice }}</td>
-            <td>{{ numberFormat(t.noItem) }}</td>
-            <td>{{ numberFormat(t.buy) }}</td>
-            <td>{{ numberFormat(t.sell) }}</td>
-            <td>{{ numberFormat(t.dividend) }}</td>
-            <td>{{ t.account?.name || t.accountId }}</td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-outline-danger" @click="deleteTransaction(idx, t)">
-                Delete
+          <th>sell</th>
+          <th>dividend</th>
+          <th>account</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(t, idx) in transactions" :key="t.id">
+          <td>{{ moment(t.date) }}</td>
+          <td>{{ t.tradeType }}</td>
+          <td>{{ t.basicPrice }}</td>
+          <td>{{ numberFormat(t.noItem) }}</td>
+          <td>{{ numberFormat(t.buy) }}</td>
+          <td>{{ numberFormat(t.sell) }}</td>
+          <td>{{ numberFormat(t.dividend) }}</td>
+          <td>{{ accountLabel(t) }}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-danger" @click="deleteTransaction(idx, t)">
+              Delete
+            </button>
+          </td>
+          <td class="text-end">
+            <router-link
+              custom
+              v-slot="{ navigate }"
+              :to="{ name: 'TrustTransactionEdit', params: { trustTransactionId: t.id } }"
+            >
+              <button class="btn btn-sm btn-outline-primary" @click="navigate">
+                Edit
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </router-link>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     </div>
   </div>
   </template>
 
 <script>
 import { API } from "aws-amplify";
-import { getTrustBalance, listTrustTransactions } from "../../graphql/queries";
+import { getTrustBalance, listTrustTransactions, listAccounts } from "../../graphql/queries";
 import { deleteTrustTransaction } from "../../graphql/mutations";
 import moment from "moment";
 
@@ -66,7 +78,7 @@ export default {
     TrustBalanceId: String,
   },
   async created() {
-    await this.fetchTrustBalance();
+    await Promise.all([this.fetchAccounts(), this.fetchTrustBalance()]);
     await this.fetchTransactions();
   },
   data() {
@@ -75,6 +87,7 @@ export default {
       transactions: [],
       loadingTB: false,
       loadingTX: false,
+      accountsMap: {},
     };
   },
   methods: {
@@ -86,6 +99,33 @@ export default {
       if (value == null || value === "") return "-";
       const n = Number(value);
       return Number.isNaN(n) ? value : n.toLocaleString();
+    },
+    accountLabel(transaction) {
+      if (!transaction) return "-";
+      if (transaction.account && transaction.account.name) {
+        const currency = transaction.account.currency ? `${transaction.account.currency} - ` : "";
+        return `${currency}${transaction.account.name}`;
+      }
+      const a = this.accountsMap[transaction.accountId];
+      if (a && a.name) {
+        const currency = a.currency ? `${a.currency} - ` : "";
+        return `${currency}${a.name}`;
+      }
+      return transaction.accountId || "-";
+    },
+    async fetchAccounts() {
+      try {
+        const res = await API.graphql({ query: listAccounts });
+        const items = res?.data?.listAccounts?.items || [];
+        const map = {};
+        for (const acc of items) {
+          if (!acc?.id) continue;
+          map[acc.id] = acc;
+        }
+        this.accountsMap = map;
+      } catch (e) {
+        console.log(e);
+      }
     },
     async fetchTrustBalance() {
       try {
