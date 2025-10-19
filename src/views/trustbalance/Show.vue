@@ -29,10 +29,11 @@
             <th>sell</th>
             <th>dividend</th>
             <th>account</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="t in transactions" :key="t.id">
+          <tr v-for="(t, idx) in transactions" :key="t.id">
             <td>{{ moment(t.date) }}</td>
             <td>{{ t.tradeType }}</td>
             <td>{{ t.basicPrice }}</td>
@@ -41,6 +42,11 @@
             <td>{{ numberFormat(t.sell) }}</td>
             <td>{{ numberFormat(t.dividend) }}</td>
             <td>{{ t.account?.name || t.accountId }}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-danger" @click="deleteTransaction(idx, t)">
+                Delete
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -51,6 +57,7 @@
 <script>
 import { API } from "aws-amplify";
 import { getTrustBalance, listTrustTransactions } from "../../graphql/queries";
+import { deleteTrustTransaction } from "../../graphql/mutations";
 import moment from "moment";
 
 export default {
@@ -119,6 +126,20 @@ export default {
         console.log(e);
       } finally {
         this.loadingTX = false;
+      }
+    },
+    async deleteTransaction(index, transaction) {
+      if (!transaction?.id) return;
+      if (!confirm("Delete this transaction?")) return;
+      try {
+        await API.graphql({
+          query: deleteTrustTransaction,
+          variables: { input: { id: transaction.id } },
+        });
+        this.transactions.splice(index, 1);
+      } catch (e) {
+        console.log(e);
+        alert("削除に失敗しました。コンソールを確認してください。");
       }
     },
   },
