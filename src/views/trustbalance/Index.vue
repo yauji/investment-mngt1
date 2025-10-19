@@ -6,18 +6,42 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th class="th-small">currency</th>
-          <th class="th-small">name</th>
-          <th class="th-small">memo</th>
-          <th class="th-small">type</th>
-          <th class="th-small">code</th>
-          <th class="th-small th-num">noItem</th>
-          <th class="th-small th-num">basic price</th>
-          <th class="th-small th-num">平均取得価格</th>
-          <th class="th-small th-num">dividend total</th>
-          <th class="th-pnl th-num">PnL</th>
-          <th class="th-small th-num">balance</th>
-          <th class="th-small th-num">balance JPY</th>
+          <th class="th-small th-sort" @click="setSort('currency')">
+            currency<span class="sort-indicator">{{ sortIndicator('currency') }}</span>
+          </th>
+          <th class="th-small th-sort" @click="setSort('name')">
+            name<span class="sort-indicator">{{ sortIndicator('name') }}</span>
+          </th>
+          <th class="th-small th-sort" @click="setSort('memo')">
+            memo<span class="sort-indicator">{{ sortIndicator('memo') }}</span>
+          </th>
+          <th class="th-small th-sort" @click="setSort('type')">
+            type<span class="sort-indicator">{{ sortIndicator('type') }}</span>
+          </th>
+          <th class="th-small th-sort" @click="setSort('code')">
+            code<span class="sort-indicator">{{ sortIndicator('code') }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="setSort('noItem')">
+            noItem<span class="sort-indicator">{{ sortIndicator('noItem') }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="setSort('basicPrice')">
+            basic price<span class="sort-indicator">{{ sortIndicator('basicPrice') }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="setSort('averagePurchasePrice')">
+            平均取得価格<span class="sort-indicator">{{ sortIndicator('averagePurchasePrice') }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="setSort('dividendTotal')">
+            dividend total<span class="sort-indicator">{{ sortIndicator('dividendTotal') }}</span>
+          </th>
+          <th class="th-pnl th-num th-sort" @click="setSort('pnl')">
+            PnL<span class="sort-indicator">{{ sortIndicator('pnl') }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="setSort('balance')">
+            balance<span class="sort-indicator">{{ sortIndicator('balance') }}</span>
+          </th>
+          <th class="th-small th-num th-sort" @click="setSort('balanceJpy')">
+            balance JPY<span class="sort-indicator">{{ sortIndicator('balanceJpy') }}</span>
+          </th>
 
           <th></th>
           <th></th>
@@ -26,7 +50,7 @@
       </thead>
       <tbody>
         <tr
-          v-for="(trustbalance, index) in trustbalances"
+          v-for="trustbalance in displayTrustBalances"
           :key="trustbalance.id"
         >
           <td class="td-small">{{ trustbalance.currency }}</td>
@@ -77,7 +101,7 @@
             </router-link>
           </td>
           <td>
-            <button class="btn btn-outline-danger btn-sm" @click="deleteTrustBalance(index, trustbalance.id)" title="Delete" aria-label="Delete">✕</button>
+            <button class="btn btn-outline-danger btn-sm" @click="deleteTrustBalance(trustbalance.id)" title="Delete" aria-label="Delete">✕</button>
           </td>
         </tr>
       </tbody>
@@ -133,10 +157,40 @@ export default {
       statusUpdate: "",
       dividendTotals: {},
       loadingDividendTotals: false,
+      sortKey: null,
+      sortAsc: true,
     };
   },
   computed: {
     ...mapState(['exchangeRates']),
+    displayTrustBalances() {
+      const list = Array.isArray(this.trustbalances) ? [...this.trustbalances] : [];
+      if (!this.sortKey) return list;
+      const dir = this.sortAsc ? 1 : -1;
+      return list.sort((a, b) => {
+        const va = this.getSortValue(a, this.sortKey);
+        const vb = this.getSortValue(b, this.sortKey);
+        const aEmpty = va === null || va === undefined || va === '';
+        const bEmpty = vb === null || vb === undefined || vb === '';
+        if (aEmpty && bEmpty) return 0;
+        if (aEmpty) return 1;
+        if (bEmpty) return -1;
+        const aNum = typeof va === 'number' && Number.isFinite(va);
+        const bNum = typeof vb === 'number' && Number.isFinite(vb);
+        let cmp = 0;
+        if (aNum && bNum) {
+          cmp = va - vb;
+        } else {
+          cmp = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
+        }
+        if (cmp === 0) {
+          const ai = this.trustbalances.indexOf(a);
+          const bi = this.trustbalances.indexOf(b);
+          cmp = ai - bi;
+        }
+        return cmp * dir;
+      });
+    },
   },
   methods: {
     rateFor(ccy) {
@@ -204,7 +258,9 @@ export default {
       }
       return all;
     },
-    async deleteTrustBalance(index, trustbalanceId) {
+    async deleteTrustBalance(trustbalanceId) {
+      const index = this.trustbalances.findIndex(tb => tb.id === trustbalanceId);
+      if (index === -1) return;
       if (!confirm("Delete TrustBalance?")) return;
 
       await API.graphql({
@@ -278,6 +334,48 @@ export default {
         nextToken = data?.nextToken || null;
       } while (nextToken);
       return total;
+    },
+    getSortValue(tb, key) {
+      switch (key) {
+        case 'currency':
+        case 'name':
+        case 'memo':
+        case 'type':
+        case 'code':
+          return tb && tb[key] ? String(tb[key]) : '';
+        case 'noItem':
+          return Number(tb?.noItem) || 0;
+        case 'basicPrice':
+          return Number(tb?.basicPrice) || 0;
+        case 'averagePurchasePrice':
+          return Number(tb?.averagePurchasePrice) || 0;
+        case 'dividendTotal':
+          return Number(this.dividendTotals[tb?.id]) || 0;
+        case 'pnl':
+          return Number(this.plFor(tb)) || 0;
+        case 'balance':
+          return Number(tb?.balance) || 0;
+        case 'balanceJpy':
+          return (Number(tb?.balance) || 0) * this.rateFor(tb?.currency);
+        default: {
+          const value = tb ? tb[key] : null;
+          const num = Number(value);
+          if (Number.isFinite(num)) return num;
+          return value;
+        }
+      }
+    },
+    setSort(key) {
+      if (this.sortKey === key) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortKey = key;
+        this.sortAsc = true;
+      }
+    },
+    sortIndicator(key) {
+      if (this.sortKey !== key) return '';
+      return this.sortAsc ? '▲' : '▼';
     },
     async updateBalances() {
       this.statusUpdate = "updating...";
@@ -438,6 +536,8 @@ export default {
 /* Smaller default cells/headers */
 .th-small { font-size: 0.85rem; color: #666; font-weight: 500; }
 .td-small { font-size: 0.9rem; color: #555; }
+.th-sort { cursor: pointer; user-select: none; }
+.sort-indicator { margin-left: 4px; font-size: 0.75em; opacity: 0.7; }
 
 /* Highlight PnL */
 .th-pnl { font-size: 0.95rem; font-weight: 700; }
