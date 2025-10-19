@@ -14,6 +14,7 @@
           <th class="th-small th-num">noItem</th>
           <th class="th-small th-num">basic price</th>
           <th class="th-small th-num">平均取得価格</th>
+          <th class="th-small th-num">dividend total</th>
           <th class="th-pnl th-num">PnL</th>
           <th class="th-small th-num">balance</th>
           <th class="th-small th-num">balance JPY</th>
@@ -47,6 +48,9 @@
           </td>
           <td class="td-small td-num">
             <span class="num-int">{{ formatParts(trustbalance.averagePurchasePrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.averagePurchasePrice, 2).frac }}</span>
+          </td>
+          <td class="td-small td-num">
+            <span class="num-int">{{ formatParts(dividendTotals[trustbalance.id], 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(dividendTotals[trustbalance.id], 2).frac }}</span>
           </td>
           <td :class="pnlClass(plFor(trustbalance)) + ' td-num'">
             <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
@@ -127,6 +131,8 @@ export default {
     return {
       trustbalances: [],
       statusUpdate: "",
+      dividendTotals: {},
+      loadingDividendTotals: false,
     };
   },
   computed: {
@@ -192,6 +198,7 @@ export default {
           nextToken = data?.nextToken || null;
         } while (nextToken);
         this.trustbalances = all;
+        await this.loadDividendTotals(all);
       } catch (e) {
         console.log(e);
       }
@@ -207,6 +214,7 @@ export default {
         .then((result) => {
           console.log(result);
           this.trustbalances.splice(index, 1);
+          this.$delete(this.dividendTotals, trustbalanceId);
         })
         .catch((error) => {
           console.log(error);
@@ -227,6 +235,49 @@ export default {
         nextToken = data?.nextToken || null;
       } while (nextToken);
       return all;
+    },
+    async loadDividendTotals(balances) {
+      this.loadingDividendTotals = true;
+      const totals = {};
+      try {
+        for (const tb of balances) {
+          if (!tb?.id) continue;
+          try {
+            const total = await this.fetchDividendTotalForTrustBalance(tb.id);
+            totals[tb.id] = total;
+          } catch (err) {
+            console.log(`[dividendTotal] failed for ${tb.id}`, err);
+            totals[tb.id] = 0;
+          }
+        }
+        this.dividendTotals = totals;
+      } finally {
+        this.loadingDividendTotals = false;
+      }
+    },
+    async fetchDividendTotalForTrustBalance(trustBalanceId) {
+      let nextToken = null;
+      let total = 0;
+      const filter = {
+        and: [
+          { trustBalanceId: { eq: trustBalanceId } },
+          { tradeType: { eq: Enum.EnumTradeType.DIVIDEND.val } },
+        ],
+      };
+      do {
+        const res = await API.graphql({
+          query: listTrustTransactions,
+          variables: { filter, limit: 100, nextToken },
+        });
+        const data = res?.data?.listTrustTransactions;
+        const items = (data?.items || []).filter(Boolean);
+        for (const item of items) {
+          const value = Number(item.dividend);
+          if (Number.isFinite(value)) total += value;
+        }
+        nextToken = data?.nextToken || null;
+      } while (nextToken);
+      return total;
     },
     async updateBalances() {
       this.statusUpdate = "updating...";
