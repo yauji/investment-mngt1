@@ -2,110 +2,111 @@
   <div>
     <h1>Trust Balances</h1>
 
+    <div class="table-scroll">
+      <table class="table table-striped table-sticky">
+        <thead>
+          <tr>
+            <th class="th-small th-sort" @click="setSort('currency')">
+              currency<span class="sort-indicator">{{ sortIndicator('currency') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('name')">
+              name<span class="sort-indicator">{{ sortIndicator('name') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('memo')">
+              memo<span class="sort-indicator">{{ sortIndicator('memo') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('type')">
+              type<span class="sort-indicator">{{ sortIndicator('type') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('code')">
+              code<span class="sort-indicator">{{ sortIndicator('code') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('noItem')">
+              noItem<span class="sort-indicator">{{ sortIndicator('noItem') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('basicPrice')">
+              basic price<span class="sort-indicator">{{ sortIndicator('basicPrice') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('averagePurchasePrice')">
+              平均取得価格<span class="sort-indicator">{{ sortIndicator('averagePurchasePrice') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('dividendTotal')">
+              dividend total<span class="sort-indicator">{{ sortIndicator('dividendTotal') }}</span>
+            </th>
+            <th class="th-pnl th-num th-sort" @click="setSort('pnl')">
+              PnL<span class="sort-indicator">{{ sortIndicator('pnl') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('balance')">
+              balance<span class="sort-indicator">{{ sortIndicator('balance') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('balanceJpy')">
+              balance JPY<span class="sort-indicator">{{ sortIndicator('balanceJpy') }}</span>
+            </th>
 
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th class="th-small th-sort" @click="setSort('currency')">
-            currency<span class="sort-indicator">{{ sortIndicator('currency') }}</span>
-          </th>
-          <th class="th-small th-sort" @click="setSort('name')">
-            name<span class="sort-indicator">{{ sortIndicator('name') }}</span>
-          </th>
-          <th class="th-small th-sort" @click="setSort('memo')">
-            memo<span class="sort-indicator">{{ sortIndicator('memo') }}</span>
-          </th>
-          <th class="th-small th-sort" @click="setSort('type')">
-            type<span class="sort-indicator">{{ sortIndicator('type') }}</span>
-          </th>
-          <th class="th-small th-sort" @click="setSort('code')">
-            code<span class="sort-indicator">{{ sortIndicator('code') }}</span>
-          </th>
-          <th class="th-small th-num th-sort" @click="setSort('noItem')">
-            noItem<span class="sort-indicator">{{ sortIndicator('noItem') }}</span>
-          </th>
-          <th class="th-small th-num th-sort" @click="setSort('basicPrice')">
-            basic price<span class="sort-indicator">{{ sortIndicator('basicPrice') }}</span>
-          </th>
-          <th class="th-small th-num th-sort" @click="setSort('averagePurchasePrice')">
-            平均取得価格<span class="sort-indicator">{{ sortIndicator('averagePurchasePrice') }}</span>
-          </th>
-          <th class="th-small th-num th-sort" @click="setSort('dividendTotal')">
-            dividend total<span class="sort-indicator">{{ sortIndicator('dividendTotal') }}</span>
-          </th>
-          <th class="th-pnl th-num th-sort" @click="setSort('pnl')">
-            PnL<span class="sort-indicator">{{ sortIndicator('pnl') }}</span>
-          </th>
-          <th class="th-small th-num th-sort" @click="setSort('balance')">
-            balance<span class="sort-indicator">{{ sortIndicator('balance') }}</span>
-          </th>
-          <th class="th-small th-num th-sort" @click="setSort('balanceJpy')">
-            balance JPY<span class="sort-indicator">{{ sortIndicator('balanceJpy') }}</span>
-          </th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="trustbalance in displayTrustBalances"
+            :key="trustbalance.id"
+          >
+            <td class="td-small">{{ trustbalance.currency }}</td>
+            <td class="td-small">
+              <router-link
+                :to="{ name: 'TrustBalanceShow', params: { TrustBalanceId: trustbalance.id } }"
+              >
+                {{ trustbalance.name }}
+              </router-link>
+            </td>
+            <td class="td-small">{{ trustbalance.memo }}</td>
+            <td class="td-small">{{ trustbalance.type }}</td>
+            <td class="td-small">{{ trustbalance.code }}</td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.noItem, 4).int }}</span><span v-if="4 > 0" class="num-dot">.</span><span v-if="4 > 0" class="num-frac">{{ formatParts(trustbalance.noItem, 4).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.basicPrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.basicPrice, 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.averagePurchasePrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.averagePurchasePrice, 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(dividendTotals[trustbalance.id], 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(dividendTotals[trustbalance.id], 2).frac }}</span>
+            </td>
+            <td :class="pnlClass(plFor(trustbalance)) + ' td-num'">
+              <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.balance, 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).frac }}</span>
+            </td>
 
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="trustbalance in displayTrustBalances"
-          :key="trustbalance.id"
-        >
-          <td class="td-small">{{ trustbalance.currency }}</td>
-          <td class="td-small">
-            <router-link
-              :to="{ name: 'TrustBalanceShow', params: { TrustBalanceId: trustbalance.id } }"
-            >
-              {{ trustbalance.name }}
-            </router-link>
-          </td>
-          <td class="td-small">{{ trustbalance.memo }}</td>
-          <td class="td-small">{{ trustbalance.type }}</td>
-          <td class="td-small">{{ trustbalance.code }}</td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.noItem, 4).int }}</span><span v-if="4 > 0" class="num-dot">.</span><span v-if="4 > 0" class="num-frac">{{ formatParts(trustbalance.noItem, 4).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.basicPrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.basicPrice, 2).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.averagePurchasePrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.averagePurchasePrice, 2).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(dividendTotals[trustbalance.id], 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(dividendTotals[trustbalance.id], 2).frac }}</span>
-          </td>
-          <td :class="pnlClass(plFor(trustbalance)) + ' td-num'">
-            <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.balance, 2).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).frac }}</span>
-          </td>
-
-          <td>
-            <router-link
-              custom
-              v-slot="{ navigate }"
-              :to="{
-                name: 'TrustBalanceEdit',
-                params: { TrustBalanceId: trustbalance.id },
-              }"
-            >
-              <button class="btn btn-outline-primary btn-sm" @click="navigate" title="Edit" aria-label="Edit">
-                ✎
-              </button>
-            </router-link>
-          </td>
-          <td>
-            <button class="btn btn-outline-danger btn-sm" @click="deleteTrustBalance(trustbalance.id)" title="Delete" aria-label="Delete">✕</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td>
+              <router-link
+                custom
+                v-slot="{ navigate }"
+                :to="{
+                  name: 'TrustBalanceEdit',
+                  params: { TrustBalanceId: trustbalance.id },
+                }"
+              >
+                <button class="btn btn-outline-primary btn-sm" @click="navigate" title="Edit" aria-label="Edit">
+                  ✎
+                </button>
+              </router-link>
+            </td>
+            <td>
+              <button class="btn btn-outline-danger btn-sm" @click="deleteTrustBalance(trustbalance.id)" title="Delete" aria-label="Delete">✕</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <button class="btn btn-primary" @click="updateBalances()">
       Update balance
@@ -555,4 +556,22 @@ export default {
 .num-int { font-variant-numeric: tabular-nums; }
 .num-frac { font-size: 0.8em; font-variant-numeric: tabular-nums; }
 .num-dot { padding: 0 0.05em; opacity: 0.7; }
+
+.table-scroll {
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background: #fff;
+}
+.table-scroll table {
+  margin-bottom: 0;
+}
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fafafa;
+  box-shadow: inset 0 -1px 0 #dee2e6;
+}
 </style>
