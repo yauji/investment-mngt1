@@ -1,38 +1,14 @@
 <template>
   <div>
-    <h1>Inputdata - MMF CSV</h1>
 
+    <h2>SBI証券 MMF CSV</h2>
     <ul>
-      <li>以下のヘッダーを含むCSVテキストを貼り付けてください。</li>
-      <li>取引のマッピング: 再投資/自動買付 → BUY、売却 → SELL</li>
-      <li>口座種別は「預り区分」（NISA/特定）を参照します。</li>
-      <li>日付は 「約定日」→「国内受渡日」の順で使用（2025年08月28日、25/08/29 形式も可）。</li>
-    </ul>
-
-    <form @submit.prevent="submit">
-      <div class="mb-3">
-        <label class="form-label">利用アカウント</label>
-        <select class="form-select" v-model="form.accountId" required>
-          <option v-for="a in accounts" :key="a.id" :value="a.id">
-            {{ a.currency }} - {{ a.name }}
-          </option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">CSVテキスト</label>
-        <textarea class="form-control" rows="8" v-model="form.text" />
-      </div>
-      <input type="submit" value="Import Monex Alt CSV" />
-    </form>
-
-    <hr />
-
-    <h2>楽天証券 MMF CSV</h2>
-    <ul>
-      <li>対象CSVの3行目以降を貼り付けてください（ヘッダー含めOK）。</li>
+      <li>ヘッダから貼り付け</li>
       <li>銘柄列に含まれる X から始まるコードで TrustBalance を特定します。</li>
       <li>取引のマッピング: 自動買付/買付 → BUY、売却 → SELL、再投資 → DIVIDEND + BUY</li>
-    </ul>
+      <li>[その他の商品]->[外貨建MMF]->[取引紹介] ->[取引・償還・利払履歴] ->絞り込み条件の期間を変更。CSVをダウンロード。</li>
+
+      </ul>
     <form @submit.prevent="submitRakuten">
       <div class="mb-3">
         <label class="form-label">利用アカウント</label>
@@ -59,6 +35,49 @@
         </li>
       </ul>
     </div>
+
+    <div>
+      サンプル
+      <pre>
+通貨指定,商品指定,期間（国内約定日）開始,期間（国内約定日）終了,明細数
+"すべての通貨","すべての商品","2020年09月19日","2025年10月20日","57"
+国内約定日,通貨,銘柄名,取引,預り区分,約定数量,約定単価,国内受渡日,受渡金額
+"2025年10月16日","米国ドル","ブラックロック・スーパー・マネー・マーケット・ファンド（米ドル） X0934000","自動買付","特定","645.46","1","25/10/17","645.46"
+"2025年09月30日","米国ドル","ブラックロック・スーパー・マネー・マーケット・ファンド（米ドル） X0934000","自動買付","特定","795.45","1","25/10/01","795.45"
+
+      </pre>
+    </div>
+
+    <hr/>
+
+    <h1>(おそらく使わない)Inputdata - MMF CSV</h1>
+
+    <ul>
+      <li>以下のヘッダーを含むCSVテキストを貼り付けてください。</li>
+      <li>取引のマッピング: 再投資/自動買付 → BUY、売却 → SELL</li>
+      <li>口座種別は「預り区分」（NISA/特定）を参照します。</li>
+      <li>日付は 「約定日」→「国内受渡日」の順で使用（2025年08月28日、25/08/29 形式も可）。</li>
+    </ul>
+
+    <form @submit.prevent="submit">
+      <div class="mb-3">
+        <label class="form-label">利用アカウント</label>
+        <select class="form-select" v-model="form.accountId" required>
+          <option v-for="a in accounts" :key="a.id" :value="a.id">
+            {{ a.currency }} - {{ a.name }}
+          </option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">CSVテキスト</label>
+        <textarea class="form-control" rows="8" v-model="form.text" />
+      </div>
+      <input type="submit" value="Import Monex Alt CSV" />
+    </form>
+
+    <hr />
+
+   
   </div>
 </template>
 
