@@ -38,7 +38,7 @@
 
 <script>
 import { API } from 'aws-amplify';
-import { listAccounts, listTrustBalances } from "../graphql/queries";
+import { listAccounts, listTrustBalances, listTrustTransactions } from "../graphql/queries";
 import { createTrustTransaction, createTrustBalance } from "../graphql/mutations";
 import * as Enum from "@/Enum";
 
@@ -54,6 +54,7 @@ export default {
       accounts: [],
       trustbalances: [],
       tbIndexByName: new Map(),
+      txDupIndexByTbAccount: new Map(),
       skipped: [],
     };
   },
@@ -129,6 +130,70 @@ export default {
     },
     normalizeName(s) {
       return String(s || '').trim();
+    },
+    txDateKey(date) {
+      if (!date) return '';
+      try {
+        const d = new Date(date);
+        if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      } catch (_) { /* noop */ }
+      const s = String(date || '').trim();
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+      return s;
+    },
+    buildDupKey(tradeType, date, amount) {
+      const type = String(tradeType || '').toUpperCase();
+      if (!type) return null;
+      const dKey = this.txDateKey(date);
+      if (!dKey) return null;
+      const amt = amount !== undefined && amount !== null ? Number(amount) : 0;
+      if (!Number.isFinite(amt)) return null;
+      return `${dKey}|${type}|${amt.toFixed(6)}`;
+    },
+    amountFromExistingTx(tx) {
+      if (!tx) return null;
+      const type = String(tx.tradeType || '').toUpperCase();
+      const buy = this.toNumberOrNull(tx.buy);
+      const sell = this.toNumberOrNull(tx.sell);
+      const dividend = this.toNumberOrNull(tx.dividend);
+      if (type === Enum.EnumTradeType.BUY.val) {
+        if (buy !== null) return buy;
+      }
+      if (type === Enum.EnumTradeType.SELL.val) {
+        if (sell !== null) return sell;
+      }
+      if (type === Enum.EnumTradeType.DIVIDEND.val) {
+        if (dividend !== null) return dividend;
+      }
+      if (buy !== null) return buy;
+      if (sell !== null) return sell;
+      if (dividend !== null) return dividend;
+      return 0;
+    },
+    async ensureTxDupIndex(trustBalanceId, accountId) {
+      if (!trustBalanceId || !accountId) return new Set();
+      const cacheKey = `${trustBalanceId}|${accountId}`;
+      if (this.txDupIndexByTbAccount.has(cacheKey)) return this.txDupIndexByTbAccount.get(cacheKey);
+      const set = new Set();
+      let nextToken = null;
+      do {
+        const filter = { and: [{ trustBalanceId: { eq: trustBalanceId } }, { accountId: { eq: accountId } }] };
+        const res = await API.graphql({
+          query: listTrustTransactions,
+          variables: { filter, limit: 100, nextToken },
+        });
+        const data = res?.data?.listTrustTransactions;
+        const items = data?.items || [];
+        for (const tx of items) {
+          const amount = this.amountFromExistingTx(tx);
+          const key = this.buildDupKey(tx.tradeType, tx.date, amount);
+          if (key) set.add(key);
+        }
+        nextToken = data?.nextToken || null;
+      } while (nextToken);
+      this.txDupIndexByTbAccount.set(cacheKey, set);
+      return set;
     },
     rebuildTbIndex() {
       const map = new Map();
@@ -241,6 +306,14 @@ export default {
           if (!trustBalanceId) { this.skipped.push({ reason: '該当するTrustBalanceが見つからない', row: r }); skip++; continue; }
           const date = this.pickDateISO(r['約定日'], r['受渡日']);
           if (!date) { this.skipped.push({ reason: '日付が不正または欠損', row: r }); skip++; continue; }
+          const dupIndex = await this.ensureTxDupIndex(trustBalanceId, this.form.accountId);
+          const amountForDup = amount !== null ? amount : 0;
+          const dupKey = this.buildDupKey(tradeType, date, amountForDup);
+          if (dupKey && dupIndex.has(dupKey)) {
+            this.skipped.push({ reason: '重複エントリ', row: r });
+            skip++;
+            continue;
+          }
 
           // 口数は 1/10000 にスケール
           const qtyRaw = this.toNumberOrNull(r['数量［口］']);
@@ -259,6 +332,7 @@ export default {
           if (tradeType === Enum.EnumTradeType.SELL.val && amount !== null) input.sell = amount;
 
           await API.graphql({ query: createTrustTransaction, variables: { input } });
+          if (dupKey) dupIndex.add(dupKey);
           ok++;
         } catch (e) {
           console.error('[Rakuten] createTrustTransaction failed', e, r);
