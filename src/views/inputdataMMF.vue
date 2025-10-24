@@ -22,7 +22,7 @@
         <label class="form-label">CSVテキスト</label>
         <textarea class="form-control" rows="8" v-model="formRakuten.text" />
       </div>
-      <input type="submit" value="Import Rakuten MMF CSV" />
+      <input type="submit" value="Import MMF CSV" />
     </form>
 
     <div v-if="skipped.length" class="mt-2">
