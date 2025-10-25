@@ -29,6 +29,8 @@
     <ul>
       <li>「受取金額[円/現地通貨]」を配当金額として登録します。</li>
       <li>銘柄列で TrustBalance を特定し、取引種別は DIVIDEND 固定です。</li>
+      <li>[マイメニュー]->[配当・分配金] ->期間すべてで検索 ->[CSVで保存]</li>
+      <li>税引き後、受取金額を登録。そのため、楽天証券の画面上の値よりも小さくなる。</li>
     </ul>
     <form @submit.prevent="submitDividend">
       <div class="mb-3">

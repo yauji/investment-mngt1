@@ -5,6 +5,16 @@
     <form @submit.prevent="submitUpdate">
       <div class="mb-3">
         <div class="mb-3">
+          <label for="" class="form-label">name</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.name"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
           <label for="" class="form-label">currency</label>
           <select
             class="form-select"
@@ -76,6 +86,7 @@ export default {
     return {
       form: {
         id: this.accountId,
+        name: '',
         currency: "JPY",
         exchangeRate: 0,
         memo: "",
@@ -96,6 +107,7 @@ export default {
           // keep only editable fields to avoid GraphQL input validation errors
           this.form = {
             id: a.id,
+            name: a.name ?? '',
             currency: a.currency,
             exchangeRate: a.exchangeRate ?? 0,
             memo: a.memo ?? "",
@@ -110,6 +122,7 @@ export default {
         // sanitize input: keep only allowed properties
         const input = {
           id: this.form.id,
+          name: this.form.name ?? '',
           currency: this.form.currency,
           exchangeRate: Number(this.form.exchangeRate || 0),
           memo: this.form.memo ?? "",
