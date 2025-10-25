@@ -23,6 +23,29 @@
       <input type="submit" value="Import Rakuten CSV" />
     </form>
 
+    <hr />
+
+    <h2>楽天証券 分配金 CSV</h2>
+    <ul>
+      <li>「受取金額[円/現地通貨]」を配当金額として登録します。</li>
+      <li>銘柄列で TrustBalance を特定し、取引種別は DIVIDEND 固定です。</li>
+    </ul>
+    <form @submit.prevent="submitDividend">
+      <div class="mb-3">
+        <label class="form-label">利用アカウント</label>
+        <select class="form-select" v-model="formDividend.accountId" required>
+          <option v-for="a in accounts" :key="a.id" :value="a.id">
+            {{ a.currency }} - {{ a.name }}
+          </option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">CSVテキスト</label>
+        <textarea class="form-control" rows="8" v-model="formDividend.text" />
+      </div>
+      <input type="submit" value="Import Dividend CSV" />
+    </form>
+
     <div v-if="skipped.length" class="mt-2">
       <div><b>スキップ:</b> {{ skipped.length }} 件</div>
       <ul>
@@ -51,6 +74,7 @@ export default {
   data() {
     return {
       form: { text: '', accountId: '' },
+      formDividend: { text: '', accountId: '' },
       accounts: [],
       trustbalances: [],
       tbIndexByName: new Map(),
@@ -63,8 +87,8 @@ export default {
       if (!row || typeof row !== 'object') return '';
       const d = row['約定日'] || row['受渡日'] || '';
       const t = row['取引'] || '';
-      const name = row['ファンド名'] || '';
-      const amt = row['受渡金額/(ポイント利用)[円]'] || '';
+      const name = row['ファンド名'] || row['銘柄'] || '';
+      const amt = row['受渡金額/(ポイント利用)[円]'] || row['受取金額[円/現地通貨]'] || '';
       return `${d} ${t} ${name} ${amt}`.trim();
     },
     parseCsvWithHeader(text) {
@@ -341,6 +365,55 @@ export default {
         }
       }
       alert(`Rakuten import finished. success=${ok}, skipped=${skip}`);
+    },
+    async submitDividend() {
+      this.skipped = [];
+      const text = this.formDividend.text;
+      if (!text) { alert('テキストを入力してください'); return; }
+      if (!this.formDividend.accountId) { alert('アカウントを選択してください'); return; }
+      if (!this.trustbalances || this.trustbalances.length === 0) await this.getTrustBalancesAll();
+      this.rebuildTbIndex();
+      const rows = this.parseCsvWithHeader(text);
+      if (!rows.length) { alert('有効な行がありません'); return; }
+
+      let ok = 0, skip = 0;
+      for (const r of rows) {
+        try {
+          const name = String(r['銘柄'] || r['ファンド名'] || '').trim();
+          if (!name) { this.skipped.push({ reason: '銘柄名が不明', row: r }); skip++; continue; }
+          const trustBalanceId = await this.findTrustBalanceIdByName(name, r['口座']);
+          if (!trustBalanceId) { this.skipped.push({ reason: '該当するTrustBalanceが見つからない', row: r }); skip++; continue; }
+          const date = this.toSafeISO(r['入金日']);
+          if (!date) { this.skipped.push({ reason: '日付が不正または欠損', row: r }); skip++; continue; }
+          const amount = this.toNumberOrNull(r['受取金額[円/現地通貨]']);
+          if (amount === null) { this.skipped.push({ reason: '受取金額が不明', row: r }); skip++; continue; }
+
+          const dupIndex = await this.ensureTxDupIndex(trustBalanceId, this.formDividend.accountId);
+          const dupKey = this.buildDupKey(Enum.EnumTradeType.DIVIDEND.val, date, amount);
+          if (dupKey && dupIndex.has(dupKey)) {
+            this.skipped.push({ reason: '重複エントリ(DIVIDEND)', row: r });
+            skip++;
+            continue;
+          }
+
+          const input = {
+            accountId: this.formDividend.accountId,
+            trustBalanceId,
+            date,
+            tradeType: Enum.EnumTradeType.DIVIDEND.val,
+            dividend: amount,
+          };
+
+          await API.graphql({ query: createTrustTransaction, variables: { input } });
+          if (dupKey) dupIndex.add(dupKey);
+          ok++;
+        } catch (e) {
+          console.error('[RakutenDividend] createTrustTransaction failed', e, r);
+          this.skipped.push({ reason: '登録時エラー', row: r });
+          skip++;
+        }
+      }
+      alert(`Rakuten dividend import finished. success=${ok}, skipped=${skip}`);
     },
     async getAccounts() {
       try {
