@@ -415,16 +415,16 @@ export default {
           let avg   = 0;
           let lastPrice = 0; // 参照のみ（basicPriceは更新に使わない）
           for (const t of arr) {
-            let qty = Number(t.noItem) || 0;
-            const price = Number(t.basicPrice) || 0;
-            const kind = t.tradeType;
+            const kind = String(t.tradeType || '').toUpperCase();
+            let qty = Math.abs(Number(t.noItem) || 0);
+            let price = Number(t.basicPrice);
+            if (!Number.isFinite(price)) price = 0;
+            const buyAmt = Number(t.buy) || 0;
+            const sellAmt = Number(t.sell) || 0;
             if (price > 0) lastPrice = price; // 直近の価格を保持
             // SELL で負の数量保存に対応: 計算では絶対値で扱う
-            qty = Math.abs(qty);
             // qty が欠損している場合、金額/単価から補完
             if ((!qty || qty <= 0) && price > 0) {
-              const buyAmt = Number(t.buy) || 0;
-              const sellAmt = Number(t.sell) || 0;
               const before = qty;
               if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
                 if (buyAmt > 0) qty = buyAmt / price;
@@ -437,18 +437,20 @@ export default {
                 );
               }
             }
-            // SELL で単価が無い場合、平均単価から数量を推定（最後の手段）
+            // SELL で単価/数量が欠損する場合、平均単価から数量を推定（最後の手段）
             if ((kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') && (!qty || qty <= 0)) {
-              const sellAmt = Number(t.sell) || 0;
-              if (sellAmt > 0 && avg > 0) {
+              if (sellAmt > 0 && price > 0) {
+                qty = sellAmt / price;
+                console.log(`[updateBalances] supplemented qty using sell/bp TB ${tbid} tx ${t.id}: qty=${qty}`);
+              } else if (sellAmt > 0 && avg > 0) {
                 qty = sellAmt / avg;
                 console.log(`[updateBalances] inferred qty from avg TB ${tbid} tx ${t.id}: qty=${qty} using sell=${sellAmt} avg=${avg}`);
               }
             }
             // 投信の 1/10000 口表記を自動補正（buy/sell 金額と照合してスケール判定）
-            if (qty > 0 && price > 0) {
-              const buyAmt = Number(t.buy) || Number(t.sell) || 0;
-              const ratio = buyAmt > 0 ? (qty * price) / buyAmt : 1;
+            const amtForScale = (kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') ? sellAmt : buyAmt;
+            if (qty > 0 && price > 0 && amtForScale > 0) {
+              const ratio = (qty * price) / amtForScale;
               if (ratio > 9000 && ratio < 11000) {
                 console.log(`[updateBalances] scale 1/10000 applied TB ${tbid} tx ${t.id}: qty ${qty} -> ${qty/10000}`);
                 qty = qty / 10000;
@@ -457,7 +459,7 @@ export default {
             // 単価が無い場合でも、TB 基準価格と金額から 1/10000 スケールを推定
             if (qty > 0 && price <= 0) {
               const refPrice = tbBasicById[tbid] || 0;
-              const amt = Number(t.buy) || Number(t.sell) || 0;
+              const amt = amtForScale;
               if (refPrice > 0 && amt > 0) {
                 const ratio = (qty * refPrice) / amt;
                 if (ratio > 9000 && ratio < 11000) {
@@ -466,11 +468,26 @@ export default {
                 }
               }
             }
+            // 単価が欠損している場合、金額や平均単価から補完
+            if (qty > 0 && price <= 0) {
+              if (amtForScale > 0) {
+                price = amtForScale / qty;
+                console.log(`[updateBalances] supplemented price TB ${tbid} tx ${t.id}: price=${price} using amt=${amtForScale} qty=${qty}`);
+              } else if ((kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') && avg > 0) {
+                price = avg;
+                console.log(`[updateBalances] fallback price from avg TB ${tbid} tx ${t.id}: price=${price}`);
+              } else if (lastPrice > 0) {
+                price = lastPrice;
+                console.log(`[updateBalances] fallback price from lastPrice TB ${tbid} tx ${t.id}: price=${price}`);
+              }
+            }
+            if (price > 0) lastPrice = price;
 
             if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
-              if (qty > 0 && price > 0) {
-                cost  += price * qty;
+              if (qty > 0) {
                 units += qty;
+                const costDelta = price > 0 ? price * qty : (buyAmt > 0 ? buyAmt : avg * qty);
+                if (costDelta > 0) cost += costDelta;
                 avg = units > 0 ? cost / units : 0;
                 console.log(`[updateBalances] BUY TB ${tbid} tx ${t.id}: +${qty} @ ${price} => units=${units}, avg=${avg}`);
               }
