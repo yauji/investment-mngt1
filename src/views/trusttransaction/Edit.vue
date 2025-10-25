@@ -68,7 +68,7 @@
         <label for="" class="form-label">noItem</label>
         <input
           type="number"
-          step="0.01"
+          step="any"
           class="form-control"
           v-model="form.noItem"
           v-bind:disabled="dNoItem"
