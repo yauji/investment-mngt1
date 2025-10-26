@@ -143,11 +143,11 @@ export default {
         }
       }
       // 文字列系（空文字は送らない）
-      const stringKeys = ["type", "code"];
+      const stringKeys = ["currency", "name", "memo", "type", "code"];
       for (const key of stringKeys) {
         const v = this.form[key];
-        if (v !== undefined && v !== null && String(v).trim() !== "") {
-          input[key] = String(v).trim();
+        if (v !== undefined && v !== null) {
+          input[key] = typeof v === "string" ? v : String(v);
         }
       }
       // 未定義は送らない
