@@ -9,13 +9,13 @@
     <hr />
     <h3>trust transactions (日本語CSVテキスト) - monex</h3>
     <ul>
-      <li>下の形式（見出しを含む）のテキストを貼り付けてください。</li>
-      <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金→DIVIDEND、再投資/再投資買付/お買付/自動買付/かんたん積立→BUY、解約/売却→SELL）。</li>
-      <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。</li>
+      <li>下の形式のテキストを貼り付けてください（見出しは任意）。</li>
+      <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金/配当金→DIVIDEND、再投資/再投資買付/お買付/自動買付/かんたん積立→BUY、解約/売却→SELL）。</li>
+      <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。英字ティッカーと、価格・金額が <code>394.80(USD)</code> のように通貨付きの外国株式形式にも対応。</li>
       <li>account は下記プルダウンで選択した共通アカウントを使用します。</li>
       <li>口数は、正しく1/10000するように。</li>
-      <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートなし。</li>
-      <li>header行も必要</li>
+      <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートの有無は問いません。</li>
+      <li>ヘッダ行は省略可能です。</li>
       <li>取引列が空欄のことがあるので、記載。おそらく、「かんたん積立」</li>
     </ul>
     <form @submit.prevent="submitCreateTrustTransactionsFromJPText">
@@ -234,7 +234,7 @@ export default {
     mapTradeTypeJP(v) {
       const t = String(v || '').trim();
       if (!t) return null;
-      if (t === '分配金') return Enum.EnumTradeType.DIVIDEND.val;
+      if (t === '分配金' || t === '配当金') return Enum.EnumTradeType.DIVIDEND.val;
       if (t === '再投資買付') return Enum.EnumTradeType.BUY.val;
       if (t === '再投資') return Enum.EnumTradeType.BUY.val;
       if (t === 'お買付') return Enum.EnumTradeType.BUY.val;
@@ -244,9 +244,12 @@ export default {
       if (t === '売却') return Enum.EnumTradeType.SELL.val;
       return null; // 未対応はスキップ
     },
-    // コード文字列を正規化（数字のみ抽出）
+    // コード文字列を正規化（国内銘柄コードと海外ティッカーの両方に対応）
     normalizeCode(s) {
-      return String(s || '').replace(/\s+/g, '').replace(/[^0-9]/g, '');
+      return String(s || '')
+        .toUpperCase()
+        .replace(/[\s\u3000]+/g, '')
+        .replace(/[^0-9A-Z]/g, '');
     },
     // 口座種別→TrustBalanceType
     mapAccountTypeJP(v) {
@@ -335,12 +338,14 @@ export default {
       }
       return null;
     },
-    // 文字列→数値（カンマ無視）。非数は null
+    // 文字列→数値（桁区切り、および Monex の "394.80(USD)" 形式に対応）。非数は null
     toNumberOrNull(s) {
       if (s === undefined || s === null) return null;
       const t = String(s).trim();
       if (!t) return null;
-      const n = Number(t.replace(/,/g, ''));
+      const match = t.replace(/,/g, '').match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:\([A-Za-z]{3}\))?$/);
+      if (!match) return null;
+      const n = Number(match[1]);
       return Number.isNaN(n) ? null : n;
     },
     // A列（約定日）が無ければB列（受渡日）を使用し ISO へ
@@ -432,6 +437,8 @@ export default {
           let noItem = this.toNumberOrNull(r['数量（株/口）/返済数量']);
           const amountM = this.toNumberOrNull(r['受渡金額(円)']);
           const amountL = this.toNumberOrNull(r['利金・分配金・償還金']);
+          // 株式の「配当金」は利金・分配金列が 0 で、受渡金額に配当額が入る形式がある。
+          const dividendAmount = amountL !== null && amountL !== 0 ? amountL : amountM;
 
           const input = {
             accountId: this.form.commonAccountId,
@@ -455,7 +462,7 @@ export default {
             noItem: input.noItem,
             buy: tradeType === Enum.EnumTradeType.BUY.val ? amountM : undefined,
             sell: tradeType === Enum.EnumTradeType.SELL.val ? amountM : undefined,
-            dividend: tradeType === Enum.EnumTradeType.DIVIDEND.val ? amountL : undefined,
+            dividend: tradeType === Enum.EnumTradeType.DIVIDEND.val ? dividendAmount : undefined,
           });
           if (set.has(key)) {
             skipDup++;
@@ -468,7 +475,7 @@ export default {
           } else if (tradeType === Enum.EnumTradeType.SELL.val) {
             if (amountM !== null) input.sell = amountM;
           } else if (tradeType === Enum.EnumTradeType.DIVIDEND.val) {
-            if (amountL !== null) input.dividend = amountL;
+            if (dividendAmount !== null) input.dividend = dividendAmount;
           }
 
           await API.graphql({
