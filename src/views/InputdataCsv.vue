@@ -12,7 +12,7 @@
       <li>下の形式のテキストを貼り付けてください（見出しは任意）。</li>
       <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金/配当金→DIVIDEND、再投資/再投資買付/お買付/自動買付/かんたん積立→BUY、解約/売却→SELL）。</li>
       <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。英字ティッカーと、価格・金額が <code>394.80(USD)</code> のように通貨付きの外国株式形式にも対応。</li>
-      <li>account は下記プルダウンで選択した共通アカウントを使用します。</li>
+      <li>国内取引は共通アカウントを使用します。外国株式は通貨ごとに下記で指定したアカウントを使用します。</li>
       <li>口数は、正しく1/10000するように。</li>
       <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートの有無は問いません。</li>
       <li>ヘッダ行は省略可能です。</li>
@@ -20,12 +20,24 @@
     </ul>
     <form @submit.prevent="submitCreateTrustTransactionsFromJPText">
       <div class="mb-3">
-        <label class="form-label">利用アカウント</label>
-        <select class="form-select" v-model="form.commonAccountId" required>
+        <label class="form-label">利用アカウント（国内取引・共通）</label>
+        <select class="form-select" v-model="form.commonAccountId">
           <option v-for="a in accounts" :key="a.id" :value="a.id">
             {{ a.currency }} - {{ a.name }}
           </option>
         </select>
+      </div>
+      <div v-if="foreignStockCurrencies.length" class="mb-3">
+        <label class="form-label">外国株式の利用アカウント（通貨別）</label>
+        <div v-for="currency in foreignStockCurrencies" :key="currency" class="mb-2">
+          <label class="form-label mb-1">{{ currency }}</label>
+          <select class="form-select" v-model="form.foreignAccountIds[currency]">
+            <option value="">選択してください</option>
+            <option v-for="a in accountsForCurrency(currency)" :key="a.id" :value="a.id">
+              {{ a.name }}
+            </option>
+          </select>
+        </div>
       </div>
       <div class="mb-3">
         <label class="form-label">日本語CSVテキスト</label>
@@ -119,6 +131,7 @@ export default {
         dataTrustTransactions: "",
         dataTrustTransactionsJP: "",
         commonAccountId: "",
+        foreignAccountIds: {},
         simpleDataDividendsJP: "",
         simpleAccountId: "",
       },
@@ -131,6 +144,20 @@ export default {
       txIndexByTB: {}, // { [trustBalanceId]: Set<key> } key = `${noItem}|${basicPrice}`
       jpSkipped: [],
     };
+  },
+  computed: {
+    foreignStockCurrencies() {
+      const currencies = new Set();
+      for (const account of this.accounts) {
+        const currency = this.normalizeCurrency(account?.currency);
+        if (currency && currency !== 'JPY') currencies.add(currency);
+      }
+      for (const row of this.parseJPBrokerCsv(this.form.dataTrustTransactionsJP)) {
+        const currency = this.foreignStockCurrency(row);
+        if (currency) currencies.add(currency);
+      }
+      return Array.from(currencies).sort();
+    },
   },
   methods: {
     summarizeRow(row) {
@@ -251,6 +278,32 @@ export default {
         .replace(/[\s\u3000]+/g, '')
         .replace(/[^0-9A-Z]/g, '');
     },
+    normalizeCurrency(value) {
+      const currency = String(value || '').trim().toUpperCase();
+      return /^[A-Z]{3}$/.test(currency) ? currency : null;
+    },
+    isForeignStock(row) {
+      return String(row?.['商品'] || '').trim() === '外国株式';
+    },
+    // Monex の外国株式は、単価・受渡金額などに "394.80(USD)" の形で通貨が入る。
+    foreignStockCurrency(row) {
+      if (!this.isForeignStock(row)) return null;
+      const values = [
+        row['単価/返済約定単価'],
+        row['手数料'],
+        row['税金(手数料消費税及び譲渡益税)'],
+        row['利金・分配金・償還金'],
+        row['受渡金額(円)'],
+      ];
+      for (const value of values) {
+        const match = String(value || '').match(/\(([A-Za-z]{3})\)\s*$/);
+        if (match) return match[1].toUpperCase();
+      }
+      return null;
+    },
+    accountsForCurrency(currency) {
+      return this.accounts.filter((account) => this.normalizeCurrency(account?.currency) === currency);
+    },
     // 口座種別→TrustBalanceType
     mapAccountTypeJP(v) {
       const t = String(v || '').trim();
@@ -361,7 +414,8 @@ export default {
         alert('入力テキストに有効な行がありません');
         return;
       }
-      if (!this.form.commonAccountId) {
+      const hasDomesticRow = rows.some((row) => !this.isForeignStock(row));
+      if (hasDomesticRow && !this.form.commonAccountId) {
         alert('共通アカウントを選択してください');
         return;
       }
@@ -377,6 +431,25 @@ export default {
         try {
           const tradeType = this.mapTradeTypeJP(r['取引']);
           if (!tradeType) { this.jpSkipped.push({ reason: '未対応の取引種別', row: r }); skip++; continue; }
+
+          const isForeignStock = this.isForeignStock(r);
+          const foreignCurrency = this.foreignStockCurrency(r);
+          if (isForeignStock && !foreignCurrency) {
+            this.jpSkipped.push({ reason: '外国株式の通貨を判定できない', row: r });
+            skip++;
+            continue;
+          }
+          const accountId = isForeignStock
+            ? this.form.foreignAccountIds[foreignCurrency]
+            : this.form.commonAccountId;
+          if (!accountId) {
+            const reason = isForeignStock
+              ? `${foreignCurrency}用のアカウントを選択してください`
+              : '共通アカウントを選択してください';
+            this.jpSkipped.push({ reason, row: r });
+            skip++;
+            continue;
+          }
 
           let trustBalanceId = await this.findTrustBalanceIdByCode(r['銘柄コード'], r['口座']);
           if (!trustBalanceId) {
@@ -441,7 +514,7 @@ export default {
           const dividendAmount = amountL !== null && amountL !== 0 ? amountL : amountM;
 
           const input = {
-            accountId: this.form.commonAccountId,
+            accountId,
             trustBalanceId,
             date,
             tradeType,
