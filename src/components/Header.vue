@@ -45,7 +45,7 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="inputdataDropdown">
               <li>
-                <router-link class="dropdown-item" to="/inputdata2">inputdata2</router-link>
+                <router-link class="dropdown-item" to="/inputdata2">inputdata2 - restore from db</router-link>
               </li>
               <li>
                 <router-link class="dropdown-item" to="/inputdatacsv">inputdatacsv</router-link>
@@ -59,10 +59,20 @@
             </ul>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
+            <router-link class="nav-link active" to="/setting" title="Settings" aria-label="Settings"><BIconGear/></router-link>
           </li>
-          <li class="nav-item">
-            <router-link class="nav-link" to="/debug">Debug</router-link>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="debugDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Debug
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="debugDropdown">
+              <li>
+                <router-link class="dropdown-item" to="/debug">Debug Tools</router-link>
+              </li>
+              <li>
+                <router-link class="dropdown-item" to="/debug/dividend-duplicates">Dividend duplicates</router-link>
+              </li>
+            </ul>
           </li>
         </ul>
 

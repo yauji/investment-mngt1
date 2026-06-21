@@ -23,6 +23,31 @@
       <input type="submit" value="Import Rakuten CSV" />
     </form>
 
+    <hr />
+
+    <h2>楽天証券 分配金 CSV</h2>
+    <ul>
+      <li>「受取金額[円/現地通貨]」を配当金額として登録します。</li>
+      <li>銘柄列で TrustBalance を特定し、取引種別は DIVIDEND 固定です。</li>
+      <li>[マイメニュー]->[配当・分配金] ->期間すべてで検索 ->[CSVで保存]</li>
+      <li>税引き後、受取金額を登録。そのため、楽天証券の画面上の値よりも小さくなる。</li>
+    </ul>
+    <form @submit.prevent="submitDividend">
+      <div class="mb-3">
+        <label class="form-label">利用アカウント</label>
+        <select class="form-select" v-model="formDividend.accountId" required>
+          <option v-for="a in accounts" :key="a.id" :value="a.id">
+            {{ a.currency }} - {{ a.name }}
+          </option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">CSVテキスト</label>
+        <textarea class="form-control" rows="8" v-model="formDividend.text" />
+      </div>
+      <input type="submit" value="Import Dividend CSV" />
+    </form>
+
     <div v-if="skipped.length" class="mt-2">
       <div><b>スキップ:</b> {{ skipped.length }} 件</div>
       <ul>
@@ -38,7 +63,7 @@
 
 <script>
 import { API } from 'aws-amplify';
-import { listAccounts, listTrustBalances } from "../graphql/queries";
+import { listAccounts, listTrustBalances, listTrustTransactions } from "../graphql/queries";
 import { createTrustTransaction, createTrustBalance } from "../graphql/mutations";
 import * as Enum from "@/Enum";
 
@@ -51,9 +76,11 @@ export default {
   data() {
     return {
       form: { text: '', accountId: '' },
+      formDividend: { text: '', accountId: '' },
       accounts: [],
       trustbalances: [],
       tbIndexByName: new Map(),
+      txDupIndexByTbAccount: new Map(),
       skipped: [],
     };
   },
@@ -62,8 +89,8 @@ export default {
       if (!row || typeof row !== 'object') return '';
       const d = row['約定日'] || row['受渡日'] || '';
       const t = row['取引'] || '';
-      const name = row['ファンド名'] || '';
-      const amt = row['受渡金額/(ポイント利用)[円]'] || '';
+      const name = row['ファンド名'] || row['銘柄'] || '';
+      const amt = row['受渡金額/(ポイント利用)[円]'] || row['受取金額[円/現地通貨]'] || '';
       return `${d} ${t} ${name} ${amt}`.trim();
     },
     parseCsvWithHeader(text) {
@@ -129,6 +156,70 @@ export default {
     },
     normalizeName(s) {
       return String(s || '').trim();
+    },
+    txDateKey(date) {
+      if (!date) return '';
+      try {
+        const d = new Date(date);
+        if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      } catch (_) { /* noop */ }
+      const s = String(date || '').trim();
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+      return s;
+    },
+    buildDupKey(tradeType, date, amount) {
+      const type = String(tradeType || '').toUpperCase();
+      if (!type) return null;
+      const dKey = this.txDateKey(date);
+      if (!dKey) return null;
+      const amt = amount !== undefined && amount !== null ? Number(amount) : 0;
+      if (!Number.isFinite(amt)) return null;
+      return `${dKey}|${type}|${amt.toFixed(6)}`;
+    },
+    amountFromExistingTx(tx) {
+      if (!tx) return null;
+      const type = String(tx.tradeType || '').toUpperCase();
+      const buy = this.toNumberOrNull(tx.buy);
+      const sell = this.toNumberOrNull(tx.sell);
+      const dividend = this.toNumberOrNull(tx.dividend);
+      if (type === Enum.EnumTradeType.BUY.val) {
+        if (buy !== null) return buy;
+      }
+      if (type === Enum.EnumTradeType.SELL.val) {
+        if (sell !== null) return sell;
+      }
+      if (type === Enum.EnumTradeType.DIVIDEND.val) {
+        if (dividend !== null) return dividend;
+      }
+      if (buy !== null) return buy;
+      if (sell !== null) return sell;
+      if (dividend !== null) return dividend;
+      return 0;
+    },
+    async ensureTxDupIndex(trustBalanceId, accountId) {
+      if (!trustBalanceId || !accountId) return new Set();
+      const cacheKey = `${trustBalanceId}|${accountId}`;
+      if (this.txDupIndexByTbAccount.has(cacheKey)) return this.txDupIndexByTbAccount.get(cacheKey);
+      const set = new Set();
+      let nextToken = null;
+      do {
+        const filter = { and: [{ trustBalanceId: { eq: trustBalanceId } }, { accountId: { eq: accountId } }] };
+        const res = await API.graphql({
+          query: listTrustTransactions,
+          variables: { filter, limit: 100, nextToken },
+        });
+        const data = res?.data?.listTrustTransactions;
+        const items = data?.items || [];
+        for (const tx of items) {
+          const amount = this.amountFromExistingTx(tx);
+          const key = this.buildDupKey(tx.tradeType, tx.date, amount);
+          if (key) set.add(key);
+        }
+        nextToken = data?.nextToken || null;
+      } while (nextToken);
+      this.txDupIndexByTbAccount.set(cacheKey, set);
+      return set;
     },
     rebuildTbIndex() {
       const map = new Map();
@@ -241,6 +332,14 @@ export default {
           if (!trustBalanceId) { this.skipped.push({ reason: '該当するTrustBalanceが見つからない', row: r }); skip++; continue; }
           const date = this.pickDateISO(r['約定日'], r['受渡日']);
           if (!date) { this.skipped.push({ reason: '日付が不正または欠損', row: r }); skip++; continue; }
+          const dupIndex = await this.ensureTxDupIndex(trustBalanceId, this.form.accountId);
+          const amountForDup = amount !== null ? amount : 0;
+          const dupKey = this.buildDupKey(tradeType, date, amountForDup);
+          if (dupKey && dupIndex.has(dupKey)) {
+            this.skipped.push({ reason: '重複エントリ', row: r });
+            skip++;
+            continue;
+          }
 
           // 口数は 1/10000 にスケール
           const qtyRaw = this.toNumberOrNull(r['数量［口］']);
@@ -259,6 +358,7 @@ export default {
           if (tradeType === Enum.EnumTradeType.SELL.val && amount !== null) input.sell = amount;
 
           await API.graphql({ query: createTrustTransaction, variables: { input } });
+          if (dupKey) dupIndex.add(dupKey);
           ok++;
         } catch (e) {
           console.error('[Rakuten] createTrustTransaction failed', e, r);
@@ -267,6 +367,55 @@ export default {
         }
       }
       alert(`Rakuten import finished. success=${ok}, skipped=${skip}`);
+    },
+    async submitDividend() {
+      this.skipped = [];
+      const text = this.formDividend.text;
+      if (!text) { alert('テキストを入力してください'); return; }
+      if (!this.formDividend.accountId) { alert('アカウントを選択してください'); return; }
+      if (!this.trustbalances || this.trustbalances.length === 0) await this.getTrustBalancesAll();
+      this.rebuildTbIndex();
+      const rows = this.parseCsvWithHeader(text);
+      if (!rows.length) { alert('有効な行がありません'); return; }
+
+      let ok = 0, skip = 0;
+      for (const r of rows) {
+        try {
+          const name = String(r['銘柄'] || r['ファンド名'] || '').trim();
+          if (!name) { this.skipped.push({ reason: '銘柄名が不明', row: r }); skip++; continue; }
+          const trustBalanceId = await this.findTrustBalanceIdByName(name, r['口座']);
+          if (!trustBalanceId) { this.skipped.push({ reason: '該当するTrustBalanceが見つからない', row: r }); skip++; continue; }
+          const date = this.toSafeISO(r['入金日']);
+          if (!date) { this.skipped.push({ reason: '日付が不正または欠損', row: r }); skip++; continue; }
+          const amount = this.toNumberOrNull(r['受取金額[円/現地通貨]']);
+          if (amount === null) { this.skipped.push({ reason: '受取金額が不明', row: r }); skip++; continue; }
+
+          const dupIndex = await this.ensureTxDupIndex(trustBalanceId, this.formDividend.accountId);
+          const dupKey = this.buildDupKey(Enum.EnumTradeType.DIVIDEND.val, date, amount);
+          if (dupKey && dupIndex.has(dupKey)) {
+            this.skipped.push({ reason: '重複エントリ(DIVIDEND)', row: r });
+            skip++;
+            continue;
+          }
+
+          const input = {
+            accountId: this.formDividend.accountId,
+            trustBalanceId,
+            date,
+            tradeType: Enum.EnumTradeType.DIVIDEND.val,
+            dividend: amount,
+          };
+
+          await API.graphql({ query: createTrustTransaction, variables: { input } });
+          if (dupKey) dupIndex.add(dupKey);
+          ok++;
+        } catch (e) {
+          console.error('[RakutenDividend] createTrustTransaction failed', e, r);
+          this.skipped.push({ reason: '登録時エラー', row: r });
+          skip++;
+        }
+      }
+      alert(`Rakuten dividend import finished. success=${ok}, skipped=${skip}`);
     },
     async getAccounts() {
       try {

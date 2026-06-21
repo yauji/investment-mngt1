@@ -67,7 +67,9 @@ export default {
   methods: {
     async submitCreate() {
       this.form.balance = 0;
-      this.form.exchangeRate = 0;
+      const currency = String(this.form.currency || '').toUpperCase();
+      const rate = currency === 'JPY' ? 1 : Number(this.$store.state.exchangeRates[currency]);
+      this.form.exchangeRate = Number.isFinite(rate) && rate > 0 ? rate : 0;
 
       await API.graphql({
         query: createAccount,

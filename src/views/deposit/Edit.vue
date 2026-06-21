@@ -173,10 +173,21 @@ export default {
   data() {
     return {
       form: {
-        //id: "",
-        //        date: new Date(),
-        //      endDate: new Date(),
+        id: this.depositId,
+        name: '',
+        status: Enum?.EnumDepositStatus?.ACTIVE?.val || 'ACTIVE',
+        memo: '',
+        date: null,
+        endDate: null,
+        principalAccountId: '',
+        valueAccountId: '',
+        principal: 0,
+        exchangeRate: null,
+        interestRate: null,
+        duration: 0,
+        value: null,
       },
+      accounts: [],
     };
   },
   methods: {
@@ -191,15 +202,27 @@ export default {
         variables: { id: this.depositId },
       })
         .then((result) => {
-          //console.log(result);
-          //this.form.id = result.data.getDeposit.id;
-          //this.form.name = result.data.getDeposit.name;
-          this.form = result.data.getDeposit;
-          const d = new Date(result.data.getDeposit.date);
-          //console.log(moment(d).format("YYYY/MM/DD"));
-          //this.form.date = moment(d).format("YYYY/MM/DD");
-          this.form.date = d;
-          //this.form.date = "2021/01/01";
+          const dep = result.data.getDeposit || {};
+          const toDate = (v) => {
+            if (!v) return null;
+            const d = new Date(v);
+            return Number.isNaN(d.getTime()) ? null : d;
+          };
+          this.form = {
+            id: dep.id,
+            name: dep.name || '',
+            status: dep.status || (Enum?.EnumDepositStatus?.ACTIVE?.val || 'ACTIVE'),
+            memo: dep.memo || '',
+            date: toDate(dep.date),
+            endDate: toDate(dep.endDate),
+            principalAccountId: dep.principalAccountId || '',
+            valueAccountId: dep.valueAccountId || '',
+            principal: dep.principal != null ? Number(dep.principal) : 0,
+            exchangeRate: dep.exchangeRate != null ? Number(dep.exchangeRate) : null,
+            interestRate: dep.interestRate != null ? Number(dep.interestRate) : null,
+            duration: dep.duration != null ? Number(dep.duration) : 0,
+            value: dep.value != null ? Number(dep.value) : null,
+          };
         })
         .catch((error) => {
           console.log(error);
@@ -218,24 +241,50 @@ export default {
         });
     },
     async submitUpdate() {
-      delete this.form.createdAt;
-      delete this.form.updatedAt;
-      delete this.form.owner;
-      delete this.form.principalAccount;
-      delete this.form.valueAccount;
+      const formatDate = (v) => {
+        if (!v) return null;
+        const d = v instanceof Date ? v : new Date(v);
+        if (Number.isNaN(d.getTime())) return null;
+        return d.toISOString().slice(0, 10);
+      };
+      const toNumber = (v, fallback = null) => {
+        if (v === '' || v === null || v === undefined) return fallback;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : fallback;
+      };
+      const input = {
+        id: this.form.id,
+        name: this.form.name,
+        status: this.form.status,
+        memo: this.form.memo || '',
+        date: formatDate(this.form.date),
+        endDate: formatDate(this.form.endDate),
+        principalAccountId: this.form.principalAccountId || null,
+        valueAccountId: this.form.valueAccountId || null,
+        principal: toNumber(this.form.principal, 0),
+        exchangeRate: toNumber(this.form.exchangeRate),
+        interestRate: toNumber(this.form.interestRate),
+        duration: toNumber(this.form.duration, 0),
+        value: toNumber(this.form.value),
+      };
+      if (input.duration !== undefined) {
+        input.duration = Math.trunc(input.duration);
+      }
 
-      //this.form.date = moment(this.form.date).format("YYYY/MM/DD");
-      await API.graphql({
-        query: updateDeposit,
-        variables: { input: this.form },
-      })
-        .then((result) => {
-          console.log(result);
-          this.$router.push({ name: "DepositIndex" });
-        })
-        .catch((error) => {
-          console.log(error);
+      Object.keys(input).forEach((key) => {
+        if (input[key] === null || input[key] === undefined) delete input[key];
+      });
+
+      try {
+        const result = await API.graphql({
+          query: updateDeposit,
+          variables: { input },
         });
+        console.log(result);
+        this.$router.push({ name: "DepositIndex" });
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
 };

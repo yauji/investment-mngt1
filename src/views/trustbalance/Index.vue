@@ -2,82 +2,131 @@
   <div>
     <h1>Trust Balances</h1>
 
+    <div class="d-flex align-items-end mb-2" style="gap: 12px; flex-wrap: wrap;">
+      <div>
+        <label class="form-label mb-1" for="trustbalance-name-filter">name</label>
+        <input id="trustbalance-name-filter" v-model.trim="nameFilter" class="form-control" placeholder="Filter by name" />
+      </div>
+      <div>
+        <label class="form-label mb-1" for="trustbalance-code-filter">code</label>
+        <input id="trustbalance-code-filter" v-model.trim="codeFilter" class="form-control" placeholder="Filter by code" />
+      </div>
+      <button class="btn btn-outline-secondary" :disabled="!nameFilter && !codeFilter" @click="clearFilters">Clear</button>
+    </div>
 
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th class="th-small">currency</th>
-          <th class="th-small">name</th>
-          <th class="th-small">memo</th>
-          <th class="th-small">type</th>
-          <th class="th-small">code</th>
-          <th class="th-small th-num">noItem</th>
-          <th class="th-small th-num">basic price</th>
-          <th class="th-small th-num">平均取得価格</th>
-          <th class="th-pnl th-num">PnL</th>
-          <th class="th-small th-num">balance</th>
-          <th class="th-small th-num">balance JPY</th>
+    <div class="table-scroll">
+      <table class="table table-striped table-sticky">
+        <thead>
+          <tr>
+            <th class="th-small th-sort" @click="setSort('currency')">
+              currency<span class="sort-indicator">{{ sortIndicator('currency') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('name')">
+              name<span class="sort-indicator">{{ sortIndicator('name') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('memo')">
+              memo<span class="sort-indicator">{{ sortIndicator('memo') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('type')">
+              type<span class="sort-indicator">{{ sortIndicator('type') }}</span>
+            </th>
+            <th class="th-small th-sort" @click="setSort('code')">
+              code<span class="sort-indicator">{{ sortIndicator('code') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('noItem')">
+              noItem<span class="sort-indicator">{{ sortIndicator('noItem') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('basicPrice')">
+              basic price<span class="sort-indicator">{{ sortIndicator('basicPrice') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('averagePurchasePrice')">
+              平均取得価格<span class="sort-indicator">{{ sortIndicator('averagePurchasePrice') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('dividendTotal')">
+              dividend total<span class="sort-indicator">{{ sortIndicator('dividendTotal') }}</span>
+            </th>
+            <th class="th-pnl th-num th-sort" @click="setSort('pnl')">
+              PnL<span class="sort-indicator">{{ sortIndicator('pnl') }}</span>
+            </th>
+            <th class="th-small">currency</th>
+            <th class="th-pnl th-num th-sort" @click="setSort('income')">
+              収支<span class="sort-indicator">{{ sortIndicator('income') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('balance')">
+              balance<span class="sort-indicator">{{ sortIndicator('balance') }}</span>
+            </th>
+            <th class="th-small th-num th-sort" @click="setSort('balanceJpy')">
+              balance JPY<span class="sort-indicator">{{ sortIndicator('balanceJpy') }}</span>
+            </th>
 
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(trustbalance, index) in trustbalances"
-          :key="trustbalance.id"
-        >
-          <td class="td-small">{{ trustbalance.currency }}</td>
-          <td class="td-small">
-            <router-link
-              :to="{ name: 'TrustBalanceShow', params: { TrustBalanceId: trustbalance.id } }"
-            >
-              {{ trustbalance.name }}
-            </router-link>
-          </td>
-          <td class="td-small">{{ trustbalance.memo }}</td>
-          <td class="td-small">{{ trustbalance.type }}</td>
-          <td class="td-small">{{ trustbalance.code }}</td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.noItem, 4).int }}</span><span v-if="4 > 0" class="num-dot">.</span><span v-if="4 > 0" class="num-frac">{{ formatParts(trustbalance.noItem, 4).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.basicPrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.basicPrice, 2).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.averagePurchasePrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.averagePurchasePrice, 2).frac }}</span>
-          </td>
-          <td :class="pnlClass(plFor(trustbalance)) + ' td-num'">
-            <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts(trustbalance.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.balance, 2).frac }}</span>
-          </td>
-          <td class="td-small td-num">
-            <span class="num-int">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).frac }}</span>
-          </td>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="trustbalance in displayTrustBalances"
+            :key="trustbalance.id"
+          >
+            <td class="td-small">{{ trustbalance.currency }}</td>
+            <td class="td-small">
+              <router-link
+                :to="{ name: 'TrustBalanceShow', params: { TrustBalanceId: trustbalance.id } }"
+              >
+                {{ trustbalance.name }}
+              </router-link>
+            </td>
+            <td class="td-small">{{ trustbalance.memo }}</td>
+            <td class="td-small">{{ trustbalance.type }}</td>
+            <td class="td-small">{{ trustbalance.code }}</td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.noItem, 4).int }}</span><span v-if="4 > 0" class="num-dot">.</span><span v-if="4 > 0" class="num-frac">{{ formatParts(trustbalance.noItem, 4).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.basicPrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.basicPrice, 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.averagePurchasePrice, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.averagePurchasePrice, 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(dividendTotals[trustbalance.id], 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(dividendTotals[trustbalance.id], 2).frac }}</span>
+            </td>
+            <td :class="pnlClass(plFor(trustbalance)) + ' td-num'">
+              <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
+            </td>
+            <td class="td-small">{{ trustbalance.currency }}</td>
+            <td :class="pnlClass(incomeFor(trustbalance)) + ' td-num'">
+              <span class="num-int">{{ formatParts(incomeFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(incomeFor(trustbalance), 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts(trustbalance.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.balance, 2).frac }}</span>
+            </td>
+            <td class="td-small td-num">
+              <span class="num-int">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts((Number(trustbalance.balance) || 0) * rateFor(trustbalance.currency), 2).frac }}</span>
+            </td>
 
-          <td>
-            <router-link
-              custom
-              v-slot="{ navigate }"
-              :to="{
-                name: 'TrustBalanceEdit',
-                params: { TrustBalanceId: trustbalance.id },
-              }"
-            >
-              <button class="btn btn-outline-primary btn-sm" @click="navigate" title="Edit" aria-label="Edit">
-                ✎
-              </button>
-            </router-link>
-          </td>
-          <td>
-            <button class="btn btn-outline-danger btn-sm" @click="deleteTrustBalance(index, trustbalance.id)" title="Delete" aria-label="Delete">✕</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td>
+              <router-link
+                custom
+                v-slot="{ navigate }"
+                :to="{
+                  name: 'TrustBalanceEdit',
+                  params: { TrustBalanceId: trustbalance.id },
+                }"
+              >
+                <button class="btn btn-outline-primary btn-sm" @click="navigate" title="Edit" aria-label="Edit">
+                  ✎
+                </button>
+              </router-link>
+            </td>
+            <td>
+              <button class="btn btn-outline-danger btn-sm" @click="deleteTrustBalance(trustbalance.id)" title="Delete" aria-label="Delete">✕</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <button class="btn btn-primary" @click="updateBalances()">
       Update balance
@@ -127,12 +176,63 @@ export default {
     return {
       trustbalances: [],
       statusUpdate: "",
+      dividendTotals: {},
+      cashFlowTotals: {},
+      loadingDividendTotals: false,
+      sortKey: null,
+      sortAsc: true,
+      nameFilter: '',
+      codeFilter: '',
     };
   },
   computed: {
     ...mapState(['exchangeRates']),
+    displayTrustBalances() {
+      const nameFilter = String(this.nameFilter || '').toLocaleLowerCase();
+      const codeFilter = String(this.codeFilter || '')
+        .toLocaleLowerCase()
+        .replace(/[\s\u3000]+/g, '');
+      const list = (Array.isArray(this.trustbalances) ? this.trustbalances : [])
+        .filter((tb) => {
+          const name = String(tb?.name || '').toLocaleLowerCase();
+          const code = String(tb?.code || '')
+            .toLocaleLowerCase()
+            .replace(/[\s\u3000]+/g, '');
+          return (!nameFilter || name.includes(nameFilter))
+            && (!codeFilter || code.includes(codeFilter));
+        });
+      if (!this.sortKey) return list;
+      const dir = this.sortAsc ? 1 : -1;
+      return list.sort((a, b) => {
+        const va = this.getSortValue(a, this.sortKey);
+        const vb = this.getSortValue(b, this.sortKey);
+        const aEmpty = va === null || va === undefined || va === '';
+        const bEmpty = vb === null || vb === undefined || vb === '';
+        if (aEmpty && bEmpty) return 0;
+        if (aEmpty) return 1;
+        if (bEmpty) return -1;
+        const aNum = typeof va === 'number' && Number.isFinite(va);
+        const bNum = typeof vb === 'number' && Number.isFinite(vb);
+        let cmp = 0;
+        if (aNum && bNum) {
+          cmp = va - vb;
+        } else {
+          cmp = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
+        }
+        if (cmp === 0) {
+          const ai = this.trustbalances.indexOf(a);
+          const bi = this.trustbalances.indexOf(b);
+          cmp = ai - bi;
+        }
+        return cmp * dir;
+      });
+    },
   },
   methods: {
+    clearFilters() {
+      this.nameFilter = '';
+      this.codeFilter = '';
+    },
     rateFor(ccy) {
       const c = String(ccy || '').toUpperCase();
       if (c === 'JPY') return 1;
@@ -145,6 +245,13 @@ export default {
       const avg = Number(tb?.averagePurchasePrice) || 0;
       const units = Number(tb?.noItem) || 0;
       return (bp - avg) * units;
+    },
+    incomeFor(tb) {
+      const totals = this.cashFlowTotals[tb?.id] || {};
+      const sell = Number(totals.sell) || 0;
+      const buy = Number(totals.buy) || 0;
+      const balance = Number(tb?.balance) || 0;
+      return sell + balance - buy;
     },
     pnlClass(value) {
       const v = Number(value) || 0;
@@ -192,12 +299,15 @@ export default {
           nextToken = data?.nextToken || null;
         } while (nextToken);
         this.trustbalances = all;
+        await this.loadTransactionTotals(all);
       } catch (e) {
         console.log(e);
       }
       return all;
     },
-    async deleteTrustBalance(index, trustbalanceId) {
+    async deleteTrustBalance(trustbalanceId) {
+      const index = this.trustbalances.findIndex(tb => tb.id === trustbalanceId);
+      if (index === -1) return;
       if (!confirm("Delete TrustBalance?")) return;
 
       await API.graphql({
@@ -207,6 +317,8 @@ export default {
         .then((result) => {
           console.log(result);
           this.trustbalances.splice(index, 1);
+          this.$delete(this.dividendTotals, trustbalanceId);
+          this.$delete(this.cashFlowTotals, trustbalanceId);
         })
         .catch((error) => {
           console.log(error);
@@ -218,15 +330,95 @@ export default {
       do {
         const res = await API.graphql({
           query: listTrustTransactions,
-          variables: nextToken ? { nextToken } : {},
+          variables: { limit: 100, nextToken },
         });
         const data = res.data?.listTrustTransactions;
         if (data?.items?.length) {
-          all.push(...data.items);
+          all.push(...data.items.filter(Boolean));
         }
         nextToken = data?.nextToken || null;
       } while (nextToken);
       return all;
+    },
+    async loadTransactionTotals(balances) {
+      this.loadingDividendTotals = true;
+      const dividendTotals = {};
+      const cashFlowTotals = {};
+      const balanceIds = new Set();
+      for (const tb of balances) {
+        if (!tb?.id) continue;
+        balanceIds.add(tb.id);
+        dividendTotals[tb.id] = 0;
+        cashFlowTotals[tb.id] = { buy: 0, sell: 0 };
+      }
+      try {
+        const transactions = await this.fetchAllTrustTransactions();
+        for (const transaction of transactions) {
+          const trustBalanceId = transaction?.trustBalanceId;
+          if (!balanceIds.has(trustBalanceId)) continue;
+          const totals = cashFlowTotals[trustBalanceId];
+          const buy = Number(transaction.buy);
+          const sell = Number(transaction.sell);
+          if (Number.isFinite(buy)) totals.buy += buy;
+          if (Number.isFinite(sell)) totals.sell += sell;
+          if (String(transaction.tradeType || '').toUpperCase() === Enum.EnumTradeType.DIVIDEND.val) {
+            const dividend = Number(transaction.dividend);
+            if (Number.isFinite(dividend)) dividendTotals[trustBalanceId] += dividend;
+          }
+        }
+        this.dividendTotals = dividendTotals;
+        this.cashFlowTotals = cashFlowTotals;
+      } catch (error) {
+        console.log('[transactionTotals] failed', error);
+        this.dividendTotals = dividendTotals;
+        this.cashFlowTotals = cashFlowTotals;
+      } finally {
+        this.loadingDividendTotals = false;
+      }
+    },
+    getSortValue(tb, key) {
+      switch (key) {
+        case 'currency':
+        case 'name':
+        case 'memo':
+        case 'type':
+        case 'code':
+          return tb && tb[key] ? String(tb[key]) : '';
+        case 'noItem':
+          return Number(tb?.noItem) || 0;
+        case 'basicPrice':
+          return Number(tb?.basicPrice) || 0;
+        case 'averagePurchasePrice':
+          return Number(tb?.averagePurchasePrice) || 0;
+        case 'dividendTotal':
+          return Number(this.dividendTotals[tb?.id]) || 0;
+        case 'pnl':
+          return Number(this.plFor(tb)) || 0;
+        case 'income':
+          return Number(this.incomeFor(tb)) || 0;
+        case 'balance':
+          return Number(tb?.balance) || 0;
+        case 'balanceJpy':
+          return (Number(tb?.balance) || 0) * this.rateFor(tb?.currency);
+        default: {
+          const value = tb ? tb[key] : null;
+          const num = Number(value);
+          if (Number.isFinite(num)) return num;
+          return value;
+        }
+      }
+    },
+    setSort(key) {
+      if (this.sortKey === key) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortKey = key;
+        this.sortAsc = true;
+      }
+    },
+    sortIndicator(key) {
+      if (this.sortKey !== key) return '';
+      return this.sortAsc ? '▲' : '▼';
     },
     async updateBalances() {
       this.statusUpdate = "updating...";
@@ -265,16 +457,16 @@ export default {
           let avg   = 0;
           let lastPrice = 0; // 参照のみ（basicPriceは更新に使わない）
           for (const t of arr) {
-            let qty = Number(t.noItem) || 0;
-            const price = Number(t.basicPrice) || 0;
-            const kind = t.tradeType;
+            const kind = String(t.tradeType || '').toUpperCase();
+            let qty = Math.abs(Number(t.noItem) || 0);
+            let price = Number(t.basicPrice);
+            if (!Number.isFinite(price)) price = 0;
+            const buyAmt = Number(t.buy) || 0;
+            const sellAmt = Number(t.sell) || 0;
             if (price > 0) lastPrice = price; // 直近の価格を保持
             // SELL で負の数量保存に対応: 計算では絶対値で扱う
-            qty = Math.abs(qty);
             // qty が欠損している場合、金額/単価から補完
             if ((!qty || qty <= 0) && price > 0) {
-              const buyAmt = Number(t.buy) || 0;
-              const sellAmt = Number(t.sell) || 0;
               const before = qty;
               if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
                 if (buyAmt > 0) qty = buyAmt / price;
@@ -287,18 +479,20 @@ export default {
                 );
               }
             }
-            // SELL で単価が無い場合、平均単価から数量を推定（最後の手段）
+            // SELL で単価/数量が欠損する場合、平均単価から数量を推定（最後の手段）
             if ((kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') && (!qty || qty <= 0)) {
-              const sellAmt = Number(t.sell) || 0;
-              if (sellAmt > 0 && avg > 0) {
+              if (sellAmt > 0 && price > 0) {
+                qty = sellAmt / price;
+                console.log(`[updateBalances] supplemented qty using sell/bp TB ${tbid} tx ${t.id}: qty=${qty}`);
+              } else if (sellAmt > 0 && avg > 0) {
                 qty = sellAmt / avg;
                 console.log(`[updateBalances] inferred qty from avg TB ${tbid} tx ${t.id}: qty=${qty} using sell=${sellAmt} avg=${avg}`);
               }
             }
             // 投信の 1/10000 口表記を自動補正（buy/sell 金額と照合してスケール判定）
-            if (qty > 0 && price > 0) {
-              const buyAmt = Number(t.buy) || Number(t.sell) || 0;
-              const ratio = buyAmt > 0 ? (qty * price) / buyAmt : 1;
+            const amtForScale = (kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') ? sellAmt : buyAmt;
+            if (qty > 0 && price > 0 && amtForScale > 0) {
+              const ratio = (qty * price) / amtForScale;
               if (ratio > 9000 && ratio < 11000) {
                 console.log(`[updateBalances] scale 1/10000 applied TB ${tbid} tx ${t.id}: qty ${qty} -> ${qty/10000}`);
                 qty = qty / 10000;
@@ -307,7 +501,7 @@ export default {
             // 単価が無い場合でも、TB 基準価格と金額から 1/10000 スケールを推定
             if (qty > 0 && price <= 0) {
               const refPrice = tbBasicById[tbid] || 0;
-              const amt = Number(t.buy) || Number(t.sell) || 0;
+              const amt = amtForScale;
               if (refPrice > 0 && amt > 0) {
                 const ratio = (qty * refPrice) / amt;
                 if (ratio > 9000 && ratio < 11000) {
@@ -316,11 +510,26 @@ export default {
                 }
               }
             }
+            // 単価が欠損している場合、金額や平均単価から補完
+            if (qty > 0 && price <= 0) {
+              if (amtForScale > 0) {
+                price = amtForScale / qty;
+                console.log(`[updateBalances] supplemented price TB ${tbid} tx ${t.id}: price=${price} using amt=${amtForScale} qty=${qty}`);
+              } else if ((kind === Enum.EnumTradeType.SELL.val || kind === 'SELL') && avg > 0) {
+                price = avg;
+                console.log(`[updateBalances] fallback price from avg TB ${tbid} tx ${t.id}: price=${price}`);
+              } else if (lastPrice > 0) {
+                price = lastPrice;
+                console.log(`[updateBalances] fallback price from lastPrice TB ${tbid} tx ${t.id}: price=${price}`);
+              }
+            }
+            if (price > 0) lastPrice = price;
 
             if (kind === Enum.EnumTradeType.BUY.val || kind === 'BUY') {
-              if (qty > 0 && price > 0) {
-                cost  += price * qty;
+              if (qty > 0) {
                 units += qty;
+                const costDelta = price > 0 ? price * qty : (buyAmt > 0 ? buyAmt : avg * qty);
+                if (costDelta > 0) cost += costDelta;
                 avg = units > 0 ? cost / units : 0;
                 console.log(`[updateBalances] BUY TB ${tbid} tx ${t.id}: +${qty} @ ${price} => units=${units}, avg=${avg}`);
               }
@@ -387,6 +596,8 @@ export default {
 /* Smaller default cells/headers */
 .th-small { font-size: 0.85rem; color: #666; font-weight: 500; }
 .td-small { font-size: 0.9rem; color: #555; }
+.th-sort { cursor: pointer; user-select: none; }
+.sort-indicator { margin-left: 4px; font-size: 0.75em; opacity: 0.7; }
 
 /* Highlight PnL */
 .th-pnl { font-size: 0.95rem; font-weight: 700; }
@@ -404,4 +615,22 @@ export default {
 .num-int { font-variant-numeric: tabular-nums; }
 .num-frac { font-size: 0.8em; font-variant-numeric: tabular-nums; }
 .num-dot { padding: 0 0.05em; opacity: 0.7; }
+
+.table-scroll {
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background: #fff;
+}
+.table-scroll table {
+  margin-bottom: 0;
+}
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fafafa;
+  box-shadow: inset 0 -1px 0 #dee2e6;
+}
 </style>

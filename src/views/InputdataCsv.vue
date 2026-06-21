@@ -9,23 +9,35 @@
     <hr />
     <h3>trust transactions (日本語CSVテキスト) - monex</h3>
     <ul>
-      <li>下の形式（見出しを含む）のテキストを貼り付けてください。</li>
-      <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金→DIVIDEND、再投資/再投資買付/お買付/自動買付/かんたん積立→BUY、解約/売却→SELL）。</li>
-      <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。</li>
-      <li>account は下記プルダウンで選択した共通アカウントを使用します。</li>
-      <li>口数は、正しく1/10000するように。</li>
-      <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートなし。</li>
-      <li>header行も必要</li>
-      <li>取引列が空欄のことがあるので、記載。おそらく、「かんたん積立」</li>
+      <li>下の形式のテキストを貼り付けてください（見出しは任意）。</li>
+      <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金/配当金→DIVIDEND、再投資/再投資買付/お買付/自動買付/かんたん積立→BUY、解約/売却→SELL）。</li>
+      <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。英字ティッカーと、価格・金額が <code>394.80(USD)</code> のように通貨付きの外国株式形式にも対応。</li>
+      <li>国内取引は共通アカウントを使用します。外国株式は通貨ごとに下記で指定したアカウントを使用します。</li>
+      <li>口数は、必要な場合のみ1/10000へ補正し、小数のまま登録します。</li>
+      <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートの有無は問いません。</li>
+      <li>ヘッダ行は省略可能です。</li>
+      <li>取引列が空欄で商品が「投信」の行は、BUYとして登録します。</li>
     </ul>
     <form @submit.prevent="submitCreateTrustTransactionsFromJPText">
       <div class="mb-3">
-        <label class="form-label">利用アカウント</label>
-        <select class="form-select" v-model="form.commonAccountId" required>
+        <label class="form-label">利用アカウント（国内取引・共通）</label>
+        <select class="form-select" v-model="form.commonAccountId">
           <option v-for="a in accounts" :key="a.id" :value="a.id">
             {{ a.currency }} - {{ a.name }}
           </option>
         </select>
+      </div>
+      <div v-if="foreignStockCurrencies.length" class="mb-3">
+        <label class="form-label">外国株式の利用アカウント（通貨別）</label>
+        <div v-for="currency in foreignStockCurrencies" :key="currency" class="mb-2">
+          <label class="form-label mb-1">{{ currency }}</label>
+          <select class="form-select" v-model="form.foreignAccountIds[currency]">
+            <option value="">選択してください</option>
+            <option v-for="a in accountsForCurrency(currency)" :key="a.id" :value="a.id">
+              {{ a.name }}
+            </option>
+          </select>
+        </div>
       </div>
       <div class="mb-3">
         <label class="form-label">日本語CSVテキスト</label>
@@ -119,6 +131,7 @@ export default {
         dataTrustTransactions: "",
         dataTrustTransactionsJP: "",
         commonAccountId: "",
+        foreignAccountIds: {},
         simpleDataDividendsJP: "",
         simpleAccountId: "",
       },
@@ -131,6 +144,20 @@ export default {
       txIndexByTB: {}, // { [trustBalanceId]: Set<key> } key = `${noItem}|${basicPrice}`
       jpSkipped: [],
     };
+  },
+  computed: {
+    foreignStockCurrencies() {
+      const currencies = new Set();
+      for (const account of this.accounts) {
+        const currency = this.normalizeCurrency(account?.currency);
+        if (currency && currency !== 'JPY') currencies.add(currency);
+      }
+      for (const row of this.parseJPBrokerCsv(this.form.dataTrustTransactionsJP)) {
+        const currency = this.foreignStockCurrency(row);
+        if (currency) currencies.add(currency);
+      }
+      return Array.from(currencies).sort();
+    },
   },
   methods: {
     summarizeRow(row) {
@@ -159,9 +186,14 @@ export default {
     buildTxSignatureBase({ date, tradeType, basicPrice, noItem, buy, sell, dividend }) {
       const tt = String(tradeType || '').toUpperCase();
       const dkey = this.dateKeyISO(date);
+      // DIVIDEND は日付と金額のみで重複判定する。
+      // 既存データには basicPrice/noItem が 0 で入っているものがあるため、これらは比較対象にしない。
+      if (tt === 'DIVIDEND') {
+        return `${dkey}|${tt}|${this.roundN(dividend, 2)}`;
+      }
       const priceKey = this.roundN(basicPrice, 6);
       let qty = '';
-      if (noItem !== undefined && noItem !== null && tt !== 'DIVIDEND') {
+      if (noItem !== undefined && noItem !== null) {
         const q = Math.abs(Number(noItem) || 0);
         const qsigned = tt === 'SELL' ? -q : q;
         qty = this.roundN(qsigned, 6);
@@ -169,7 +201,6 @@ export default {
       let amt = '';
       if (tt === 'BUY' && buy != null) amt = this.roundN(buy, 2);
       if (tt === 'SELL' && sell != null) amt = this.roundN(sell, 2);
-      if (tt === 'DIVIDEND' && dividend != null) amt = this.roundN(dividend, 2);
       return `${dkey}|${tt}|${qty}|${priceKey}|${amt}`;
     },
     // 日本語の列名のCSVをパース（クォート対応）。ヘッダーなし行にも対応。
@@ -231,10 +262,16 @@ export default {
       return set;
     },
     // 取引種別の日本語→アプリ内Enum変換
-    mapTradeTypeJP(v) {
+    mapTradeTypeJP(v, row = null) {
       const t = String(v || '').trim();
-      if (!t) return null;
-      if (t === '分配金') return Enum.EnumTradeType.DIVIDEND.val;
+      if (!t) {
+        // Monexでは投信の通常買付で取引列が空欄になる形式がある。
+        const amount = this.toNumberOrNull(row?.['受渡金額(円)']);
+        return String(row?.['商品'] || '').trim() === '投信' && amount !== null && amount > 0
+          ? Enum.EnumTradeType.BUY.val
+          : null;
+      }
+      if (t === '分配金' || t === '配当金') return Enum.EnumTradeType.DIVIDEND.val;
       if (t === '再投資買付') return Enum.EnumTradeType.BUY.val;
       if (t === '再投資') return Enum.EnumTradeType.BUY.val;
       if (t === 'お買付') return Enum.EnumTradeType.BUY.val;
@@ -244,9 +281,38 @@ export default {
       if (t === '売却') return Enum.EnumTradeType.SELL.val;
       return null; // 未対応はスキップ
     },
-    // コード文字列を正規化（数字のみ抽出）
+    // コード文字列を正規化（国内銘柄コードと海外ティッカーの両方に対応）
     normalizeCode(s) {
-      return String(s || '').replace(/\s+/g, '').replace(/[^0-9]/g, '');
+      return String(s || '')
+        .toUpperCase()
+        .replace(/[\s\u3000]+/g, '')
+        .replace(/[^0-9A-Z]/g, '');
+    },
+    normalizeCurrency(value) {
+      const currency = String(value || '').trim().toUpperCase();
+      return /^[A-Z]{3}$/.test(currency) ? currency : null;
+    },
+    isForeignStock(row) {
+      return String(row?.['商品'] || '').trim() === '外国株式';
+    },
+    // Monex の外国株式は、単価・受渡金額などに "394.80(USD)" の形で通貨が入る。
+    foreignStockCurrency(row) {
+      if (!this.isForeignStock(row)) return null;
+      const values = [
+        row['単価/返済約定単価'],
+        row['手数料'],
+        row['税金(手数料消費税及び譲渡益税)'],
+        row['利金・分配金・償還金'],
+        row['受渡金額(円)'],
+      ];
+      for (const value of values) {
+        const match = String(value || '').match(/\(([A-Za-z]{3})\)\s*$/);
+        if (match) return match[1].toUpperCase();
+      }
+      return null;
+    },
+    accountsForCurrency(currency) {
+      return this.accounts.filter((account) => this.normalizeCurrency(account?.currency) === currency);
     },
     // 口座種別→TrustBalanceType
     mapAccountTypeJP(v) {
@@ -335,13 +401,35 @@ export default {
       }
       return null;
     },
-    // 文字列→数値（カンマ無視）。非数は null
+    // 文字列→数値（桁区切り、および Monex の "394.80(USD)" 形式に対応）。非数は null
     toNumberOrNull(s) {
       if (s === undefined || s === null) return null;
       const t = String(s).trim();
       if (!t) return null;
-      const n = Number(t.replace(/,/g, ''));
+      const match = t.replace(/,/g, '').match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:\([A-Za-z]{3}\))?$/);
+      if (!match) return null;
+      const n = Number(match[1]);
       return Number.isNaN(n) ? null : n;
+    },
+    // Monex CSVでは数量が生の口数、または既に1/10000換算済みの小数で混在する。
+    // 単価と受渡金額を照合して補正が必要な場合だけ割り算し、小数部は丸めない。
+    scaleNoItemIfNeeded(noItem, basicPrice, amount, tradeType) {
+      if (noItem === null || noItem === undefined) return noItem;
+      const type = String(tradeType || '').toUpperCase();
+      const quantity = Number(noItem);
+      const price = Math.abs(Number(basicPrice));
+      const expectedAmount = Math.abs(Number(amount));
+      if (!['BUY', 'SELL'].includes(type)
+        || !Number.isFinite(quantity)
+        || !Number.isFinite(price) || price <= 0
+        || !Number.isFinite(expectedAmount) || expectedAmount <= 0) {
+        return noItem;
+      }
+
+      const directDifference = Math.abs(Math.abs(quantity) * price - expectedAmount);
+      const scaledQuantity = quantity / 10000;
+      const scaledDifference = Math.abs(Math.abs(scaledQuantity) * price - expectedAmount);
+      return scaledDifference < directDifference ? scaledQuantity : quantity;
     },
     // A列（約定日）が無ければB列（受渡日）を使用し ISO へ
     pickDateISO(a, b) {
@@ -356,7 +444,8 @@ export default {
         alert('入力テキストに有効な行がありません');
         return;
       }
-      if (!this.form.commonAccountId) {
+      const hasDomesticRow = rows.some((row) => !this.isForeignStock(row));
+      if (hasDomesticRow && !this.form.commonAccountId) {
         alert('共通アカウントを選択してください');
         return;
       }
@@ -370,8 +459,27 @@ export default {
         const r = rows[idx];
         console.log(r);
         try {
-          const tradeType = this.mapTradeTypeJP(r['取引']);
+          const tradeType = this.mapTradeTypeJP(r['取引'], r);
           if (!tradeType) { this.jpSkipped.push({ reason: '未対応の取引種別', row: r }); skip++; continue; }
+
+          const isForeignStock = this.isForeignStock(r);
+          const foreignCurrency = this.foreignStockCurrency(r);
+          if (isForeignStock && !foreignCurrency) {
+            this.jpSkipped.push({ reason: '外国株式の通貨を判定できない', row: r });
+            skip++;
+            continue;
+          }
+          const accountId = isForeignStock
+            ? this.form.foreignAccountIds[foreignCurrency]
+            : this.form.commonAccountId;
+          if (!accountId) {
+            const reason = isForeignStock
+              ? `${foreignCurrency}用のアカウントを選択してください`
+              : '共通アカウントを選択してください';
+            this.jpSkipped.push({ reason, row: r });
+            skip++;
+            continue;
+          }
 
           let trustBalanceId = await this.findTrustBalanceIdByCode(r['銘柄コード'], r['口座']);
           if (!trustBalanceId) {
@@ -432,9 +540,12 @@ export default {
           let noItem = this.toNumberOrNull(r['数量（株/口）/返済数量']);
           const amountM = this.toNumberOrNull(r['受渡金額(円)']);
           const amountL = this.toNumberOrNull(r['利金・分配金・償還金']);
+          // 株式の「配当金」は利金・分配金列が 0 で、受渡金額に配当額が入る形式がある。
+          const dividendAmount = amountL !== null && amountL !== 0 ? amountL : amountM;
+          noItem = this.scaleNoItemIfNeeded(noItem, basicPrice, amountM, tradeType);
 
           const input = {
-            accountId: this.form.commonAccountId,
+            accountId,
             trustBalanceId,
             date,
             tradeType,
@@ -455,7 +566,7 @@ export default {
             noItem: input.noItem,
             buy: tradeType === Enum.EnumTradeType.BUY.val ? amountM : undefined,
             sell: tradeType === Enum.EnumTradeType.SELL.val ? amountM : undefined,
-            dividend: tradeType === Enum.EnumTradeType.DIVIDEND.val ? amountL : undefined,
+            dividend: tradeType === Enum.EnumTradeType.DIVIDEND.val ? dividendAmount : undefined,
           });
           if (set.has(key)) {
             skipDup++;
@@ -468,7 +579,7 @@ export default {
           } else if (tradeType === Enum.EnumTradeType.SELL.val) {
             if (amountM !== null) input.sell = amountM;
           } else if (tradeType === Enum.EnumTradeType.DIVIDEND.val) {
-            if (amountL !== null) input.dividend = amountL;
+            if (dividendAmount !== null) input.dividend = dividendAmount;
           }
 
           await API.graphql({
@@ -498,19 +609,24 @@ export default {
       // パース（先頭行をヘッダとして使用）
       const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
       if (!lines.length) { alert('有効な行がありません'); return; }
-      const header = this.splitCsvLine(lines[0]).map(h => h.trim());
+      const header = this.splitCsvLine(lines[0]).map((h) => this.cleanCsvValue(h));
       const rows = [];
       for (let i = 1; i < lines.length; i++) {
         const cols = this.splitCsvLine(lines[i]);
         const r = {};
-        for (let j = 0; j < header.length; j++) r[header[j]] = cols[j] !== undefined ? cols[j] : '';
+        for (let j = 0; j < header.length; j++) {
+          const key = header[j];
+          if (!key) continue;
+          const value = cols[j] !== undefined ? this.cleanCsvValue(cols[j]) : '';
+          r[key] = value;
+        }
         rows.push(r);
       }
-      let ok = 0, skip = 0;
+      let ok = 0, skip = 0, skipDup = 0;
       for (let i = 0; i < rows.length; i++) {
         const r = rows[i];
         try {
-          const codeRaw = String(r['銘柄コード'] || '').trim();
+          const codeRaw = this.cleanCsvValue(r['銘柄コード']);
           if (!codeRaw) { skip++; continue; }
           // exact match (local)
           let trustBalanceId = null;
@@ -540,11 +656,11 @@ export default {
           if (!trustBalanceId) trustBalanceId = await this.findTrustBalanceIdByCode(codeRaw, null);
           if (!trustBalanceId) { console.warn('[Simple] trustBalance not found', codeRaw, r); skip++; continue; }
 
-          const date = this.toSafeISO(r['日付']);
+          const date = this.toSafeISO(this.cleanCsvValue(r['日付']));
           if (!date) { console.warn('[Simple] date missing', r); skip++; continue; }
 
           const amtRaw = r['受渡金額'] !== undefined ? r['受渡金額'] : r['受渡金額(円)'];
-          const dividend = this.toNumberOrNull(amtRaw);
+          const dividend = this.toNumberOrNull(this.cleanCsvValue(amtRaw));
           if (dividend === null) { console.warn('[Simple] dividend missing', r); skip++; continue; }
 
           const input = {
@@ -554,14 +670,25 @@ export default {
             tradeType: Enum.EnumTradeType.DIVIDEND.val,
             dividend,
           };
+          const dupSet = await this.ensureTxIndexForTB(trustBalanceId);
+          const dupKey = this.buildTxSignatureBase({
+            date,
+            tradeType: Enum.EnumTradeType.DIVIDEND.val,
+            dividend,
+          });
+          if (dupSet.has(dupKey)) {
+            skipDup++;
+            continue;
+          }
           await API.graphql({ query: createTrustTransaction, variables: { input } });
+          dupSet.add(dupKey);
           ok++;
         } catch (e) {
           console.error('[Simple] createTrustTransaction failed', e, r);
           skip++;
         }
       }
-      alert(`Simple DIVIDEND import finished. success=${ok}, skipped=${skip}`);
+      alert(`Simple DIVIDEND import finished. success=${ok}, duplicates=${skipDup}, skipped=${skip}`);
     },
     // 全ページの trustBalances を読み込む
     async getTrustBalancesAll() {
@@ -578,6 +705,19 @@ export default {
       return all;
     },
     // CSVの1行をクォート考慮で分割
+    cleanCsvValue(value) {
+      if (value === undefined || value === null) return '';
+      let s = String(value);
+      s = s.trim();
+      if (!s) return '';
+      let prev = null;
+      while (s.length >= 2 && s.startsWith('"') && s.endsWith('"') && s !== prev) {
+        prev = s;
+        s = s.slice(1, -1).trim();
+      }
+      if (s.includes('""')) s = s.replace(/""/g, '"');
+      return s;
+    },
     splitCsvLine(line) {
       const out = [];
       let cur = '';
@@ -612,7 +752,7 @@ export default {
         }
       }
       out.push(cur);
-      return out.map(s => s.replace(/^"(.*)"$/, '$1')); // 外側の引用符を除去
+      return out.map((s) => this.cleanCsvValue(s));
     },
     // CSV全文を配列オブジェクトに変換
     // (removed) parseAccountsCsv, parseDepositsCsv — not used by current UI
