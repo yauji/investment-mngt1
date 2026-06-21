@@ -13,7 +13,7 @@
       <li>取引は E列「取引」から BUY/SELL/DIVIDEND にマッピング（分配金/配当金→DIVIDEND、再投資/再投資買付/お買付/自動買付/かんたん積立→BUY、解約/売却→SELL）。</li>
       <li>trustBalance は F列「銘柄コード」と一致するものを検索（可能なら C列「口座」の種別 NISA/特定 も考慮）。英字ティッカーと、価格・金額が <code>394.80(USD)</code> のように通貨付きの外国株式形式にも対応。</li>
       <li>国内取引は共通アカウントを使用します。外国株式は通貨ごとに下記で指定したアカウントを使用します。</li>
-      <li>口数は、正しく1/10000するように。</li>
+      <li>口数は、必要な場合のみ1/10000へ補正し、小数のまま登録します。</li>
       <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートの有無は問いません。</li>
       <li>ヘッダ行は省略可能です。</li>
       <li>取引列が空欄のことがあるので、記載。おそらく、「かんたん積立」</li>
@@ -405,6 +405,26 @@ export default {
       const n = Number(match[1]);
       return Number.isNaN(n) ? null : n;
     },
+    // Monex CSVでは数量が生の口数、または既に1/10000換算済みの小数で混在する。
+    // 単価と受渡金額を照合して補正が必要な場合だけ割り算し、小数部は丸めない。
+    scaleNoItemIfNeeded(noItem, basicPrice, amount, tradeType) {
+      if (noItem === null || noItem === undefined) return noItem;
+      const type = String(tradeType || '').toUpperCase();
+      const quantity = Number(noItem);
+      const price = Math.abs(Number(basicPrice));
+      const expectedAmount = Math.abs(Number(amount));
+      if (!['BUY', 'SELL'].includes(type)
+        || !Number.isFinite(quantity)
+        || !Number.isFinite(price) || price <= 0
+        || !Number.isFinite(expectedAmount) || expectedAmount <= 0) {
+        return noItem;
+      }
+
+      const directDifference = Math.abs(Math.abs(quantity) * price - expectedAmount);
+      const scaledQuantity = quantity / 10000;
+      const scaledDifference = Math.abs(Math.abs(scaledQuantity) * price - expectedAmount);
+      return scaledDifference < directDifference ? scaledQuantity : quantity;
+    },
     // A列（約定日）が無ければB列（受渡日）を使用し ISO へ
     pickDateISO(a, b) {
       const aISO = this.toSafeISO(a);
@@ -516,6 +536,7 @@ export default {
           const amountL = this.toNumberOrNull(r['利金・分配金・償還金']);
           // 株式の「配当金」は利金・分配金列が 0 で、受渡金額に配当額が入る形式がある。
           const dividendAmount = amountL !== null && amountL !== 0 ? amountL : amountM;
+          noItem = this.scaleNoItemIfNeeded(noItem, basicPrice, amountM, tradeType);
 
           const input = {
             accountId,
