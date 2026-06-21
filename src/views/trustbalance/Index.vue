@@ -48,7 +48,10 @@
             <th class="th-pnl th-num th-sort" @click="setSort('pnl')">
               PnL<span class="sort-indicator">{{ sortIndicator('pnl') }}</span>
             </th>
-            <th class="th-small"></th>
+            <th class="th-small">currency</th>
+            <th class="th-pnl th-num th-sort" @click="setSort('income')">
+              収支<span class="sort-indicator">{{ sortIndicator('income') }}</span>
+            </th>
             <th class="th-small th-num th-sort" @click="setSort('balance')">
               balance<span class="sort-indicator">{{ sortIndicator('balance') }}</span>
             </th>
@@ -93,6 +96,9 @@
               <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
             </td>
             <td class="td-small">{{ trustbalance.currency }}</td>
+            <td :class="pnlClass(incomeFor(trustbalance)) + ' td-num'">
+              <span class="num-int">{{ formatParts(incomeFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(incomeFor(trustbalance), 2).frac }}</span>
+            </td>
             <td class="td-small td-num">
               <span class="num-int">{{ formatParts(trustbalance.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.balance, 2).frac }}</span>
             </td>
@@ -171,6 +177,7 @@ export default {
       trustbalances: [],
       statusUpdate: "",
       dividendTotals: {},
+      cashFlowTotals: {},
       loadingDividendTotals: false,
       sortKey: null,
       sortAsc: true,
@@ -239,6 +246,13 @@ export default {
       const units = Number(tb?.noItem) || 0;
       return (bp - avg) * units;
     },
+    incomeFor(tb) {
+      const totals = this.cashFlowTotals[tb?.id] || {};
+      const sell = Number(totals.sell) || 0;
+      const buy = Number(totals.buy) || 0;
+      const balance = Number(tb?.balance) || 0;
+      return sell + balance - buy;
+    },
     pnlClass(value) {
       const v = Number(value) || 0;
       if (v > 0) return 'td-pnl pnl-pos';
@@ -285,7 +299,7 @@ export default {
           nextToken = data?.nextToken || null;
         } while (nextToken);
         this.trustbalances = all;
-        await this.loadDividendTotals(all);
+        await this.loadTransactionTotals(all);
       } catch (e) {
         console.log(e);
       }
@@ -304,6 +318,7 @@ export default {
           console.log(result);
           this.trustbalances.splice(index, 1);
           this.$delete(this.dividendTotals, trustbalanceId);
+          this.$delete(this.cashFlowTotals, trustbalanceId);
         })
         .catch((error) => {
           console.log(error);
@@ -315,58 +330,51 @@ export default {
       do {
         const res = await API.graphql({
           query: listTrustTransactions,
-          variables: nextToken ? { nextToken } : {},
+          variables: { limit: 100, nextToken },
         });
         const data = res.data?.listTrustTransactions;
         if (data?.items?.length) {
-          all.push(...data.items);
+          all.push(...data.items.filter(Boolean));
         }
         nextToken = data?.nextToken || null;
       } while (nextToken);
       return all;
     },
-    async loadDividendTotals(balances) {
+    async loadTransactionTotals(balances) {
       this.loadingDividendTotals = true;
-      const totals = {};
+      const dividendTotals = {};
+      const cashFlowTotals = {};
+      const balanceIds = new Set();
+      for (const tb of balances) {
+        if (!tb?.id) continue;
+        balanceIds.add(tb.id);
+        dividendTotals[tb.id] = 0;
+        cashFlowTotals[tb.id] = { buy: 0, sell: 0 };
+      }
       try {
-        for (const tb of balances) {
-          if (!tb?.id) continue;
-          try {
-            const total = await this.fetchDividendTotalForTrustBalance(tb.id);
-            totals[tb.id] = total;
-          } catch (err) {
-            console.log(`[dividendTotal] failed for ${tb.id}`, err);
-            totals[tb.id] = 0;
+        const transactions = await this.fetchAllTrustTransactions();
+        for (const transaction of transactions) {
+          const trustBalanceId = transaction?.trustBalanceId;
+          if (!balanceIds.has(trustBalanceId)) continue;
+          const totals = cashFlowTotals[trustBalanceId];
+          const buy = Number(transaction.buy);
+          const sell = Number(transaction.sell);
+          if (Number.isFinite(buy)) totals.buy += buy;
+          if (Number.isFinite(sell)) totals.sell += sell;
+          if (String(transaction.tradeType || '').toUpperCase() === Enum.EnumTradeType.DIVIDEND.val) {
+            const dividend = Number(transaction.dividend);
+            if (Number.isFinite(dividend)) dividendTotals[trustBalanceId] += dividend;
           }
         }
-        this.dividendTotals = totals;
+        this.dividendTotals = dividendTotals;
+        this.cashFlowTotals = cashFlowTotals;
+      } catch (error) {
+        console.log('[transactionTotals] failed', error);
+        this.dividendTotals = dividendTotals;
+        this.cashFlowTotals = cashFlowTotals;
       } finally {
         this.loadingDividendTotals = false;
       }
-    },
-    async fetchDividendTotalForTrustBalance(trustBalanceId) {
-      let nextToken = null;
-      let total = 0;
-      const filter = {
-        and: [
-          { trustBalanceId: { eq: trustBalanceId } },
-          { tradeType: { eq: Enum.EnumTradeType.DIVIDEND.val } },
-        ],
-      };
-      do {
-        const res = await API.graphql({
-          query: listTrustTransactions,
-          variables: { filter, limit: 100, nextToken },
-        });
-        const data = res?.data?.listTrustTransactions;
-        const items = (data?.items || []).filter(Boolean);
-        for (const item of items) {
-          const value = Number(item.dividend);
-          if (Number.isFinite(value)) total += value;
-        }
-        nextToken = data?.nextToken || null;
-      } while (nextToken);
-      return total;
     },
     getSortValue(tb, key) {
       switch (key) {
@@ -386,6 +394,8 @@ export default {
           return Number(this.dividendTotals[tb?.id]) || 0;
         case 'pnl':
           return Number(this.plFor(tb)) || 0;
+        case 'income':
+          return Number(this.incomeFor(tb)) || 0;
         case 'balance':
           return Number(tb?.balance) || 0;
         case 'balanceJpy':
