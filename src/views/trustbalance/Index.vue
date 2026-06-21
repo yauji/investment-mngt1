@@ -36,6 +36,7 @@
             <th class="th-pnl th-num th-sort" @click="setSort('pnl')">
               PnL<span class="sort-indicator">{{ sortIndicator('pnl') }}</span>
             </th>
+            <th class="th-small"></th>
             <th class="th-small th-num th-sort" @click="setSort('balance')">
               balance<span class="sort-indicator">{{ sortIndicator('balance') }}</span>
             </th>
@@ -79,6 +80,7 @@
             <td :class="pnlClass(plFor(trustbalance)) + ' td-num'">
               <span class="num-int">{{ formatParts(plFor(trustbalance), 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(plFor(trustbalance), 2).frac }}</span>
             </td>
+            <td class="td-small">{{ trustbalance.currency }}</td>
             <td class="td-small td-num">
               <span class="num-int">{{ formatParts(trustbalance.balance, 2).int }}</span><span class="num-dot">.</span><span class="num-frac">{{ formatParts(trustbalance.balance, 2).frac }}</span>
             </td>
