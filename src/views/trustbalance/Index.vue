@@ -2,6 +2,18 @@
   <div>
     <h1>Trust Balances</h1>
 
+    <div class="d-flex align-items-end mb-2" style="gap: 12px; flex-wrap: wrap;">
+      <div>
+        <label class="form-label mb-1" for="trustbalance-name-filter">name</label>
+        <input id="trustbalance-name-filter" v-model.trim="nameFilter" class="form-control" placeholder="Filter by name" />
+      </div>
+      <div>
+        <label class="form-label mb-1" for="trustbalance-code-filter">code</label>
+        <input id="trustbalance-code-filter" v-model.trim="codeFilter" class="form-control" placeholder="Filter by code" />
+      </div>
+      <button class="btn btn-outline-secondary" :disabled="!nameFilter && !codeFilter" @click="clearFilters">Clear</button>
+    </div>
+
     <div class="table-scroll">
       <table class="table table-striped table-sticky">
         <thead>
@@ -162,12 +174,26 @@ export default {
       loadingDividendTotals: false,
       sortKey: null,
       sortAsc: true,
+      nameFilter: '',
+      codeFilter: '',
     };
   },
   computed: {
     ...mapState(['exchangeRates']),
     displayTrustBalances() {
-      const list = Array.isArray(this.trustbalances) ? [...this.trustbalances] : [];
+      const nameFilter = String(this.nameFilter || '').toLocaleLowerCase();
+      const codeFilter = String(this.codeFilter || '')
+        .toLocaleLowerCase()
+        .replace(/[\s\u3000]+/g, '');
+      const list = (Array.isArray(this.trustbalances) ? this.trustbalances : [])
+        .filter((tb) => {
+          const name = String(tb?.name || '').toLocaleLowerCase();
+          const code = String(tb?.code || '')
+            .toLocaleLowerCase()
+            .replace(/[\s\u3000]+/g, '');
+          return (!nameFilter || name.includes(nameFilter))
+            && (!codeFilter || code.includes(codeFilter));
+        });
       if (!this.sortKey) return list;
       const dir = this.sortAsc ? 1 : -1;
       return list.sort((a, b) => {
@@ -196,6 +222,10 @@ export default {
     },
   },
   methods: {
+    clearFilters() {
+      this.nameFilter = '';
+      this.codeFilter = '';
+    },
     rateFor(ccy) {
       const c = String(ccy || '').toUpperCase();
       if (c === 'JPY') return 1;
