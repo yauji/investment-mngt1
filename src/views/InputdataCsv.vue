@@ -186,9 +186,14 @@ export default {
     buildTxSignatureBase({ date, tradeType, basicPrice, noItem, buy, sell, dividend }) {
       const tt = String(tradeType || '').toUpperCase();
       const dkey = this.dateKeyISO(date);
+      // DIVIDEND は日付と金額のみで重複判定する。
+      // 既存データには basicPrice/noItem が 0 で入っているものがあるため、これらは比較対象にしない。
+      if (tt === 'DIVIDEND') {
+        return `${dkey}|${tt}|${this.roundN(dividend, 2)}`;
+      }
       const priceKey = this.roundN(basicPrice, 6);
       let qty = '';
-      if (noItem !== undefined && noItem !== null && tt !== 'DIVIDEND') {
+      if (noItem !== undefined && noItem !== null) {
         const q = Math.abs(Number(noItem) || 0);
         const qsigned = tt === 'SELL' ? -q : q;
         qty = this.roundN(qsigned, 6);
@@ -196,7 +201,6 @@ export default {
       let amt = '';
       if (tt === 'BUY' && buy != null) amt = this.roundN(buy, 2);
       if (tt === 'SELL' && sell != null) amt = this.roundN(sell, 2);
-      if (tt === 'DIVIDEND' && dividend != null) amt = this.roundN(dividend, 2);
       return `${dkey}|${tt}|${qty}|${priceKey}|${amt}`;
     },
     // 日本語の列名のCSVをパース（クォート対応）。ヘッダーなし行にも対応。
