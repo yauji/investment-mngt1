@@ -61,8 +61,18 @@
           <li class="nav-item">
             <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
           </li>
-          <li class="nav-item">
-            <router-link class="nav-link" to="/debug">Debug</router-link>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="debugDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Debug
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="debugDropdown">
+              <li>
+                <router-link class="dropdown-item" to="/debug">Debug Tools</router-link>
+              </li>
+              <li>
+                <router-link class="dropdown-item" to="/debug/dividend-duplicates">Dividend duplicates</router-link>
+              </li>
+            </ul>
           </li>
         </ul>
 

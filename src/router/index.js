@@ -39,6 +39,7 @@ import InputdataCsv from "../views/InputdataCsv.vue";
 import InputdataMMF from "../views/inputdataMMF.vue";
 import InputdataCsvRakuten from "../views/inputdataCsvRakuten.vue";
 import DebugTools from "../views/DebugTools.vue";
+import DebugDividendDuplicates from "../views/DebugDividendDuplicates.vue";
 
 const routes = [
   {
@@ -234,6 +235,13 @@ const routes = [
     path: "/debug",
     name: "DebugTools",
     component: DebugTools,
+    props: true,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/debug/dividend-duplicates",
+    name: "DebugDividendDuplicates",
+    component: DebugDividendDuplicates,
     props: true,
     meta: { requireAuth: true },
   },
