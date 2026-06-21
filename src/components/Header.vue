@@ -59,7 +59,7 @@
             </ul>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link active" to="/setting"><BIconGear/></router-link>
+            <router-link class="nav-link active" to="/setting" title="Settings" aria-label="Settings"><BIconGear/></router-link>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="debugDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

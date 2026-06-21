@@ -33,17 +33,6 @@
         </div>
 
         <div class="mb-3">
-          <label for="" class="form-label">exchange rate</label>
-          <input
-            type="number"
-            class="form-control"
-            v-model="form.exchangeRate"
-            step="0.01"
-          />
-        </div>
-
-
-        <div class="mb-3">
           <label for="" class="form-label">memo</label>
           <textarea class="form-control" v-model="form.memo" />
         </div>
@@ -88,7 +77,6 @@ export default {
         id: this.accountId,
         name: '',
         currency: "JPY",
-        exchangeRate: 0,
         memo: "",
       },
     };
@@ -109,7 +97,6 @@ export default {
             id: a.id,
             name: a.name ?? '',
             currency: a.currency,
-            exchangeRate: a.exchangeRate ?? 0,
             memo: a.memo ?? "",
           };
         })
@@ -124,7 +111,6 @@ export default {
           id: this.form.id,
           name: this.form.name ?? '',
           currency: this.form.currency,
-          exchangeRate: Number(this.form.exchangeRate || 0),
           memo: this.form.memo ?? "",
         };
 
