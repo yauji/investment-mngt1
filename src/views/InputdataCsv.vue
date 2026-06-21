@@ -16,7 +16,7 @@
       <li>口数は、必要な場合のみ1/10000へ補正し、小数のまま登録します。</li>
       <li>DLしたそのままではなく、NumberからエクスポートしたCSVを利用。クオートの有無は問いません。</li>
       <li>ヘッダ行は省略可能です。</li>
-      <li>取引列が空欄のことがあるので、記載。おそらく、「かんたん積立」</li>
+      <li>取引列が空欄で商品が「投信」の行は、BUYとして登録します。</li>
     </ul>
     <form @submit.prevent="submitCreateTrustTransactionsFromJPText">
       <div class="mb-3">
@@ -262,9 +262,15 @@ export default {
       return set;
     },
     // 取引種別の日本語→アプリ内Enum変換
-    mapTradeTypeJP(v) {
+    mapTradeTypeJP(v, row = null) {
       const t = String(v || '').trim();
-      if (!t) return null;
+      if (!t) {
+        // Monexでは投信の通常買付で取引列が空欄になる形式がある。
+        const amount = this.toNumberOrNull(row?.['受渡金額(円)']);
+        return String(row?.['商品'] || '').trim() === '投信' && amount !== null && amount > 0
+          ? Enum.EnumTradeType.BUY.val
+          : null;
+      }
       if (t === '分配金' || t === '配当金') return Enum.EnumTradeType.DIVIDEND.val;
       if (t === '再投資買付') return Enum.EnumTradeType.BUY.val;
       if (t === '再投資') return Enum.EnumTradeType.BUY.val;
@@ -453,7 +459,7 @@ export default {
         const r = rows[idx];
         console.log(r);
         try {
-          const tradeType = this.mapTradeTypeJP(r['取引']);
+          const tradeType = this.mapTradeTypeJP(r['取引'], r);
           if (!tradeType) { this.jpSkipped.push({ reason: '未対応の取引種別', row: r }); skip++; continue; }
 
           const isForeignStock = this.isForeignStock(r);
