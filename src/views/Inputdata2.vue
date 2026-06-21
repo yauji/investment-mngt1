@@ -34,12 +34,12 @@
 
     <hr />
 <h3>trust balances (CSV)</h3>
-<p>ヘッダ付きCSVを貼り付けてください（id,name,currency,noItem,basicPrice,balance[,memo] を取り込みます）。</p>
+<p>ヘッダ付きCSVを貼り付けてください（id,averagePurchasePrice,balance,basicPrice,code,currency,memo,name,noItem,type を取り込みます）。</p>
 <form @submit.prevent="submitCreateTrustBalancesFromCSV">
   <div class="mb-3">
     <label for="" class="form-label">trust balances CSV</label>
-    <textarea class="form-control" rows="6" v-model="form.dataTrustBalances" placeholder='"id","__typename","balance","basicPrice","createdAt","currency","name","noItem","owner","updatedAt"
-"65d25a84-4b6f-4e1f-9307-97b92fbee4c3","TrustBalance","995.38","314","2021-06-25T13:59:50.693Z","USD","ジャナス・セレクション ジャナス・バランス・ファンドクラスA（米ドル）受益証券（愛称：全天候型）","3.17","3b5c64d1-5ddc-4064-a4e4-23f4ae07acdd","2025-02-22T22:52:43.575Z"' />
+    <textarea class="form-control" rows="6" v-model="form.dataTrustBalances" placeholder='"id","__typename","averagePurchasePrice","balance","basicPrice","code","createdAt","currency","memo","name","noItem","owner","type","updatedAt"
+"65d25a84-4b6f-4e1f-9307-97b92fbee4c3","TrustBalance","300","995.38","314","1234","2021-06-25T13:59:50.693Z","USD","","ジャナス・セレクション ジャナス・バランス・ファンドクラスA（米ドル）受益証券（愛称：全天候型）","3.17","owner","NISA","2025-02-22T22:52:43.575Z"' />
   </div>
   <input type="submit" value="Import TrustBalances" />
 </form>
@@ -388,6 +388,16 @@ parseTrustTransactionsCsv(text) {
       if (!Number.isNaN(basicPrice)) input.basicPrice = basicPrice;
       const balance = Number(r.balance);
       if (!Number.isNaN(balance)) input.balance = balance;
+      const averagePurchasePrice = Number(r.averagePurchasePrice);
+      if (r.averagePurchasePrice !== undefined && String(r.averagePurchasePrice).trim() !== '' && !Number.isNaN(averagePurchasePrice)) {
+        input.averagePurchasePrice = averagePurchasePrice;
+      }
+      if (r.code !== undefined && r.code !== null && String(r.code).trim() !== '') {
+        input.code = String(r.code).trim();
+      }
+      if (r.type !== undefined && r.type !== null && String(r.type).trim() !== '') {
+        input.type = String(r.type).trim();
+      }
       // バリデーション（必須想定: name, currency）
       if (!input.name || !input.currency) {
         console.warn(`[trustbalance csv] skip row ${idx} (name/currency missing):`, r);
